@@ -7,213 +7,211 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
 </head>
-<body class="p-2 sm:p-4 pb-20 select-none">
+<body class="select-none">
 
-  <!-- Ana Kart Kapsayıcı -->
-  <div class="max-w-xl mx-auto space-y-4">
+  <!-- Ana Kapsayıcı (Mobil Görünüm) -->
+  <div class="max-w-md mx-auto min-h-screen flex flex-col bg-[var(--header-bg)]">
 
-    <!-- Üst Başlık & Konum & Canlı Saat -->
-    <header class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 sm:p-4 shadow-sm flex items-center justify-between">
-      <div class="flex items-center gap-2.5">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-          🕌
+    <!-- 1. ÜST KISIM: KOYU ZÜMRÜT KUBBE ALANI -->
+    <header class="header-wrapper">
+      
+      <!-- Üst Bar: Geri/Menü, Başlık, Konum Butonu -->
+      <div class="flex items-center justify-between">
+        <button onclick="app.openLocationModal()" class="circle-btn" title="Şehir Değiştir">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+
+        <div class="text-center">
+          <h1 class="font-extrabold text-lg tracking-wide text-white">Tam Vakti</h1>
         </div>
-        <div>
-          <div class="flex items-center gap-1.5">
-            <h1 class="font-extrabold text-base sm:text-lg tracking-tight">Tam Vakti</h1>
-            <span class="text-[10px] font-mono bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold px-1.5 py-0.5 rounded border border-emerald-500/20">v2026.10.12</span>
-          </div>
-          <button onclick="app.openLocationModal()" class="flex items-center gap-1 text-xs text-[var(--muted-foreground)] hover:text-emerald-500 transition-colors mt-0.5">
-            <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-            <span id="locationBadge" class="font-semibold underline decoration-dashed underline-offset-2">Konya / Ilgın</span>
-            <span class="text-[10px] opacity-75">(Değiştir)</span>
+
+        <button onclick="app.openLocationModal()" class="circle-btn" title="Konum">
+          <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- KUBBE VE GÜNEŞ YAYI GÖSTERGESİ -->
+      <div class="dome-container">
+        
+        <!-- Altın Sarısı Dış Güneş Yayı -->
+        <div class="solar-arc" id="solarArcIndicator"></div>
+
+        <!-- Yeşil Kemer Kubbe -->
+        <div class="emerald-dome">
+          
+          <!-- Konum Başlığı -->
+          <button onclick="app.openLocationModal()" class="flex items-center gap-1 text-[11px] font-semibold text-emerald-100 hover:text-white transition-colors">
+            <span id="domeLocationText">Konya, Ilgın</span>
+            <svg class="w-2.5 h-2.5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
           </button>
+
+          <!-- Büyük Dijital Saat -->
+          <div class="flex items-baseline gap-1 my-1">
+            <span id="domeLiveClock" class="font-mono text-4xl sm:text-5xl font-black text-white tracking-tight drop-shadow-sm">
+              03:45
+            </span>
+            <div class="flex flex-col text-[10px] font-bold text-emerald-200 leading-tight">
+              <span id="domeAmpmLabel">PM</span>
+              <span id="domeSecondsLabel" class="text-[9px] opacity-75">:00</span>
+            </div>
+          </div>
+
+          <!-- Alt Çentik / Kemer Oyuntusu -->
+          <div class="dome-bottom-notch"></div>
         </div>
+
       </div>
 
-      <!-- Canlı Saat & Tarih -->
-      <div class="text-right">
-        <div class="font-mono text-xl sm:text-2xl font-black tracking-tight text-[var(--foreground)]" id="liveClock">
-          --:--:--
+      <!-- KUBBE ALTI İKİLİ ÖZET BİLGİ (Fajr / İftar) -->
+      <div class="flex items-center justify-between px-3 pt-1 text-white">
+        
+        <!-- Sol: Fajr (İmsak) -->
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-sm shadow-inner">
+            🌅
+          </div>
+          <div>
+            <div class="text-[10px] uppercase font-bold text-emerald-200 tracking-wider">İmsak</div>
+            <div id="subFajrTime" class="font-mono font-extrabold text-xs sm:text-sm text-white">05:28</div>
+          </div>
         </div>
-        <div class="text-[10px] text-[var(--muted-foreground)]" id="dateLabel">
-          Yükleniyor...
+
+        <!-- Sağ: Iftar (Akşam) -->
+        <div class="flex items-center gap-2 text-right">
+          <div>
+            <div class="text-[10px] uppercase font-bold text-amber-300 tracking-wider">İftar</div>
+            <div id="subIftarTime" class="font-mono font-extrabold text-xs sm:text-sm text-white">18:27</div>
+          </div>
+          <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-sm shadow-inner">
+            🌇
+          </div>
         </div>
+
       </div>
+
     </header>
 
-    <!-- Sekme İçerikleri -->
-    <main>
+    <!-- 2. ALT KISIM: BEYAZ ZAMAN ÇİZELGESİ (BOTTOM SHEET) -->
+    <main class="bottom-sheet flex-1">
+      
+      <!-- Tepe Çentiği / Gösterge -->
+      <div class="sheet-indicator"></div>
 
-      <!-- 1. SEKME: VAKİTLER & SAYAÇ -->
-      <section id="tabContent-home" class="space-y-4">
+      <!-- Sekme 1: Vakitler Zaman Çizelgesi (Varsayılan) -->
+      <section id="tabContent-home">
         
-        <!-- Canlı Vakit & Geri Sayım Kartı -->
-        <div class="bg-gradient-to-br from-emerald-600/15 via-teal-600/10 to-transparent border border-emerald-500/30 rounded-2xl p-4 relative overflow-hidden shadow-sm">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <div class="flex items-center gap-2 mb-1">
-                <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500 pulse-badge"></span>
-                <span class="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Şu Anki Vakit</span>
-                <span id="kerahatAlertBadge" class="hidden text-[11px] bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold px-2 py-0.5 rounded-full border border-amber-500/30">
-                  ⚠️ Kerahat Vakti
-                </span>
-              </div>
-              <h2 id="currentPrayerName" class="text-xl sm:text-2xl font-extrabold text-[var(--foreground)] tracking-tight">Yükleniyor...</h2>
-              <p id="nextPrayerTarget" class="text-xs text-[var(--muted-foreground)] mt-0.5">Hedef: Sonraki Vakit</p>
-            </div>
-
-            <!-- Dijital Geri Sayım -->
-            <div class="bg-[var(--card)]/90 backdrop-blur px-4 py-2.5 rounded-xl border border-[var(--border)] shadow-xs text-left sm:text-right">
-              <div id="countdownDisplay" class="font-mono text-2xl sm:text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">
-                00:00:00
-              </div>
-              <div class="flex items-center justify-between sm:justify-end gap-2 text-[11px] text-[var(--muted-foreground)] mt-0.5">
-                <span>Kalan Süre</span>
-                <span class="text-[var(--border)]">•</span>
-                <span id="progressPercentage" class="font-semibold text-emerald-600 dark:text-emerald-400">%0</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- İlerleme Çubuğu -->
-          <div class="w-full bg-[var(--border)]/40 rounded-full h-1.5 mt-3.5 overflow-hidden">
-            <div id="prayerProgressBar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-          </div>
+        <div class="flex items-center justify-between mb-3 text-xs">
+          <span class="font-bold text-slate-700">Günün Namaz Vakitleri</span>
+          <span id="sheetCurrentVakitBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+            Öğle Vakti
+          </span>
         </div>
 
-        <!-- 6 Vakit Kartı Izgarası -->
-        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2" id="prayerGrid">
-          <!-- JS ile doldurulacak -->
-        </div>
-
-        <!-- Hızlı İşlemler Kartı -->
-        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-3 flex items-center justify-between text-xs">
-          <div class="flex items-center gap-2">
-            <span class="text-emerald-500 font-bold">📍</span>
-            <span id="locHeader" class="text-[var(--foreground)] font-medium">Konya / Ilgın</span>
-            <span class="text-[10px] text-[var(--muted-foreground)]">(Diyanet Uyumlu)</span>
+        <!-- Zaman Çizelgesi Listesi -->
+        <div class="timeline-container relative">
+          <div class="timeline-line"></div>
+          <div id="prayerTimelineList">
+            <!-- JS ile dinamik olarak görseldeki gibi doldurulacak -->
           </div>
-          <button onclick="app.playAlertTone()" class="flex items-center gap-1 px-2.5 py-1 bg-[var(--border)]/40 hover:bg-[var(--border)] text-[var(--foreground)] rounded-lg transition-colors">
-            <span>🔔</span>
-            <span>Ses Testi</span>
-          </button>
         </div>
 
       </section>
 
-      <!-- 2. SEKME: KIBLE PUSULASI -->
+      <!-- Sekme 2: Kıble Pusulası -->
       <section id="tabContent-compass" class="hidden space-y-4">
-        <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 text-center flex flex-col items-center">
-          <h2 class="font-bold text-base text-[var(--foreground)]">Kıble Pusulası</h2>
-          <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Kâbe-i Muazzama İstikameti</p>
+        <div class="bg-white rounded-2xl p-5 text-center shadow-xs border border-slate-100 flex flex-col items-center">
+          <h2 class="font-bold text-base text-slate-800">Kıble Pusulası</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Kâbe İstikametine Yöneliniz</p>
 
-          <!-- Pusula Kadranı -->
-          <div class="relative w-48 h-48 flex items-center justify-center my-6">
-            <!-- Dış Çember -->
-            <div class="absolute inset-0 rounded-full border-2 border-dashed border-[var(--border)] flex items-center justify-center">
+          <div class="relative w-44 h-44 flex items-center justify-center my-5">
+            <div class="absolute inset-0 rounded-full border-2 border-dashed border-slate-200 flex items-center justify-center">
               <span class="absolute top-1 text-xs font-bold text-red-500">K</span>
-              <span class="absolute bottom-1 text-xs font-bold text-[var(--muted-foreground)]">G</span>
-              <span class="absolute right-1 text-xs font-bold text-[var(--muted-foreground)]">D</span>
-              <span class="absolute left-1 text-xs font-bold text-[var(--muted-foreground)]">B</span>
+              <span class="absolute bottom-1 text-xs font-bold text-slate-400">G</span>
+              <span class="absolute right-1 text-xs font-bold text-slate-400">D</span>
+              <span class="absolute left-1 text-xs font-bold text-slate-400">B</span>
             </div>
-
-            <!-- Kıble İbresi -->
             <div id="compassDial" class="compass-dial w-full h-full flex items-center justify-center">
               <div class="w-1 bg-gradient-to-t from-emerald-500 to-transparent h-20 rounded-full origin-bottom"></div>
-              <div class="absolute top-4 flex flex-col items-center">
+              <div class="absolute top-3 flex flex-col items-center">
                 <span class="text-xl">🕋</span>
-                <span class="text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded mt-0.5">Kıble</span>
+                <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded mt-0.5">Kıble</span>
               </div>
             </div>
-
-            <!-- Merkez Düğme -->
-            <div class="w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[var(--card)] shadow z-10"></div>
+            <div class="w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white shadow z-10"></div>
           </div>
 
-          <!-- Bilgiler -->
-          <div class="grid grid-cols-2 gap-3 w-full max-w-xs text-center border-t border-[var(--border)] pt-3">
-            <div class="p-2 rounded-lg bg-[var(--border)]/20">
-              <div class="text-[10px] text-[var(--muted-foreground)]">Kıble Açısı</div>
-              <div id="qiblaAngleVal" class="font-mono font-bold text-sm text-emerald-500">154.2° GD</div>
+          <div class="grid grid-cols-2 gap-2 w-full pt-2 border-t border-slate-100 text-center">
+            <div class="p-2 rounded-xl bg-slate-50">
+              <div class="text-[10px] text-slate-500">Kıble Açısı</div>
+              <div id="qiblaAngleVal" class="font-mono font-bold text-sm text-emerald-600">154.2° GD</div>
             </div>
-            <div class="p-2 rounded-lg bg-[var(--border)]/20">
-              <div class="text-[10px] text-[var(--muted-foreground)]">Mekke Mesafesi</div>
-              <div id="qiblaDistVal" class="font-mono font-bold text-sm text-[var(--foreground)]">-- km</div>
+            <div class="p-2 rounded-xl bg-slate-50">
+              <div class="text-[10px] text-slate-500">Kâbe Mesafesi</div>
+              <div id="qiblaDistVal" class="font-mono font-bold text-sm text-slate-700">-- km</div>
             </div>
           </div>
-
-          <p id="compassStatusText" class="text-[11px] text-[var(--muted-foreground)] mt-3">
-            Pusula için telefonunuzu düz bir zeminde tutunuz.
-          </p>
+          <p id="compassStatusText" class="text-[10px] text-slate-400 mt-2">Telefonu düz bir zeminde tutunuz.</p>
         </div>
       </section>
 
-      <!-- 3. SEKME: ZİKİRMATİK & TESBİHAT -->
+      <!-- Sekme 3: Zikirmatik -->
       <section id="tabContent-dhikr" class="hidden space-y-4">
-        <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 text-center flex flex-col items-center">
-          <div class="flex items-center justify-between w-full mb-2">
-            <span id="dhikrStageBadge" class="text-xs font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full">1 / 4 Aşama</span>
+        <div class="bg-white rounded-2xl p-5 text-center shadow-xs border border-slate-100 flex flex-col items-center">
+          <div class="flex items-center justify-between w-full mb-1">
+            <span id="dhikrStageBadge" class="text-[11px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">1 / 4 Aşama</span>
             <button onclick="app.onDhikrReset()" class="text-xs text-red-500 hover:underline">Sıfırla</button>
           </div>
 
-          <div id="dhikrWordDisplay" class="font-bold text-xl sm:text-2xl text-emerald-600 dark:text-emerald-400 my-2">
+          <div id="dhikrWordDisplay" class="font-bold text-xl text-emerald-700 my-2">
             Sübhânallâh (سُبْحَانَ الله)
           </div>
-          <p id="dhikrMeaningDisplay" class="text-xs text-[var(--muted-foreground)] max-w-sm mb-4">
+          <p id="dhikrMeaningDisplay" class="text-xs text-slate-500 max-w-xs mb-3">
             Allah her türlü eksiklikten münezzehtir
           </p>
 
-          <div id="dhikrCountDisplay" class="font-mono text-5xl sm:text-6xl font-black text-[var(--foreground)] my-4">
+          <div id="dhikrCountDisplay" class="font-mono text-5xl font-black text-slate-800 my-3">
             0 / 33
           </div>
 
           <button onclick="app.onDhikrClick()" 
-                  class="w-full max-w-xs py-5 px-8 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-lg rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2">
-            <span>ÇEK (SAY)</span>
-            <span class="text-xs opacity-75 font-normal">(Dokun)</span>
+                  class="w-full max-w-xs py-4 px-6 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-base rounded-2xl shadow-md transition-all">
+            ÇEK (DOKUN)
           </button>
         </div>
       </section>
 
-      <!-- 4. SEKME: KAZA DEFTERİ -->
-      <section id="tabContent-kaza" class="hidden space-y-4">
-        <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4">
-          <div class="flex items-center justify-between mb-3 border-b border-[var(--border)] pb-2">
-            <div>
-              <h2 class="font-bold text-sm sm:text-base text-[var(--foreground)]">Kaza Namazı Defteri</h2>
-              <p class="text-xs text-[var(--muted-foreground)]">Kılınan kaza namazlarınızı buradan takip edebilirsiniz.</p>
-            </div>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="kazaGridContainer">
-            <!-- JS ile doldurulacak -->
-          </div>
+      <!-- Sekme 4: Kaza Defteri -->
+      <section id="tabContent-kaza" class="hidden space-y-3">
+        <div class="bg-white rounded-2xl p-4 shadow-xs border border-slate-100">
+          <h2 class="font-bold text-sm text-slate-800 mb-1">Kaza Namazı Defteri</h2>
+          <p class="text-xs text-slate-500 mb-3">Borç namazlarınızı buradan takip edin.</p>
+          <div class="space-y-2" id="kazaGridContainer"></div>
         </div>
       </section>
 
-      <!-- 5. SEKME: AYLIK İMSAKİYE -->
-      <section id="tabContent-imsakiye" class="hidden space-y-4">
-        <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4">
-          <h2 class="font-bold text-sm sm:text-base text-[var(--foreground)] mb-2">Aylık İmsakiye Cetveli</h2>
+      <!-- Sekme 5: Aylık İmsakiye -->
+      <section id="tabContent-imsakiye" class="hidden space-y-3">
+        <div class="bg-white rounded-2xl p-4 shadow-xs border border-slate-100">
+          <h2 class="font-bold text-sm text-slate-800 mb-2">Aylık İmsakiye Cetveli</h2>
           <div class="overflow-x-auto">
             <table class="w-full text-center text-xs">
-              <thead class="border-b border-[var(--border)] text-[var(--muted-foreground)]">
+              <thead class="border-b border-slate-200 text-slate-400">
                 <tr>
-                  <th class="py-2 px-1">Gün</th>
-                  <th class="py-2 px-1">İmsak</th>
-                  <th class="py-2 px-1">Güneş</th>
-                  <th class="py-2 px-1">Öğle</th>
-                  <th class="py-2 px-1">İkindi</th>
-                  <th class="py-2 px-1">Akşam</th>
-                  <th class="py-2 px-1">Yatsı</th>
+                  <th class="py-1.5 px-1">Gün</th>
+                  <th class="py-1.5 px-1">İmsak</th>
+                  <th class="py-1.5 px-1">Güneş</th>
+                  <th class="py-1.5 px-1">Öğle</th>
+                  <th class="py-1.5 px-1">İkindi</th>
+                  <th class="py-1.5 px-1">Akşam</th>
+                  <th class="py-1.5 px-1">Yatsı</th>
                 </tr>
               </thead>
-              <tbody id="imsakiyeTableBody">
-                <!-- JS ile doldurulacak -->
-              </tbody>
+              <tbody id="imsakiyeTableBody"></tbody>
             </table>
           </div>
         </div>
@@ -221,73 +219,66 @@
 
     </main>
 
-  </div>
-
-  <!-- Sabit Alt Menü (Tab Bar) -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-[var(--card)]/95 backdrop-blur border-t border-[var(--border)] z-40 max-w-xl mx-auto">
-    <div class="flex justify-around items-center py-2 text-[10px] font-semibold">
-      <button onclick="app.switchTab('home')" id="tabBtn-home" class="tab-btn flex flex-col items-center gap-0.5 text-emerald-500 border-b-2 border-emerald-500 pb-1">
-        <span class="text-base">🕌</span>
+    <!-- 3. SABİT ALT MENÜ (BOTTOM DOCK) -->
+    <nav class="bottom-dock">
+      <button onclick="app.switchTab('home')" id="tabBtn-home" class="dock-item active">
+        <span class="text-lg">🕌</span>
         <span>Vakitler</span>
       </button>
-      <button onclick="app.switchTab('compass')" id="tabBtn-compass" class="tab-btn flex flex-col items-center gap-0.5 text-[var(--muted-foreground)] pb-1">
-        <span class="text-base">🧭</span>
+      <button onclick="app.switchTab('compass')" id="tabBtn-compass" class="dock-item">
+        <span class="text-lg">🧭</span>
         <span>Kıble</span>
       </button>
-      <button onclick="app.switchTab('dhikr')" id="tabBtn-dhikr" class="tab-btn flex flex-col items-center gap-0.5 text-[var(--muted-foreground)] pb-1">
-        <span class="text-base">📿</span>
-        <span>Zikir</span>
+      <button onclick="app.switchTab('dhikr')" id="tabBtn-dhikr" class="dock-item">
+        <span class="text-lg">📿</span>
+        <span>Zikirmatik</span>
       </button>
-      <button onclick="app.switchTab('kaza')" id="tabBtn-kaza" class="tab-btn flex flex-col items-center gap-0.5 text-[var(--muted-foreground)] pb-1">
-        <span class="text-base">📋</span>
+      <button onclick="app.switchTab('kaza')" id="tabBtn-kaza" class="dock-item">
+        <span class="text-lg">📋</span>
         <span>Kaza</span>
       </button>
-      <button onclick="app.switchTab('imsakiye')" id="tabBtn-imsakiye" class="tab-btn flex flex-col items-center gap-0.5 text-[var(--muted-foreground)] pb-1">
-        <span class="text-base">📅</span>
+      <button onclick="app.switchTab('imsakiye')" id="tabBtn-imsakiye" class="dock-item">
+        <span class="text-lg">📅</span>
         <span>İmsakiye</span>
       </button>
-    </div>
-  </nav>
+    </nav>
 
-  <!-- MODAL 1: Konum / Şehir Seçici -->
+  </div>
+
+  <!-- MODAL: Şehir ve İlçe Seçimi -->
   <div id="locationModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 modal-overlay">
-    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl w-full max-w-md max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-      <div class="p-4 border-b border-[var(--border)] flex items-center justify-between">
-        <h3 class="font-bold text-sm sm:text-base text-[var(--foreground)]">Şehir ve İlçe Seçimi</h3>
-        <button onclick="app.closeLocationModal()" class="text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-lg">&times;</button>
+    <div class="bg-white rounded-3xl w-full max-w-sm max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="font-bold text-sm text-slate-800">Şehir / İlçe Seçimi</h3>
+        <button onclick="app.closeLocationModal()" class="text-slate-400 hover:text-slate-700 text-lg">&times;</button>
       </div>
 
-      <!-- GPS Butonu -->
-      <div class="p-3 bg-[var(--border)]/20 border-b border-[var(--border)]">
-        <button id="gpsLocateBtn" onclick="app.locateWithGPS()" class="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors">
+      <div class="p-3 bg-slate-50 border-b border-slate-100">
+        <button id="gpsLocateBtn" onclick="app.locateWithGPS()" class="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors">
           <span>📡</span>
           <span>GPS ile Otomatik Bul</span>
         </button>
       </div>
 
-      <!-- Şehirler Listesi -->
-      <div class="p-3 overflow-y-auto flex-1 space-y-1" id="cityListContainer">
-        <!-- JS ile doldurulacak -->
-      </div>
+      <div class="p-3 overflow-y-auto flex-1 space-y-1" id="cityListContainer"></div>
     </div>
   </div>
 
-  <!-- MODAL 2: Vakit Detayı -->
+  <!-- MODAL: Vakit ve Rekât Detayı -->
   <div id="detailModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 modal-overlay">
-    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl w-full max-w-sm p-4 shadow-2xl space-y-3">
-      <div class="flex items-center justify-between border-b border-[var(--border)] pb-2">
+    <div class="bg-white rounded-3xl w-full max-w-xs p-4 shadow-2xl space-y-3">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
         <div>
-          <h3 id="detailModalTitle" class="font-bold text-sm sm:text-base text-[var(--foreground)]">Vakit Detayı</h3>
-          <p id="detailModalSub" class="text-[11px] text-[var(--muted-foreground)]">Açıklama</p>
+          <h3 id="detailModalTitle" class="font-bold text-sm text-slate-800">Vakit Detayı</h3>
+          <p id="detailModalSub" class="text-[11px] text-slate-500">Açıklama</p>
         </div>
-        <span id="detailModalTotal" class="text-xs font-bold px-2 py-0.5 rounded bg-[var(--border)] text-[var(--foreground)]">--</span>
+        <span id="detailModalTotal" class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800">--</span>
       </div>
 
-      <p id="detailModalDesc" class="text-xs text-[var(--muted-foreground)] leading-relaxed"></p>
-
+      <p id="detailModalDesc" class="text-xs text-slate-600 leading-relaxed"></p>
       <div class="space-y-1.5 pt-1" id="detailModalRakahs"></div>
 
-      <button onclick="app.closePrayerDetail()" class="w-full py-2 bg-[var(--border)]/60 hover:bg-[var(--border)] text-[var(--foreground)] rounded-xl text-xs font-bold transition-colors">
+      <button onclick="app.closePrayerDetail()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-colors">
         Kapat
       </button>
     </div>
