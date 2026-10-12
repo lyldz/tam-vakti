@@ -339,12 +339,34 @@ class TamVaktiApp {
     document.getElementById("domeCountdownTimer").textContent = 
       `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
+    // Kalan Zamana Göre Akıllı Renk Skalası (Yeşil -> Sarı -> Turuncu -> Kırmızı)
+    const remainingMinutes = Math.floor(diffMs / 60000);
+    let arcColor = "#10b981"; // Canlı Zümrüt Yeşili (>90 dk)
+    let shadowColor = "rgba(16, 185, 129, 0.7)";
+    let urgencyText = "";
+
+    if (remainingMinutes <= 20) {
+      arcColor = "#ef4444"; // Kırmızı Alarm (Son 20 dakika!)
+      shadowColor = "rgba(239, 68, 68, 0.85)";
+      urgencyText = " ⚠️";
+    } else if (remainingMinutes <= 45) {
+      arcColor = "#f97316"; // Turuncu (Son 45 dakika - Vaktin çıkışı yaklaşıyor)
+      shadowColor = "rgba(249, 115, 22, 0.8)";
+      urgencyText = " ⏳";
+    } else if (remainingMinutes <= 90) {
+      arcColor = "#facc15"; // Altın Sarısı (45 - 90 dakika)
+      shadowColor = "rgba(250, 204, 21, 0.7)";
+    }
+
     // 3. Vakit İlerleme Yüzdesi ve Hedef Başlığı
     const percent = Math.min(100, Math.max(0, Math.round((passedMs / totalMs) * 100)));
-    document.getElementById("domeTargetLabel").textContent = 
-      `${current.nextName}'ne Kalan • %${percent}`;
+    const targetEl = document.getElementById("domeTargetLabel");
+    if (targetEl) {
+      targetEl.textContent = `${current.nextName}'ne Kalan • %${percent}${urgencyText}`;
+      targetEl.style.color = arcColor;
+    }
 
-    // 4. TURUNCU / ALTIN GÜNEŞ YAYININ ZAMAN ENDEKSLİ CANLI İLERLEMESİ
+    // 4. GÜNEŞ YAYININ ZAMAN VE RENK ENDEKSLİ CANLI İLERLEMESİ
     // Yay toplam çevre uzunluğu: 377px
     const arcPath = document.getElementById("solarArcProgressPath");
     if (arcPath) {
@@ -352,6 +374,8 @@ class TamVaktiApp {
       const progressFraction = Math.min(1, Math.max(0, passedMs / totalMs));
       const strokeOffset = totalArcLength - (totalArcLength * progressFraction);
       arcPath.style.strokeDashoffset = strokeOffset;
+      arcPath.style.stroke = arcColor;
+      arcPath.style.filter = `drop-shadow(0 0 10px ${shadowColor})`;
     }
 
     // 5. Kerahat Vakti Kontrolü
