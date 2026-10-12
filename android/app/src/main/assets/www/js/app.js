@@ -4,12 +4,12 @@
  */
 
 const PRAYER_LIST = [
-  { key: "imsak", name: "İmsak", iconClass: "icon-imsak", symbol: "🌙" },
-  { key: "gunes", name: "Güneş", iconClass: "icon-gunes", symbol: "🌅" },
-  { key: "ogle", name: "Öğle", iconClass: "icon-ogle", symbol: "☀️" },
-  { key: "ikindi", name: "İkindi", iconClass: "icon-ikindi", symbol: "🌤️" },
-  { key: "aksam", name: "Akşam", iconClass: "icon-aksam", symbol: "🌇" },
-  { key: "yatsi", name: "Yatsı", iconClass: "icon-yatsi", symbol: "🌌" }
+  { key: "imsak", name: "İmsak", iconSvg: "assets/icons/imsak.svg" },
+  { key: "gunes", name: "Güneş", iconSvg: "assets/icons/gunes.svg" },
+  { key: "ogle", name: "Öğle", iconSvg: "assets/icons/ogle.svg" },
+  { key: "ikindi", name: "İkindi", iconSvg: "assets/icons/ikindi.svg" },
+  { key: "aksam", name: "Akşam", iconSvg: "assets/icons/aksam.svg" },
+  { key: "yatsi", name: "Yatsı", iconSvg: "assets/icons/yatsi.svg" }
 ];
 
 const PRAYER_DETAILS = {
@@ -247,11 +247,9 @@ class TamVaktiApp {
              class="prayer-card-item ${isActive ? 'active' : ''}">
           
           <div class="flex items-center">
-            <!-- Kubbe İkon Rozeti -->
-            <div class="card-dome-icon ${item.iconClass}">
-              <div class="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-xs">
-                ${item.symbol}
-              </div>
+            <!-- Kubbe İkon Rozeti (Özel Vektör) -->
+            <div class="card-dome-wrapper mr-3 flex-shrink-0">
+              <img src="${item.iconSvg}" alt="${item.name}" class="w-10 h-11 object-contain drop-shadow-xs">
             </div>
 
             <!-- Saat ve Vakit Adı -->
