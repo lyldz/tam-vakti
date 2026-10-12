@@ -1,4 +1,4 @@
-/* Tam Vakti - Özel Zümrüt Kubbe & Timeline Tasarımı */
+/* Tam Vakti - Özel Zümrüt Kubbe & Canlı İlerleyen Zaman Çizelgesi */
 :root {
   --header-bg: #083326;
   --header-dark: #05231a;
@@ -35,57 +35,81 @@ body {
   background-color: var(--header-bg);
   color: #ffffff;
   position: relative;
-  padding: 16px 20px 24px 20px;
+  padding: 14px 18px 20px 18px;
 }
 
 /* Güneş Yayı ve Kubbe Göstergesi */
 .dome-container {
   position: relative;
-  width: 250px;
-  height: 155px;
-  margin: 16px auto 8px auto;
+  width: 270px;
+  height: 165px;
+  margin: 12px auto 6px auto;
   display: flex;
   align-items: flex-end;
   justify-content: center;
 }
 
-/* Dış Güneş İlerleme Yayı (Altın Sarısı Ark) */
-.solar-arc {
+/* SVG Güneş Yolu İlerleme Çemberi */
+.solar-arc-svg {
   position: absolute;
   top: 0;
   left: 0;
-  width: 250px;
-  height: 155px;
-  border: 7px solid var(--accent-gold);
-  border-bottom: none;
-  border-radius: 135px 135px 0 0;
-  box-shadow: 0 0 15px rgba(245, 158, 11, 0.35);
+  width: 270px;
+  height: 165px;
   pointer-events: none;
+}
+
+.solar-arc-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.15);
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+
+.solar-arc-progress {
+  fill: none;
+  stroke: var(--accent-gold);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.6));
 }
 
 /* İç Zümrüt Kubbe */
 .emerald-dome {
-  width: 216px;
-  height: 135px;
+  width: 230px;
+  height: 144px;
   background: var(--dome-gradient);
-  border-radius: 115px 115px 0 0;
+  border-radius: 125px 125px 0 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding-top: 14px;
+  padding-top: 10px;
   position: relative;
-  box-shadow: inset 0 2px 8px rgba(255, 255, 255, 0.25), 0 10px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 8px rgba(255, 255, 255, 0.25), 0 10px 25px rgba(0, 0, 0, 0.25);
+  z-index: 10;
 }
 
 /* Kubbe Alt Oyuntusu (Notch) */
 .dome-bottom-notch {
   position: absolute;
   bottom: -1px;
-  width: 50px;
-  height: 16px;
+  width: 52px;
+  height: 18px;
   background-color: var(--header-bg);
-  border-radius: 16px 16px 0 0;
+  border-radius: 18px 18px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dome-bottom-notch::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background-color: #34d399;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #34d399;
 }
 
 /* Alt Beyaz Panel (Sheet) */
@@ -99,7 +123,7 @@ body {
   min-height: 480px;
 }
 
-/* Panel Üst Tutma Çentiği / Tepe Noktası */
+/* Panel Üst Tutma Çentiği */
 .sheet-indicator {
   position: absolute;
   top: -9px;
@@ -154,7 +178,7 @@ body {
   width: 16px;
   height: 16px;
   background-color: #f59e0b;
-  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.35);
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.4);
   animation: pulse-ring 2s infinite ease-in-out;
 }
 
@@ -173,16 +197,16 @@ body {
   justify-content: space-between;
   margin-bottom: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.85);
   transition: all 0.2s ease-in-out;
   cursor: pointer;
   position: relative;
 }
 
 .prayer-row-card.active-prayer {
-  border: 1.5px solid rgba(16, 185, 129, 0.4);
+  border: 1.5px solid rgba(16, 185, 129, 0.45);
   background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.12);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
 }
 
 /* Yuvarlak Geri / Menü Butonu */

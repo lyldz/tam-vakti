@@ -1,12 +1,12 @@
 /**
- * Tam Vakti - Özel Zümrüt Kubbe & Zaman Çizelgesi Uygulama Kontrolcüsü
+ * Tam Vakti - Özel Zümrüt Kubbe & Canlı İlerleyen Zaman Çizelgesi
  * Sürüm: 2026.10.12 (CalVer)
  */
 
 const PRAYER_DETAILS = {
   imsak: {
-    name: "Fazr (İmsak)",
-    sub: "Sabah Namazı & İmsak",
+    name: "İmsak",
+    sub: "Sahur Sonu & Sabah Namazı",
     icon: "🌅",
     bgClass: "bg-amber-50 text-amber-600",
     rakahs: [
@@ -14,10 +14,10 @@ const PRAYER_DETAILS = {
       { name: "2 Rekât Farz", type: "Farz" }
     ],
     total: "4 Rekât",
-    desc: "Sabah namazı ve orucun başlangıç vaktidir. Güneş doğuşuna kadar kılınabilir."
+    desc: "Yeme-içmenin sona erdiği ve sabah namazı vaktinin başladığı andır. Güneş doğuşuna kadar kılınabilir."
   },
   gunes: {
-    name: "Güneş Doğuşu",
+    name: "Güneş",
     sub: "Sabah Namazı Sonu (Kerahat)",
     icon: "🌄",
     bgClass: "bg-orange-50 text-orange-500",
@@ -25,10 +25,10 @@ const PRAYER_DETAILS = {
       { name: "Güneş Doğuşu", type: "Kerahat Vakti" }
     ],
     total: "Kerahat",
-    desc: "Güneş doğduktan sonraki ilk 45 dakika namaz kılmak mekruhtur. Sonrasında Kuşluk (Duhâ) namazı kılınabilir."
+    desc: "Güneş doğduktan sonraki ilk 45 dakika namaz kılmak mekruhtur. Güneş 45-50 dk yükseldikten sonra Kuşluk (Duhâ) namazı kılınabilir."
   },
   ogle: {
-    name: "Dhuhr (Öğle)",
+    name: "Öğle",
     sub: "Zeval Vakti Sonu",
     icon: "☀️",
     bgClass: "bg-yellow-50 text-amber-500",
@@ -38,10 +38,10 @@ const PRAYER_DETAILS = {
       { name: "2 Rekât Son Sünnet", type: "Sünnet-i Müekkede" }
     ],
     total: "10 Rekât",
-    desc: "Güneşin tepe noktasından batıya meyletmesiyle başlar, ikindiye kadar devam eder."
+    desc: "Güneşin tepe noktasından batıya meyletmesiyle başlar, ikindiye kadar devam eder. Cuma günleri bu vakitte Cuma namazı kılınır."
   },
   ikindi: {
-    name: "Asr (İkindi)",
+    name: "İkindi",
     sub: "Asr Vakti",
     icon: "🌤️",
     bgClass: "bg-emerald-50 text-emerald-600",
@@ -50,10 +50,10 @@ const PRAYER_DETAILS = {
       { name: "4 Rekât Farz", type: "Farz" }
     ],
     total: "8 Rekât",
-    desc: "Güneş batmadan 45 dakika öncesine kadar kılınmalıdır; son 45 dakika kerahat vaktidir."
+    desc: "Güneşin batmasına 45 dakika kalana kadar kılınmalıdır; son 45 dakika kerahat vaktidir."
   },
   aksam: {
-    name: "Iftar (Akşam)",
+    name: "Akşam",
     sub: "İftar & Akşam Namazı",
     icon: "🌇",
     bgClass: "bg-rose-50 text-rose-500",
@@ -63,10 +63,10 @@ const PRAYER_DETAILS = {
       { name: "6 Rekât Evvâbîn", type: "Müstehab" }
     ],
     total: "5 Rekât",
-    desc: "Güneşin tamamen batmasıyla başlar. Oruç tutanlar için iftar vaktidir."
+    desc: "Güneşin tamamen batmasıyla başlar. Oruçlular için iftar vaktidir. Akşam namazında önce farz kılınır."
   },
   yatsi: {
-    name: "Esha (Yatsı)",
+    name: "Yatsı",
     sub: "İşa & Vitir Namazı",
     icon: "🌙",
     bgClass: "bg-indigo-50 text-indigo-600",
@@ -77,7 +77,7 @@ const PRAYER_DETAILS = {
       { name: "3 Rekât Vitir", type: "Vacip" }
     ],
     total: "13 Rekât",
-    desc: "Batı ufkundaki aydınlığın kaybolmasıyla başlar, imsak vaktine kadar devam eder."
+    desc: "Batı ufkundaki kızıllık ve beyazlığın kaybolmasıyla başlar, imsak vaktine kadar devam eder."
   }
 };
 
@@ -91,7 +91,7 @@ class TamVaktiApp {
     this.currentTimes = null;
     this.activePrayerKey = null;
 
-    // Ses Tercihleri (Varsayılan olarak İmsak ve İftar açık)
+    // Ses Tercihleri
     this.soundSettings = this.loadSoundSettings();
 
     this.init();
@@ -163,7 +163,7 @@ class TamVaktiApp {
     document.getElementById("qiblaDistVal").textContent = `${qiblaInfo.distanceKm.toLocaleString('tr-TR')} km`;
     this.compass.setTargetQibla(qiblaInfo.angle);
 
-    // Alt özet (Fajr & Iftar)
+    // Alt Özet (İmsak & İftar)
     document.getElementById("subFajrTime").textContent = this.currentTimes.imsak;
     document.getElementById("subIftarTime").textContent = this.currentTimes.aksam;
 
@@ -175,7 +175,6 @@ class TamVaktiApp {
     const container = document.getElementById("prayerTimelineList");
     if (!container || !this.currentTimes) return;
 
-    // Vakit Aralığı Eşleştirmesi (Başlangıç - Bitiş)
     const items = [
       { key: "imsak", start: this.currentTimes.imsak, end: this.currentTimes.gunes },
       { key: "gunes", start: this.currentTimes.gunes, end: this.currentTimes.ogle },
@@ -190,27 +189,22 @@ class TamVaktiApp {
       const isActive = item.key === this.activePrayerKey;
       const isSoundOn = this.soundSettings[item.key];
 
-      // Ses ikonu (Hoparlör)
       const soundSvg = isSoundOn 
         ? `<svg class="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 24 24"><path d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77zm-2.5-1.23L6.5 6H2v12h4.5l5 4V2z"/></svg>`
         : `<svg class="w-4 h-4 text-slate-400" fill="currentColor" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>`;
 
       return `
         <div class="relative">
-          <!-- Sol Çizgi Üzerindeki Sarı Nokta -->
           <div class="timeline-node ${isActive ? 'active' : ''}"></div>
 
-          <!-- Vakit Kartı -->
           <div onclick="app.showPrayerDetail('${item.key}')" 
                class="prayer-row-card ${isActive ? 'active-prayer' : ''}">
             
             <div class="flex items-center gap-3">
-              <!-- İkon Kutusu -->
               <div class="w-10 h-10 rounded-2xl ${info.bgClass} flex items-center justify-center text-lg shadow-2xs">
                 ${info.icon}
               </div>
 
-              <!-- İsim ve Zaman Aralığı -->
               <div>
                 <h4 class="font-extrabold text-xs sm:text-sm text-slate-800 tracking-tight">
                   ${info.name}
@@ -221,7 +215,6 @@ class TamVaktiApp {
               </div>
             </div>
 
-            <!-- Sağ Ses Butonu -->
             <button onclick="app.toggleSound('${item.key}', event)" 
                     class="sound-toggle-btn ${isSoundOn ? '' : 'muted'}"
                     title="${isSoundOn ? 'Ses Açık' : 'Sessiz'}">
@@ -238,7 +231,7 @@ class TamVaktiApp {
     const info = PRAYER_DETAILS[key];
     if (!info) return;
 
-    document.getElementById("detailModalTitle").textContent = `${info.name}`;
+    document.getElementById("detailModalTitle").textContent = `${info.name} Vakti`;
     document.getElementById("detailModalSub").textContent = info.sub;
     document.getElementById("detailModalDesc").textContent = info.desc;
     document.getElementById("detailModalTotal").textContent = info.total;
@@ -261,23 +254,12 @@ class TamVaktiApp {
   tick() {
     const now = new Date();
 
-    // 12 Saat Formatı (Görseldeki gibi örn. 03:45 PM)
-    let hours = now.getHours();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours : 12; // 0 saati 12 olarak göster
-    const formattedHours = String(hours).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-
-    const clockEl = document.getElementById("domeLiveClock");
-    if (clockEl) clockEl.textContent = `${formattedHours}:${minutes}`;
-
-    const ampmEl = document.getElementById("domeAmpmLabel");
-    if (ampmEl) ampmEl.textContent = ampm;
-
-    const secEl = document.getElementById("domeSecondsLabel");
-    if (secEl) secEl.textContent = `:${seconds}`;
+    // Üst Bar Canlı Saat (24 Saat Formatı)
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    const clockEl = document.getElementById("headerLiveClock");
+    if (clockEl) clockEl.textContent = `${h}:${m}:${s}`;
 
     if (this.currentTimes) {
       this.evaluateCurrentPrayer();
@@ -304,17 +286,25 @@ class TamVaktiApp {
     const tYatsi = this.parseTimeToDate(this.currentTimes.yatsi, now);
 
     const prayerOrder = [
-      { key: "imsak", name: "İmsak (Sabah)", start: tImsak, end: tGunes },
-      { key: "gunes", name: "Güneş (Kerahat)", start: tGunes, end: tOgle },
-      { key: "ogle", name: "Öğle Vakti", start: tOgle, end: tIkindi },
-      { key: "ikindi", name: "İkindi Vakti", start: tIkindi, end: tAksam },
-      { key: "aksam", name: "Akşam / İftar", start: tAksam, end: tYatsi },
-      { key: "yatsi", name: "Yatsı Vakti", start: tYatsi, end: new Date(tImsak.getTime() + 86400000) }
+      { key: "imsak", name: "İmsak Vakti", start: tImsak, end: tGunes, nextName: "Güneş Doğuşu", nextTime: tGunes },
+      { key: "gunes", name: "Güneş (Kerahat)", start: tGunes, end: tOgle, nextName: "Öğle Vakti", nextTime: tOgle },
+      { key: "ogle", name: "Öğle Vakti", start: tOgle, end: tIkindi, nextName: "İkindi Vakti", nextTime: tIkindi },
+      { key: "ikindi", name: "İkindi Vakti", start: tIkindi, end: tAksam, nextName: "Akşam (İftar)", nextTime: tAksam },
+      { key: "aksam", name: "Akşam Vakti", start: tAksam, end: tYatsi, nextName: "Yatsı Vakti", nextTime: tYatsi },
+      { key: "yatsi", name: "Yatsı Vakti", start: tYatsi, end: new Date(tImsak.getTime() + 86400000), nextName: "İmsak (Sahur)", nextTime: new Date(tImsak.getTime() + 86400000) }
     ];
 
     let current = null;
     if (now < tImsak) {
-      current = { key: "yatsi", name: "Yatsı Vakti (Gece)" };
+      const prevYatsi = new Date(tYatsi.getTime() - 86400000);
+      current = {
+        key: "yatsi",
+        name: "Yatsı Vakti (Gece)",
+        start: prevYatsi,
+        end: tImsak,
+        nextName: "İmsak (Sahur)",
+        nextTime: tImsak
+      };
     } else {
       for (let p of prayerOrder) {
         if (now >= p.start && now < p.end) {
@@ -332,8 +322,48 @@ class TamVaktiApp {
       this.renderTimeline();
     }
 
-    const badge = document.getElementById("sheetCurrentVakitBadge");
-    if (badge) badge.textContent = current.name;
+    // 1. Kubbe İçindeki Vakit Başlığı
+    document.getElementById("domeCurrentPrayerLabel").textContent = current.name;
+    document.getElementById("sheetCurrentVakitBadge").textContent = current.name;
+
+    // 2. Kalan Süre Canlı Geri Sayım (HH:MM:SS)
+    const diffMs = Math.max(0, current.nextTime.getTime() - now.getTime());
+    const totalMs = current.end.getTime() - current.start.getTime();
+    const passedMs = Math.max(0, now.getTime() - current.start.getTime());
+
+    const diffSec = Math.floor(diffMs / 1000);
+    const hrs = Math.floor(diffSec / 3600);
+    const mins = Math.floor((diffSec % 3600) / 60);
+    const secs = diffSec % 60;
+
+    document.getElementById("domeCountdownTimer").textContent = 
+      `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+    // 3. Vakit İlerleme Yüzdesi ve Hedef Başlığı
+    const percent = Math.min(100, Math.max(0, Math.round((passedMs / totalMs) * 100)));
+    document.getElementById("domeTargetLabel").textContent = 
+      `${current.nextName}'ne Kalan • %${percent}`;
+
+    // 4. TURUNCU / ALTIN GÜNEŞ YAYININ ZAMAN ENDEKSLİ CANLI İLERLEMESİ
+    // Yay toplam çevre uzunluğu: 377px
+    const arcPath = document.getElementById("solarArcProgressPath");
+    if (arcPath) {
+      const totalArcLength = 377;
+      const progressFraction = Math.min(1, Math.max(0, passedMs / totalMs));
+      const strokeOffset = totalArcLength - (totalArcLength * progressFraction);
+      arcPath.style.strokeDashoffset = strokeOffset;
+    }
+
+    // 5. Kerahat Vakti Kontrolü
+    const kerahatBadge = document.getElementById("kerahatPillBadge");
+    const isMorningKerahat = now >= tGunes && (now.getTime() - tGunes.getTime()) < 45 * 60000;
+    const isEveningKerahat = (tAksam.getTime() - now.getTime()) <= 45 * 60000 && now < tAksam;
+
+    if (isMorningKerahat || isEveningKerahat) {
+      kerahatBadge.classList.remove("hidden");
+    } else {
+      kerahatBadge.classList.add("hidden");
+    }
   }
 
   // Şehir / Konum Seçimi
@@ -534,8 +564,8 @@ class TamVaktiApp {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sine";
-      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-      osc.frequency.exponentialRampToValueAtTime(880.00, ctx.currentTime + 0.4); // A5
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880.00, ctx.currentTime + 0.4);
       gain.gain.setValueAtTime(0.25, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
       osc.connect(gain);
