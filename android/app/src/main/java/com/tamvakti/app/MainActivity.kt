@@ -160,7 +160,7 @@ class MainActivity : AppCompatActivity() {
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_tamvakti)
             .setContentTitle("Tam Vakti • $cityName")
             .setContentText("Sıradaki: $nextPrayerName ($nextPrayerTime)")
             .setOngoing(true)
