@@ -42,9 +42,29 @@ html, body {
 /* Üst Başlık (Header) */
 .top-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
+  gap: 8px;
   margin-bottom: 18px;
+}
+
+/* Şık Uygulama İsmi Rozeti */
+.app-title-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  padding: 7px 15px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+.app-title-pill span {
+  font-weight: 900;
+  font-size: 14px;
+  color: var(--text-dark);
+  letter-spacing: -0.02em;
 }
 
 /* Şehir Rozeti */
