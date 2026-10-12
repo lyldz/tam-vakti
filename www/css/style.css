@@ -118,97 +118,166 @@ html, body {
 /* Geri Sayım ve Sıradaki Vakit */
 .countdown-header-area {
   text-align: center;
-  margin-bottom: 16px;
-  padding-top: 6px;
+  margin-bottom: 14px;
+  padding-top: 4px;
 }
 .next-vakit-label {
   font-size: 13px;
   font-weight: 700;
-  color: var(--text-muted);
+  color: #3b5a45;
+  letter-spacing: -0.01em;
+  margin-bottom: 2px;
 }
 .big-countdown {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 38px;
+  font-variant-numeric: tabular-nums;
+  font-size: 40px;
   font-weight: 900;
-  color: var(--text-dark);
   letter-spacing: -0.03em;
-  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+}
+.big-countdown .cd-main {
+  color: #1b4332;
+}
+.big-countdown .cd-sec {
+  color: #74a892;
+  margin-left: 1px;
 }
 
-/* Vakit Kartları */
+/* İlerleme Çubuğu */
+.prayer-progress-wrapper {
+  margin: 10px auto 4px auto;
+  max-width: 280px;
+}
+.prayer-progress-track {
+  width: 100%;
+  height: 4.5px;
+  background-color: #d8e9df;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.prayer-progress-fill {
+  height: 100%;
+  background-color: #2d6a4f;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+.prayer-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6c8a75;
+  margin-top: 4px;
+  padding: 0 1px;
+}
+
+/* 6 Vakit Kartları - Tek Satır Tasarım */
 .prayer-card-item {
   background: #ffffff;
-  border-radius: 20px;
-  padding: 10px 16px;
+  border-radius: 18px;
+  padding: 10px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 9px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  margin-bottom: 8px;
+  box-shadow: 0 1.5px 6px rgba(0, 0, 0, 0.025);
   border: 1.5px solid transparent;
   transition: all 0.2s ease-in-out;
   cursor: pointer;
 }
 
-.prayer-card-item.active {
-  border-color: rgba(59, 130, 246, 0.4);
-  background: #ffffff;
-  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.12);
+/* 1. Geçmiş Vakitler: Soluk */
+.prayer-card-item.past {
+  opacity: 0.58;
 }
 
-/* Kart İçi Kubbe İkon Rozetleri */
-.card-dome-icon {
-  width: 38px;
-  height: 42px;
-  border-radius: 20px 20px 8px 8px;
+/* 2. Şu Anki Vakit (İçinde Bulunulan): Dolgulu Arka Plan + "Şimdi" Rozeti */
+.prayer-card-item.current {
+  background: #e2f0e6;
+  border-color: rgba(45, 106, 79, 0.15);
+  opacity: 1 !important;
+  box-shadow: 0 2px 10px rgba(45, 106, 79, 0.08);
+}
+
+/* 3. Sıradaki Vakit: İnce Yeşil Çerçeve ve Yeşil Saat */
+.prayer-card-item.next {
+  border-color: #2d6a4f;
+  background: #ffffff;
+  opacity: 1 !important;
+  box-shadow: 0 3px 12px rgba(45, 106, 79, 0.12);
+}
+
+.prayer-card-item.next .card-row-time {
+  color: #2d6a4f !important;
+  font-weight: 900;
+}
+
+/* Satır İçi Sol Taraf: İkon + İsim + (Opsiyonel Şimdi Rozeti) */
+.card-left-part {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-icon-box {
+  width: 36px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  flex-shrink: 0;
+}
+.card-icon-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.card-title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-row-name {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #1f3d2b;
+}
+
+.now-pill {
+  display: inline-block;
+  background: #2d6a4f;
   color: #ffffff;
-  position: relative;
-  overflow: hidden;
-}
-
-/* İkon Renkleri (Görseldeki Gibi) */
-.icon-imsak {
-  background: linear-gradient(180deg, #166534 0%, #14532d 100%);
-}
-.icon-gunes {
-  background: linear-gradient(180deg, #84cc16 0%, #65a30d 100%);
-}
-.icon-ogle {
-  background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
-}
-.icon-ikindi {
-  background: linear-gradient(180deg, #a3e635 0%, #65a30d 100%);
-}
-.icon-aksam {
-  background: linear-gradient(180deg, #10b981 0%, #047857 100%);
-}
-.icon-yatsi {
-  background: linear-gradient(180deg, #0f766e 0%, #115e59 100%);
-}
-
-/* Kart Metin Alanı */
-.card-text-area {
-  flex: 1;
-  margin-left: 14px;
-}
-.card-time {
+  font-size: 9.5px;
   font-weight: 800;
-  font-size: 16px;
-  color: var(--text-dark);
-  letter-spacing: -0.01em;
-}
-.card-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin-top: 1px;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  margin-top: 2px;
+  line-height: 1.3;
+  width: fit-content;
 }
 
-/* Ses Butonu */
+/* Satır İçi Sağ Taraf: Saat + Ses Butonu */
+.card-right-part {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.card-row-time {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+  font-weight: 800;
+  color: #264653;
+  letter-spacing: -0.02em;
+}
+
+/* Okunur Kontrastlı Ses Butonu */
 .card-sound-btn {
   width: 32px;
   height: 32px;
@@ -218,11 +287,16 @@ html, body {
   background: none;
   border: none;
   cursor: pointer;
-  color: #94a3b8;
-  transition: color 0.15s;
+  transition: transform 0.15s;
 }
-.card-sound-btn.active {
-  color: var(--accent-green);
+.card-sound-btn:active {
+  transform: scale(0.9);
+}
+.sound-icon-on {
+  color: #2d6a4f;
+}
+.sound-icon-off {
+  color: #64748b; /* Net ve okunur gri tonu */
 }
 
 /* Alt Bar (Segmented Control + Ayarlar) */

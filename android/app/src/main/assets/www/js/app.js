@@ -1,6 +1,6 @@
 /**
  * Tam Vakti - Minimalist Adaçayı Yeşili & Sade Vakit / Kıble Kontrolcüsü
- * Sürüm: v1.00.03
+ * Sürüm: v1.00.04
  */
 
 const PRAYER_LIST = [
@@ -224,47 +224,77 @@ class TamVaktiApp {
     const dayName = days[now.getDay()];
 
     const mainEl = document.getElementById("miladiDateMain");
-    const subEl = document.getElementById("miladiDateSub");
     if (mainEl) mainEl.textContent = `${dayNum} ${monthName} ${yearNum}`;
-    if (subEl) subEl.textContent = dayName;
+
+    // Hicri Takvim (Diyanet / civil uyumlu format: "Pazartesi • 29 Rebiülahir")
+    const hicriEl = document.getElementById("hicriDateSub");
+    if (hicriEl) {
+      try {
+        const parts = new Intl.DateTimeFormat('tr-TR-u-ca-islamic-civil', {
+          day: 'numeric',
+          month: 'long'
+        }).formatToParts(now);
+        const hDay = parts.find(p => p.type === 'day')?.value || '';
+        const hMonth = parts.find(p => p.type === 'month')?.value || '';
+        hicriEl.textContent = `${dayName} • ${hDay} ${hMonth}`;
+      } catch (e) {
+        hicriEl.textContent = dayName;
+      }
+    }
   }
 
   renderPrayerCards() {
     const container = document.getElementById("prayerCardsList");
     if (!container || !this.currentTimes) return;
 
-    container.innerHTML = PRAYER_LIST.map(item => {
+    const orderKeys = ["imsak", "gunes", "ogle", "ikindi", "aksam", "yatsi"];
+    const currentIdx = orderKeys.indexOf(this.activePrayerKey);
+    const nextIdx = currentIdx >= 0 ? (currentIdx + 1) % 6 : -1;
+
+    container.innerHTML = PRAYER_LIST.map((item, idx) => {
       const timeVal = this.currentTimes[item.key] || "--:--";
-      const isActive = item.key === this.activePrayerKey;
+      const isCurrent = item.key === this.activePrayerKey;
+      const isNext = idx === nextIdx;
+      const isPast = currentIdx >= 0 ? idx < currentIdx : false;
       const isSoundOn = this.soundSettings[item.key];
 
+      let cardClass = "prayer-card-item";
+      if (isCurrent) {
+        cardClass += " current";
+      } else if (isNext) {
+        cardClass += " next";
+      } else if (isPast) {
+        cardClass += " past";
+      }
+
+      // Net ve kontrastlı ses ikonu
       const soundSvg = isSoundOn
-        ? `<svg class="w-4 h-4 text-emerald-700" fill="currentColor" viewBox="0 0 24 24"><path d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77zm-2.5-1.23L6.5 6H2v12h4.5l5 4V2z"/></svg>`
-        : `<svg class="w-4 h-4 text-slate-300" fill="currentColor" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>`;
+        ? `<svg class="w-5 h-5 sound-icon-on" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>`
+        : `<svg class="w-5 h-5 sound-icon-off" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>`;
 
       return `
-        <div onclick="app.showPrayerDetail('${item.key}')" 
-             class="prayer-card-item ${isActive ? 'active' : ''}">
+        <div onclick="app.showPrayerDetail('${item.key}')" class="${cardClass}">
           
-          <div class="flex items-center">
-            <!-- Kubbe İkon Rozeti (Özel Vektör) -->
-            <div class="card-dome-wrapper mr-3 flex-shrink-0">
-              <img src="${item.iconSvg}" alt="${item.name}" class="w-10 h-11 object-contain drop-shadow-xs">
+          <!-- Sol Kısım: Vektör İkon + Vakit Adı + (Şimdi Rozeti) -->
+          <div class="card-left-part">
+            <div class="card-icon-box">
+              <img src="${item.iconSvg}" alt="${item.name}" class="drop-shadow-xs">
             </div>
-
-            <!-- Saat ve Vakit Adı -->
-            <div class="card-text-area">
-              <div class="card-time font-mono">${timeVal}</div>
-              <div class="card-name">${item.name}</div>
+            <div class="card-title-group">
+              <span class="card-row-name">${item.name}</span>
+              ${isCurrent ? `<span class="now-pill">Şimdi</span>` : ''}
             </div>
           </div>
 
-          <!-- Sağ Hoparlör Butonu -->
-          <button onclick="app.toggleSound('${item.key}', event)" 
-                  class="card-sound-btn ${isSoundOn ? 'active' : ''}"
-                  title="${isSoundOn ? 'Ses Açık' : 'Sessiz'}">
-            ${soundSvg}
-          </button>
+          <!-- Sağ Kısım: Tabular Saat + Net Ses Butonu -->
+          <div class="card-right-part">
+            <span class="card-row-time">${timeVal}</span>
+            <button onclick="app.toggleSound('${item.key}', event)" 
+                    class="card-sound-btn"
+                    title="${isSoundOn ? 'Ses Açık' : 'Sessiz'}">
+              ${soundSvg}
+            </button>
+          </div>
 
         </div>
       `;
@@ -358,22 +388,59 @@ class TamVaktiApp {
       this.renderPrayerCards();
     }
 
-    // 1. Üst Başlık: "Sıradaki: Öğle • 12:44"
+    // 1. Üst Başlık: "Akşam'a kalan · 18:26"
     const nextLabel = document.getElementById("nextPrayerInfo");
     if (nextLabel) {
-      nextLabel.textContent = `Sıradaki: ${current.nextName} • ${current.nextTimeStr}`;
+      const suffixes = {
+        "imsak": "İmsak'a",
+        "gunes": "Güneş'e",
+        "ogle": "Öğle'ye",
+        "ikindi": "İkindi'ye",
+        "aksam": "Akşam'a",
+        "yatsi": "Yatsı'ya"
+      };
+      const orderKeys = ["imsak", "gunes", "ogle", "ikindi", "aksam", "yatsi"];
+      const currentIdx = orderKeys.indexOf(current.key);
+      const nextKey = currentIdx >= 0 ? orderKeys[(currentIdx + 1) % 6] : "aksam";
+      const suffixName = suffixes[nextKey] || `${current.nextName}'e`;
+      nextLabel.textContent = `${suffixName} kalan · ${current.nextTimeStr}`;
     }
 
-    // 2. Canlı Geri Sayım (HH:MM:SS)
+    // 2. Canlı Geri Sayım (HH:MM:SS) - Tabular ve Soluk Saniye
     const diffMs = Math.max(0, current.nextTime.getTime() - now.getTime());
     const diffSec = Math.floor(diffMs / 1000);
     const hrs = Math.floor(diffSec / 3600);
     const mins = Math.floor((diffSec % 3600) / 60);
     const secs = diffSec % 60;
 
+    const hrsStr = String(hrs).padStart(2, '0');
+    const minsStr = String(mins).padStart(2, '0');
+    const secsStr = String(secs).padStart(2, '0');
+
     const countEl = document.getElementById("mainCountdown");
     if (countEl) {
-      countEl.textContent = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      countEl.innerHTML = `<span class="cd-main">${hrsStr}:${minsStr}:</span><span class="cd-sec">${secsStr}</span>`;
+    }
+
+    // 3. İlerleme Çizgisi: Mevcut vakitten sonraki vakte ne kadar süre geçti
+    const totalDuration = Math.max(1, current.end.getTime() - current.start.getTime());
+    const elapsed = Math.min(Math.max(0, now.getTime() - current.start.getTime()), totalDuration);
+    const pct = ((elapsed / totalDuration) * 100).toFixed(1);
+
+    const barEl = document.getElementById("prayerProgressBar");
+    if (barEl) {
+      barEl.style.width = `${pct}%`;
+    }
+
+    const startLbl = document.getElementById("progressStartLabel");
+    if (startLbl) {
+      const startTimeStr = this.currentTimes[current.key] || "--:--";
+      startLbl.textContent = `${current.name} ${startTimeStr}`;
+    }
+
+    const endLbl = document.getElementById("progressEndLabel");
+    if (endLbl) {
+      endLbl.textContent = `${current.nextName} ${current.nextTimeStr}`;
     }
 
     // 3. Android Durum Çubuğu Sabit Bildirimini Güncelle

@@ -57,23 +57,27 @@ jobs:
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.03' }}
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.04' }}
           files: build-output/*.apk
-          name: "Tam Vakti ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.03' }}"
+          name: "Tam Vakti ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.04' }}"
           draft: false
           prerelease: false
           generate_release_notes: true
           body: |
-            ## 🕌 Tam Vakti - Namaz & İbadet Asistanı
+            ## 🕌 Tam Vakti v1.00.04 - Namaz & İbadet Asistanı
 
-            - **Sürüm:** `${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.03' }}`
+            - **Sürüm:** `${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.04' }}`
             - **Paket Adı:** `com.tamvakti.app`
             
-            ### 📝 Değişiklik Listesi (Changelog)
-            - 🕌 Özel cami kubbesi vektör ikonları entegre edildi.
-            - 🏷️ Tarih alanına dokunulduğunda açılan özel "Hakkında" penceresi eklendi (*dua ile baslandi by Lütfi ❤️*).
-            - ⏱️ Bildirim çubuğunda canlı geri sayım sayacı ve ayarlar menüsünde açma/kapama seçeneği eklendi.
-            - 🔢 Sürüm sistemi `v1.00.xx` formatına geçirildi.
+            ### 📝 Yenilikler ve Değişiklikler (v1.00.04)
+            - 🌙 **Hicri Takvim:** Miladi tarihin yanına Diyanet uyumlu Hicri takvim eklendi (*Örn: Pazartesi • 29 Rebiülahir*).
+            - 🏷️ **Akıllı Hedef Etiketi:** Kart içindeki tekrarlayan etiket yerine doğrudan hedefe kalan süre başlığı getirildi (*Örn: Akşam'a kalan · 18:26*).
+            - ⏱️ **Tabular Geri Sayım & Soluk Saniye:** Rakamlar zıplamayan sabit genişlikli (tabular-nums) yapıldı; saniye göz yormaması için soluklaştırıldı.
+            - 📊 **İlerleme Çizgisi:** İki vakit arasında geçen süreyi ve başlangıç/bitiş saatlerini gösteren dinamik ilerleme çubuğu eklendi.
+            - 🌫️ **Geçmiş Vakitler:** Geçen vakitler hafif soluklaştırılarak aktif vakitlerin önüne geçmesi engellendi.
+            - 🟢 **Şu Anki Vakit:** Aktif vakit yumuşak yeşil dolgu ve "Şimdi" rozetiyle belirginleştirildi.
+            - 🎯 **Sıradaki Vakit:** Geri sayımın hedefi olan sıradaki vakit ince yeşil çerçeve ve yeşil saat ile vurgulandı.
+            - 📐 **Tek Satır Liste Düzeni:** Vakit listesi nefes alan zarif tek satır düzene geçirildi; yüksek kontrastlı ses butonları eklendi.
             
             ### 📱 Kurulum
-            Aşağıdaki `TamVakti-v1.00.03.apk` veya `TamVakti.apk` dosyasını indirip doğrudan cihazınıza kurabilirsiniz.
+            Aşağıdaki `TamVakti-v1.00.04.apk` veya `TamVakti.apk` dosyasını indirip doğrudan cihazınıza kurabilirsiniz.
