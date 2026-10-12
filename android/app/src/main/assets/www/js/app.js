@@ -1,6 +1,6 @@
 /**
  * Tam Vakti - Minimalist Adaçayı Yeşili & Sade Vakit / Kıble Kontrolcüsü
- * Sürüm: v1.00.01
+ * Sürüm: v1.00.02
  */
 
 const PRAYER_LIST = [
@@ -492,6 +492,14 @@ class TamVaktiApp {
 
   closeLocationModal() {
     document.getElementById("locationModal").classList.add("hidden");
+  }
+
+  openAboutModal() {
+    document.getElementById("aboutModal").classList.remove("hidden");
+  }
+
+  closeAboutModal() {
+    document.getElementById("aboutModal").classList.add("hidden");
   }
 
   playAlertTone() {
