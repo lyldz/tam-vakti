@@ -57,24 +57,23 @@ jobs:
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.01' }}
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.03' }}
           files: build-output/*.apk
-          name: "Tam Vakti ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.01' }}"
+          name: "Tam Vakti ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.03' }}"
           draft: false
           prerelease: false
-          generate_release_notes: false
+          generate_release_notes: true
           body: |
             ## 🕌 Tam Vakti - Namaz & İbadet Asistanı
 
-            - **Sürüm:** `${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.01' }}`
+            - **Sürüm:** `${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.03' }}`
             - **Paket Adı:** `com.tamvakti.app`
             
-            ### ✨ Öne Çıkan Özellikler
-            - ⏱️ Diyanet İşleri Başkanlığı uyumlu vakit motoru (Offline & Online Hibrit)
-            - 🧭 Gerçek Zamanlı Kıble Pusulası (Sensör Entegrasyonu)
-            - 📿 Titreşimli Zikirmatik ve Kaza Defteri
-            - 📅 Aylık İmsakiye Tablosu
-            - 🛡️ Reklamsız, sade ve hafif tasarım
+            ### 📝 Değişiklik Listesi (Changelog)
+            - 🕌 Özel cami kubbesi vektör ikonları entegre edildi.
+            - 🏷️ Tarih alanına dokunulduğunda açılan özel "Hakkında" penceresi eklendi (*dua ile baslandi by Lütfi ❤️*).
+            - ⏱️ Bildirim çubuğunda canlı geri sayım sayacı ve ayarlar menüsünde açma/kapama seçeneği eklendi.
+            - 🔢 Sürüm sistemi `v1.00.xx` formatına geçirildi.
             
             ### 📱 Kurulum
-            Aşağıdaki `TamVakti-2026.10.12.apk` dosyasını telefonunuza indirip kurabilirsiniz.
+            Aşağıdaki `TamVakti-v1.00.03.apk` veya `TamVakti.apk` dosyasını indirip doğrudan cihazınıza kurabilirsiniz.

@@ -1,6 +1,6 @@
 /**
  * Tam Vakti - Minimalist Adaçayı Yeşili & Sade Vakit / Kıble Kontrolcüsü
- * Sürüm: v1.00.02
+ * Sürüm: v1.00.03
  */
 
 const PRAYER_LIST = [
