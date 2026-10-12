@@ -43,28 +43,30 @@ jobs:
       - name: Prepare APK Artifact
         run: |
           mkdir -p build-output
-          find android/app/build/outputs/apk/ -name "*.apk" -exec cp {} build-output/TamVakti-2026.10.12.apk \;
+          TAG="${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.01' }}"
+          find android/app/build/outputs/apk/ -name "*.apk" -exec cp {} build-output/TamVakti-${TAG}.apk \;
+          find android/app/build/outputs/apk/ -name "*.apk" -exec cp {} build-output/TamVakti.apk \;
           ls -lh build-output/
 
       - name: Upload APK as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: TamVakti-APK
-          path: build-output/TamVakti-2026.10.12.apk
+          path: build-output/*.apk
 
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v2026.10.12' }}
-          files: build-output/TamVakti-2026.10.12.apk
-          name: "Tam Vakti ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v2026.10.12' }}"
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.01' }}
+          files: build-output/*.apk
+          name: "Tam Vakti ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.01' }}"
           draft: false
           prerelease: false
           generate_release_notes: false
           body: |
             ## 🕌 Tam Vakti - Namaz & İbadet Asistanı
 
-            - **Sürüm:** `2026.10.12` (CalVer)
+            - **Sürüm:** `${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.01' }}`
             - **Paket Adı:** `com.tamvakti.app`
             
             ### ✨ Öne Çıkan Özellikler

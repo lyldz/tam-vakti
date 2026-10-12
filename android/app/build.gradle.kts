@@ -12,9 +12,9 @@ android {
         minSdk = 24
         targetSdk = 34
         
-        // CalVer Sürüm Yapılandırması: YYYY.MM.DD
-        versionCode = 20261012
-        versionName = "2026.10.12"
+        // Sürüm Yapılandırması: v1.00.01
+        versionCode = 10001
+        versionName = "1.00.01"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
