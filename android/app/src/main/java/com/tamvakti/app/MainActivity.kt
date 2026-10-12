@@ -2,9 +2,16 @@ package com.tamvakti.app
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.webkit.GeolocationPermissions
+import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
@@ -12,18 +19,25 @@ import android.webkit.WebViewClient
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
     private val LOCATION_PERMISSION_REQUEST = 1001
+    private val NOTIFICATION_PERMISSION_REQUEST = 1002
+    private val NOTIFICATION_ID = 2026
+    private val CHANNEL_ID = "tamvakti_ongoing"
+
     private var pendingGeoCallback: GeolocationPermissions.Callback? = null
     private var pendingGeoOrigin: String? = null
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        createNotificationChannel()
 
         webView = WebView(this)
         setContentView(webView)
@@ -60,6 +74,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // JavaScript Köprüsü (Bildirim Kontrolü İçin)
+        webView.addJavascriptInterface(WebAppInterface(this), "AndroidBridge")
+
         // Yerel varlığı yükle
         webView.loadUrl("file:///android_asset/www/index.html")
 
@@ -76,10 +93,96 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Tam Vakti Sabit Sayaç"
+            val descriptionText = "Bildirim çubuğunda sıradaki vakti ve kalan süreyi gösterir"
+            val importance = NotificationManager.IMPORTANCE_LOW
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+                setShowBadge(false)
+            }
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
     private fun hasLocationPermission(): Boolean {
         val fine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
         val coarse = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
         return fine == PackageManager.PERMISSION_GRANTED || coarse == PackageManager.PERMISSION_GRANTED
+    }
+
+    fun hasNotificationPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+    }
+
+    fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                NOTIFICATION_PERMISSION_REQUEST
+            )
+        }
+    }
+
+    fun showOngoingPrayerNotification(
+        cityName: String,
+        nextPrayerName: String,
+        nextPrayerTime: String,
+        targetMillis: Long
+    ) {
+        if (!hasNotificationPermission()) {
+            requestNotificationPermission()
+            return
+        }
+
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+        )
+
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_launcher)
+            .setContentTitle("Tam Vakti • $cityName")
+            .setContentText("Sıradaki: $nextPrayerName ($nextPrayerTime)")
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+
+        // Android Native Kronometre Canlı Geri Sayımı
+        if (targetMillis > System.currentTimeMillis()) {
+            builder.setUsesChronometer(true)
+            builder.setChronometerCountDown(true)
+            builder.setWhen(targetMillis)
+            builder.setShowWhen(true)
+        }
+
+        notificationManager.notify(NOTIFICATION_ID, builder.build())
+    }
+
+    fun cancelOngoingPrayerNotification() {
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(NOTIFICATION_ID)
     }
 
     override fun onRequestPermissionsResult(
@@ -93,6 +196,39 @@ class MainActivity : AppCompatActivity() {
             pendingGeoCallback?.invoke(pendingGeoOrigin, granted, false)
             pendingGeoCallback = null
             pendingGeoOrigin = null
+        }
+    }
+
+    inner class WebAppInterface(private val activity: MainActivity) {
+        @JavascriptInterface
+        fun updatePrayerNotification(
+            cityName: String,
+            nextPrayerName: String,
+            nextPrayerTime: String,
+            targetMillis: Long
+        ) {
+            activity.runOnUiThread {
+                activity.showOngoingPrayerNotification(
+                    cityName,
+                    nextPrayerName,
+                    nextPrayerTime,
+                    targetMillis
+                )
+            }
+        }
+
+        @JavascriptInterface
+        fun cancelPrayerNotification() {
+            activity.runOnUiThread {
+                activity.cancelOngoingPrayerNotification()
+            }
+        }
+
+        @JavascriptInterface
+        fun requestNotificationPermission() {
+            activity.runOnUiThread {
+                activity.requestNotificationPermission()
+            }
         }
     }
 }

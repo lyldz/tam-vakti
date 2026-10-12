@@ -90,7 +90,34 @@ class TamVaktiApp {
     // Ses Tercihleri
     this.soundSettings = this.loadSoundSettings();
 
+    // Sabit Bildirim Tercihi (Varsayılan: Açık)
+    this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
+
     this.init();
+  }
+
+  loadOngoingNotifSetting() {
+    const saved = localStorage.getItem("tamvakti_ongoing_notif");
+    return saved !== null ? saved === "true" : true;
+  }
+
+  setOngoingNotifSetting(enabled) {
+    this.ongoingNotifEnabled = enabled;
+    localStorage.setItem("tamvakti_ongoing_notif", enabled ? "true" : "false");
+    if (!enabled) {
+      if (window.AndroidBridge && window.AndroidBridge.cancelPrayerNotification) {
+        window.AndroidBridge.cancelPrayerNotification();
+      }
+    } else {
+      if (window.AndroidBridge && window.AndroidBridge.requestNotificationPermission) {
+        window.AndroidBridge.requestNotificationPermission();
+      }
+      this.evaluateCurrentPrayer();
+    }
+  }
+
+  toggleOngoingNotification(checked) {
+    this.setOngoingNotifSetting(checked);
   }
 
   loadSavedLocation() {
@@ -131,6 +158,17 @@ class TamVaktiApp {
   async init() {
     this.renderCitySelector();
     this.compass = new QiblaCompass("compassDial", "qiblaAngleVal", "compassStatusText");
+
+    // Modal açıldığında toggle durumunu senkronize et
+    const notifCheckbox = document.getElementById("ongoingNotifToggle");
+    if (notifCheckbox) {
+      notifCheckbox.checked = this.ongoingNotifEnabled;
+    }
+
+    // Android bildirim iznini ilk açılışta nazikçe iste
+    if (this.ongoingNotifEnabled && window.AndroidBridge && window.AndroidBridge.requestNotificationPermission) {
+      window.AndroidBridge.requestNotificationPermission();
+    }
 
     // Canlı Saat & Tarih Sayacı
     setInterval(() => this.tick(), 1000);
@@ -338,6 +376,25 @@ class TamVaktiApp {
     const countEl = document.getElementById("mainCountdown");
     if (countEl) {
       countEl.textContent = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    // 3. Android Durum Çubuğu Sabit Bildirimini Güncelle
+    if (this.ongoingNotifEnabled && window.AndroidBridge && window.AndroidBridge.updatePrayerNotification) {
+      const targetTimeMillis = current.nextTime.getTime();
+      // Her saniye gereksiz IPC çağrısı yapmamak için hedef vakit değiştiğinde güncelle
+      if (this._lastNotifTargetMillis !== targetTimeMillis || this._lastNotifCity !== this.currentLocation.name) {
+        this._lastNotifTargetMillis = targetTimeMillis;
+        this._lastNotifCity = this.currentLocation.name;
+        const cityName = this.currentLocation.name.includes(",")
+          ? this.currentLocation.name.split(",")[1].trim()
+          : this.currentLocation.name;
+        window.AndroidBridge.updatePrayerNotification(
+          cityName,
+          current.nextName,
+          current.nextTimeStr,
+          targetTimeMillis
+        );
+      }
     }
   }
 
