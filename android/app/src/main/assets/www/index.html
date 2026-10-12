@@ -3,263 +3,125 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Tam Vakti - Namaz & İbadet Asistanı</title>
+  <title>Tam Vakti - Namaz & Kıble</title>
   <link rel="stylesheet" href="css/style.css">
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
 </head>
 <body class="select-none">
 
-  <!-- Ana Kapsayıcı (Ekrana Tam Oturan) -->
-  <div class="app-container">
+  <!-- Ana Minimalist Kapsayıcı -->
+  <div class="minimal-app">
 
-    <!-- 1. ÜST KISIM: KOYU ZÜMRÜT KUBBE ALANI -->
-    <header class="header-wrapper">
+    <!-- 1. ÜST BAŞLIK ALANI -->
+    <header class="top-header">
       
-      <!-- Üst Bar: Konum Seçimi, Başlık, Canlı Saat -->
-      <div class="flex items-center justify-between">
-        <button onclick="app.openLocationModal()" class="circle-btn" title="Şehir Değiştir">
-          <svg class="w-4 h-4 text-emerald-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
-          </svg>
-        </button>
-
-        <div class="text-center">
-          <h1 class="font-black text-lg tracking-wide text-white">Tam Vakti</h1>
-        </div>
-
-        <!-- Canlı Saat Rozeti -->
-        <div class="px-2.5 py-1 rounded-full bg-white/10 backdrop-blur border border-white/15 text-white flex items-center gap-1.5 shadow-2xs">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span id="headerLiveClock" class="font-mono text-xs font-bold">--:--:--</span>
-        </div>
-      </div>
-
-      <!-- KUBBE VE DİNAMİK İLERLEYEN GÜNEŞ YAYI GÖSTERGESİ -->
-      <div class="dome-container">
-        
-        <!-- SVG Güneş Yolu Arkı (Yarı Çap 120, Yay Uzunluğu 377px) -->
-        <svg class="solar-arc-svg" viewBox="0 0 270 165">
-          <!-- Arka Plan İzi -->
-          <path class="solar-arc-track" d="M 15 148 A 120 120 0 0 1 255 148" />
-          <!-- Canlı İlerleyen Turuncu/Altın Yay -->
-          <path id="solarArcProgressPath" class="solar-arc-progress" 
-                d="M 15 148 A 120 120 0 0 1 255 148"
-                stroke-dasharray="377" 
-                stroke-dashoffset="377" />
+      <!-- Sol: Şehir Rozeti -->
+      <button onclick="app.openLocationModal()" class="location-pill">
+        <svg class="w-3.5 h-3.5 text-emerald-700" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
         </svg>
+        <span id="headerCityName">Ilgın</span>
+      </button>
 
-        <!-- Yeşil Kemer Kubbe -->
-        <div class="emerald-dome">
-          
-          <!-- Konum Başlığı -->
-          <button onclick="app.openLocationModal()" class="flex items-center gap-1 text-[11px] font-semibold text-emerald-100 hover:text-white transition-colors">
-            <span id="domeLocationText">Konya, Ilgın</span>
-            <svg class="w-2.5 h-2.5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-          </button>
-
-          <!-- Şu Anki Vakit Başlığı -->
-          <div id="domeCurrentPrayerLabel" class="text-[10px] font-bold uppercase tracking-wider text-emerald-200 mt-0.5">
-            Öğle Vakti
-          </div>
-
-          <!-- BÜYÜK CANLI GERİ SAYIM SAYACI -->
-          <div class="my-0.5">
-            <span id="domeCountdownTimer" class="font-mono text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-md">
-              00:00:00
-            </span>
-          </div>
-
-          <!-- Hedef Vakit ve İlerleme Yüzdesi -->
-          <div id="domeTargetLabel" class="text-[10px] font-bold text-amber-300 drop-shadow-2xs">
-            İkindi'ye Kalan Süre • %0
-          </div>
-
-          <!-- Alt Çentik / Yeşil Nokta -->
-          <div class="dome-bottom-notch"></div>
-        </div>
-
-      </div>
-
-      <!-- KUBBE ALTI İKİLİ ÖZET BİLGİ (İmsak & İftar) -->
-      <div class="flex items-center justify-between px-3 pt-2 text-white">
-        
-        <!-- Sol: İmsak -->
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-sm shadow-inner">
-            🌅
-          </div>
-          <div>
-            <div class="text-[10px] uppercase font-bold text-emerald-200 tracking-wider">İmsak</div>
-            <div id="subFajrTime" class="font-mono font-extrabold text-xs sm:text-sm text-white">--:--</div>
-          </div>
-        </div>
-
-        <!-- Kerahat Vakti Rozeti (Gerektiğinde Görünür) -->
-        <div id="kerahatPillBadge" class="hidden px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-400/30">
-          ⚠️ Kerahat Vakti
-        </div>
-
-        <!-- Sağ: İftar (Akşam) -->
-        <div class="flex items-center gap-2 text-right">
-          <div>
-            <div class="text-[10px] uppercase font-bold text-amber-300 tracking-wider">İftar (Akşam)</div>
-            <div id="subIftarTime" class="font-mono font-extrabold text-xs sm:text-sm text-white">--:--</div>
-          </div>
-          <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-sm shadow-inner">
-            🌇
-          </div>
-        </div>
-
+      <!-- Sağ: Sadece Miladi Takvim -->
+      <div class="date-header">
+        <div id="miladiDateMain" class="date-main">12 Ekim 2026</div>
+        <div id="miladiDateSub" class="date-sub">Pazartesi</div>
       </div>
 
     </header>
 
-    <!-- 2. ALT KISIM: BEYAZ ZAMAN ÇİZELGESİ (BOTTOM SHEET) -->
-    <main class="bottom-sheet flex-1">
-      
-      <!-- Tepe Çentiği -->
-      <div class="sheet-indicator"></div>
+    <!-- 2. ANA İÇERİK ALANI -->
+    <main class="flex-1">
 
-      <!-- Sekme 1: Vakitler Zaman Çizelgesi -->
-      <section id="tabContent-home">
+      <!-- GÖRÜNÜM 1: NAMAZ VAKİTLERİ (MİHRAP KUBBESİ) -->
+      <section id="viewPrayer" class="mihrab-frame">
         
-        <div class="flex items-center justify-between mb-3 text-xs">
-          <span class="font-bold text-slate-700">Namaz Vakitleri Çizelgesi</span>
-          <span id="sheetCurrentVakitBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-            Öğle Vakti
-          </span>
+        <!-- Sıradaki Vakit ve Geri Sayım -->
+        <div class="countdown-header-area">
+          <div id="nextPrayerInfo" class="next-vakit-label">
+            Öğle Vakti • 12:44
+          </div>
+          <div id="mainCountdown" class="big-countdown">
+            03:39:50
+          </div>
         </div>
 
-        <!-- Zaman Çizelgesi Listesi -->
-        <div class="timeline-container relative">
-          <div class="timeline-line"></div>
-          <div id="prayerTimelineList">
-            <!-- JS ile doldurulacak -->
-          </div>
+        <!-- 6 Vakit Kartı -->
+        <div id="prayerCardsList">
+          <!-- JS ile doldurulacak -->
         </div>
 
       </section>
 
-      <!-- Sekme 2: Kıble Pusulası -->
-      <section id="tabContent-compass" class="hidden space-y-4">
-        <div class="bg-white rounded-2xl p-5 text-center shadow-xs border border-slate-100 flex flex-col items-center">
-          <h2 class="font-bold text-base text-slate-800">Kıble Pusulası</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Kâbe İstikametine Yöneliniz</p>
+      <!-- GÖRÜNÜM 2: KIBLE PUSULASI -->
+      <section id="viewQibla" class="hidden qibla-view-container">
+        
+        <div class="mb-3">
+          <h2 class="text-base font-extrabold text-[#0f3e2e]">Kıble Pusulası</h2>
+          <p class="text-xs font-semibold text-[#52796f]">Kâbe-i Muazzama İstikameti</p>
+        </div>
 
-          <div class="relative w-44 h-44 flex items-center justify-center my-5">
-            <div class="absolute inset-0 rounded-full border-2 border-dashed border-slate-200 flex items-center justify-center">
-              <span class="absolute top-1 text-xs font-bold text-red-500">K</span>
-              <span class="absolute bottom-1 text-xs font-bold text-slate-400">G</span>
-              <span class="absolute right-1 text-xs font-bold text-slate-400">D</span>
-              <span class="absolute left-1 text-xs font-bold text-slate-400">B</span>
-            </div>
-            <div id="compassDial" class="compass-dial w-full h-full flex items-center justify-center">
-              <div class="w-1 bg-gradient-to-t from-emerald-500 to-transparent h-20 rounded-full origin-bottom"></div>
-              <div class="absolute top-3 flex flex-col items-center">
-                <span class="text-xl">🕋</span>
-                <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded mt-0.5">Kıble</span>
-              </div>
-            </div>
-            <div class="w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white shadow z-10"></div>
+        <div class="relative w-52 h-52 mx-auto flex items-center justify-center my-4">
+          <div class="absolute inset-0 rounded-full border-2 border-dashed border-emerald-900/15 flex items-center justify-center">
+            <span class="absolute top-1 text-xs font-extrabold text-red-500">K</span>
+            <span class="absolute bottom-1 text-xs font-bold text-slate-400">G</span>
+            <span class="absolute right-1 text-xs font-bold text-slate-400">D</span>
+            <span class="absolute left-1 text-xs font-bold text-slate-400">B</span>
           </div>
 
-          <div class="grid grid-cols-2 gap-2 w-full pt-2 border-t border-slate-100 text-center">
-            <div class="p-2 rounded-xl bg-slate-50">
-              <div class="text-[10px] text-slate-500">Kıble Açısı</div>
-              <div id="qiblaAngleVal" class="font-mono font-bold text-sm text-emerald-600">154.2° GD</div>
-            </div>
-            <div class="p-2 rounded-xl bg-slate-50">
-              <div class="text-[10px] text-slate-500">Kâbe Mesafesi</div>
-              <div id="qiblaDistVal" class="font-mono font-bold text-sm text-slate-700">-- km</div>
+          <div id="compassDial" class="compass-dial w-full h-full flex items-center justify-center">
+            <div class="w-1.5 bg-gradient-to-t from-emerald-600 to-transparent h-24 rounded-full origin-bottom"></div>
+            <div class="absolute top-4 flex flex-col items-center">
+              <span class="text-2xl drop-shadow-sm">🕋</span>
+              <span class="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full mt-1">Kıble</span>
             </div>
           </div>
-          <p id="compassStatusText" class="text-[10px] text-slate-400 mt-2">Telefonu düz bir zeminde tutunuz.</p>
+
+          <div class="w-4 h-4 rounded-full bg-emerald-600 border-2 border-white shadow z-10"></div>
         </div>
-      </section>
 
-      <!-- Sekme 3: Zikirmatik -->
-      <section id="tabContent-dhikr" class="hidden space-y-4">
-        <div class="bg-white rounded-2xl p-5 text-center shadow-xs border border-slate-100 flex flex-col items-center">
-          <div class="flex items-center justify-between w-full mb-1">
-            <span id="dhikrStageBadge" class="text-[11px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">1 / 4 Aşama</span>
-            <button onclick="app.onDhikrReset()" class="text-xs text-red-500 hover:underline">Sıfırla</button>
+        <div class="grid grid-cols-2 gap-2 max-w-xs mx-auto text-center mt-4">
+          <div class="bg-white/80 p-2.5 rounded-2xl shadow-2xs">
+            <div class="text-[10px] font-bold text-slate-500">Kıble Açısı</div>
+            <div id="qiblaAngleVal" class="font-mono font-black text-sm text-emerald-800">154.2° GD</div>
           </div>
-
-          <div id="dhikrWordDisplay" class="font-bold text-xl text-emerald-700 my-2">
-            Sübhânallâh (سُبْحَانَ الله)
-          </div>
-          <p id="dhikrMeaningDisplay" class="text-xs text-slate-500 max-w-xs mb-3">
-            Allah her türlü eksiklikten münezzehtir
-          </p>
-
-          <div id="dhikrCountDisplay" class="font-mono text-5xl font-black text-slate-800 my-3">
-            0 / 33
-          </div>
-
-          <button onclick="app.onDhikrClick()" 
-                  class="w-full max-w-xs py-4 px-6 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-base rounded-2xl shadow-md transition-all">
-            ÇEK (DOKUN)
-          </button>
-        </div>
-      </section>
-
-      <!-- Sekme 4: Kaza Defteri -->
-      <section id="tabContent-kaza" class="hidden space-y-3">
-        <div class="bg-white rounded-2xl p-4 shadow-xs border border-slate-100">
-          <h2 class="font-bold text-sm text-slate-800 mb-1">Kaza Namazı Defteri</h2>
-          <p class="text-xs text-slate-500 mb-3">Borç namazlarınızı buradan takip edin.</p>
-          <div class="space-y-2" id="kazaGridContainer"></div>
-        </div>
-      </section>
-
-      <!-- Sekme 5: Aylık İmsakiye -->
-      <section id="tabContent-imsakiye" class="hidden space-y-3">
-        <div class="bg-white rounded-2xl p-4 shadow-xs border border-slate-100">
-          <h2 class="font-bold text-sm text-slate-800 mb-2">Aylık İmsakiye Cetveli</h2>
-          <div class="overflow-x-auto">
-            <table class="w-full text-center text-xs">
-              <thead class="border-b border-slate-200 text-slate-400">
-                <tr>
-                  <th class="py-1.5 px-1">Gün</th>
-                  <th class="py-1.5 px-1">İmsak</th>
-                  <th class="py-1.5 px-1">Güneş</th>
-                  <th class="py-1.5 px-1">Öğle</th>
-                  <th class="py-1.5 px-1">İkindi</th>
-                  <th class="py-1.5 px-1">Akşam</th>
-                  <th class="py-1.5 px-1">Yatsı</th>
-                </tr>
-              </thead>
-              <tbody id="imsakiyeTableBody"></tbody>
-            </table>
+          <div class="bg-white/80 p-2.5 rounded-2xl shadow-2xs">
+            <div class="text-[10px] font-bold text-slate-500">Kâbe Mesafesi</div>
+            <div id="qiblaDistVal" class="font-mono font-black text-sm text-slate-700">-- km</div>
           </div>
         </div>
+
+        <p id="compassStatusText" class="text-[11px] font-medium text-[#52796f] mt-4">
+          Pusulanın doğru çalışması için telefonu düz bir zeminde tutunuz.
+        </p>
+
       </section>
 
     </main>
 
-    <!-- 3. SABİT ALT MENÜ -->
-    <nav class="bottom-dock">
-      <button onclick="app.switchTab('home')" id="tabBtn-home" class="dock-item active">
-        <span class="text-lg">🕌</span>
-        <span>Vakitler</span>
+    <!-- 3. ALT DOCK (AYARLAR + VAKİTLER / KIBLE SEÇİCİ) -->
+    <div class="minimal-dock">
+      
+      <!-- Sol: Ayarlar / Konum Değiştir -->
+      <button onclick="app.openLocationModal()" class="settings-circle-btn" title="Ayarlar & Şehir">
+        <svg class="w-5 h-5 text-emerald-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
       </button>
-      <button onclick="app.switchTab('compass')" id="tabBtn-compass" class="dock-item">
-        <span class="text-lg">🧭</span>
-        <span>Kıble</span>
-      </button>
-      <button onclick="app.switchTab('dhikr')" id="tabBtn-dhikr" class="dock-item">
-        <span class="text-lg">📿</span>
-        <span>Zikirmatik</span>
-      </button>
-      <button onclick="app.switchTab('kaza')" id="tabBtn-kaza" class="dock-item">
-        <span class="text-lg">📋</span>
-        <span>Kaza</span>
-      </button>
-      <button onclick="app.switchTab('imsakiye')" id="tabBtn-imsakiye" class="dock-item">
-        <span class="text-lg">📅</span>
-        <span>İmsakiye</span>
-      </button>
-    </nav>
+
+      <!-- Sağ: Segmented Control (Vakitler / Kıble) -->
+      <div class="segment-container">
+        <button onclick="app.switchTab('prayer')" id="tabBtn-prayer" class="segment-btn active">
+          Vakitler
+        </button>
+        <button onclick="app.switchTab('qibla')" id="tabBtn-qibla" class="segment-btn">
+          Kıble
+        </button>
+      </div>
+
+    </div>
 
   </div>
 
@@ -267,12 +129,12 @@
   <div id="locationModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 modal-overlay">
     <div class="bg-white rounded-3xl w-full max-w-sm max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
       <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-        <h3 class="font-bold text-sm text-slate-800">Şehir / İlçe Seçimi</h3>
-        <button onclick="app.closeLocationModal()" class="text-slate-400 hover:text-slate-700 text-lg">&times;</button>
+        <h3 class="font-extrabold text-sm text-[#0f3e2e]">Şehir ve İlçe Seçimi</h3>
+        <button onclick="app.closeLocationModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold">&times;</button>
       </div>
 
-      <div class="p-3 bg-slate-50 border-b border-slate-100">
-        <button id="gpsLocateBtn" onclick="app.locateWithGPS()" class="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors">
+      <div class="p-3 bg-emerald-50/50 border-b border-slate-100">
+        <button id="gpsLocateBtn" onclick="app.locateWithGPS()" class="w-full py-2.5 px-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors">
           <span>📡</span>
           <span>GPS ile Otomatik Bul</span>
         </button>
@@ -282,21 +144,21 @@
     </div>
   </div>
 
-  <!-- MODAL: Vakit ve Rekât Detayı -->
+  <!-- MODAL: Rekât ve Vakit Detayı -->
   <div id="detailModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 modal-overlay">
-    <div class="bg-white rounded-3xl w-full max-w-xs p-4 shadow-2xl space-y-3">
+    <div class="bg-white rounded-3xl w-full max-w-xs p-5 shadow-2xl space-y-3">
       <div class="flex items-center justify-between border-b border-slate-100 pb-2">
         <div>
-          <h3 id="detailModalTitle" class="font-bold text-sm text-slate-800">Vakit Detayı</h3>
+          <h3 id="detailModalTitle" class="font-extrabold text-sm text-[#0f3e2e]">Vakit Detayı</h3>
           <p id="detailModalSub" class="text-[11px] text-slate-500">Açıklama</p>
         </div>
-        <span id="detailModalTotal" class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800">--</span>
+        <span id="detailModalTotal" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">--</span>
       </div>
 
       <p id="detailModalDesc" class="text-xs text-slate-600 leading-relaxed"></p>
       <div class="space-y-1.5 pt-1" id="detailModalRakahs"></div>
 
-      <button onclick="app.closePrayerDetail()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-colors">
+      <button onclick="app.closePrayerDetail()" class="w-full py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 rounded-2xl text-xs font-bold transition-colors">
         Kapat
       </button>
     </div>
@@ -306,7 +168,6 @@
   <script src="js/cities.js"></script>
   <script src="js/prayer-engine.js"></script>
   <script src="js/compass.js"></script>
-  <script src="js/dhikr.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
