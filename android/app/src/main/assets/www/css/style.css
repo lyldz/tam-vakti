@@ -386,3 +386,29 @@ html, body {
   background-color: rgba(15, 62, 46, 0.4);
   backdrop-filter: blur(6px);
 }
+
+/* Güncelleme Bildirim Kırmızı Noktası */
+.update-badge-dot {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  width: 9px;
+  height: 9px;
+  background-color: #ef4444;
+  border: 1.5px solid #f2f7f4;
+  border-radius: 9999px;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+  animation: pulse-badge 1.8s infinite ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes pulse-badge {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.75;
+  }
+}

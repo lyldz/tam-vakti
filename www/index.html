@@ -30,7 +30,8 @@
       </div>
 
       <!-- Sağ: Miladi & Hicri Takvim (Tıklandığında Hakkında & Sürüm Bilgisi Açar) -->
-      <button onclick="app.openAboutModal()" class="date-header text-right cursor-pointer hover:opacity-80 active:scale-95 transition-transform" title="Uygulama Hakkında & Sürüm">
+      <button onclick="app.openAboutModal()" class="date-header text-right cursor-pointer hover:opacity-80 active:scale-95 transition-transform relative" title="Uygulama Hakkında & Sürüm">
+        <span id="updateBadgeDot" class="update-badge-dot hidden" title="Yeni güncelleme mevcut!"></span>
         <div id="miladiDateMain" class="text-xs font-black text-[#0f3e2e] leading-tight">12 Ekim 2026</div>
         <div id="hicriDateSub" class="text-[10px] font-semibold text-slate-500 leading-tight mt-0.5">Pazartesi • 29 Rebiülahir</div>
       </button>
@@ -175,7 +176,7 @@
       <!-- Sürüm Bilgisi -->
       <div class="px-3 py-2 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-semibold">
         <span>Tam Vakti</span>
-        <span class="font-mono bg-slate-200/60 px-2 py-0.5 rounded-full text-slate-600">v1.00.04</span>
+        <span class="font-mono bg-slate-200/60 px-2 py-0.5 rounded-full text-slate-600">v1.00.05</span>
       </div>
 
       <div class="p-3 overflow-y-auto flex-1 space-y-1" id="cityListContainer"></div>
@@ -192,14 +193,14 @@
           <img src="assets/icons/logo.svg" alt="Tam Vakti Logo" class="w-8 h-9 object-contain drop-shadow-xs">
           <div class="text-left">
             <h3 class="font-extrabold text-base text-[#0f3e2e]">Tam Vakti</h3>
-            <span class="inline-block text-[11px] font-mono font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">v1.00.04</span>
+            <span class="inline-block text-[11px] font-mono font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">v1.00.05</span>
           </div>
         </div>
         <button onclick="app.closeAboutModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold leading-none">&times;</button>
       </div>
 
       <!-- Kullanıcı Özel Metni -->
-      <div class="py-3 px-2 space-y-2">
+      <div class="py-2.5 px-2 space-y-1.5">
         <div class="text-sm font-bold text-[#0f3e2e]">
           dua ile baslandi by Lütfi ❤️
         </div>
@@ -208,7 +209,44 @@
         </div>
       </div>
 
-      <button onclick="app.closeAboutModal()" class="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs font-bold transition-colors shadow-sm">
+      <!-- Yeni Güncelleme Kartı (GitHub'da Yeni Sürüm Varsa Görünür) -->
+      <div id="updateNoticeCard" class="hidden text-left bg-emerald-50 border border-emerald-200/90 rounded-2xl p-3 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-extrabold text-[#0f3e2e] flex items-center gap-1.5">
+            <span class="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+            Yeni Güncelleme!
+          </span>
+          <span id="updateNewVersionTag" class="text-[10px] font-mono font-bold bg-emerald-200/80 text-emerald-900 px-2 py-0.5 rounded-full">v1.00.05</span>
+        </div>
+        <p id="updateReleaseNotes" class="text-[11px] text-slate-600 leading-snug line-clamp-3">
+          Yeni sürüm hazır.
+        </p>
+
+        <!-- Canlı İndirme İlerleme Alanı -->
+        <div id="updateProgressArea" class="hidden space-y-1 pt-1">
+          <div class="w-full bg-emerald-200/60 rounded-full h-2 overflow-hidden">
+            <div id="updateProgressBar" class="bg-emerald-600 h-full rounded-full transition-all duration-200" style="width: 0%;"></div>
+          </div>
+          <div id="updateProgressStatus" class="text-[10px] font-bold text-emerald-800 text-center">İndiriliyor... %0</div>
+        </div>
+
+        <!-- İndirme & Kurulum Butonu -->
+        <button id="btnStartUpdate" onclick="app.startUpdateDownload()" class="w-full py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer">
+          <span>⚡</span>
+          <span>Şimdi Güncelle ve İndir</span>
+        </button>
+      </div>
+
+      <!-- Güncelleme Denetleme Durumu & Butonu -->
+      <div class="pt-0.5 flex items-center justify-between text-[11px] text-slate-500 px-1">
+        <span id="updateCheckStatus">✓ Sürüm güncel</span>
+        <button onclick="app.checkForUpdates(false)" class="text-emerald-700 font-bold hover:underline cursor-pointer flex items-center gap-1">
+          <span>🔄</span>
+          <span>Denetle</span>
+        </button>
+      </div>
+
+      <button onclick="app.closeAboutModal()" class="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs font-bold transition-colors shadow-sm cursor-pointer">
         Kapat
       </button>
     </div>

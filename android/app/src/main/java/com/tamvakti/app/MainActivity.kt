@@ -8,8 +8,10 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.webkit.GeolocationPermissions
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
@@ -21,6 +23,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
+import java.net.HttpURLConnection
+import java.net.URL
+import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
@@ -229,6 +238,133 @@ class MainActivity : AppCompatActivity() {
             activity.runOnUiThread {
                 activity.requestNotificationPermission()
             }
+        }
+
+        @JavascriptInterface
+        fun downloadAndInstallApk(downloadUrl: String) {
+            activity.startApkDownload(downloadUrl)
+        }
+
+        @JavascriptInterface
+        fun getAppVersion(): String {
+            return try {
+                val pInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
+                pInfo.versionName ?: "1.00.05"
+            } catch (e: Exception) {
+                "1.00.05"
+            }
+        }
+    }
+
+    fun startApkDownload(downloadUrl: String) {
+        thread {
+            try {
+                runOnUiThread {
+                    webView.evaluateJavascript("window.app && window.app.onUpdateDownloadProgress(0, 'İndirme başlatılıyor...');", null)
+                }
+
+                val url = URL(downloadUrl)
+                var connection = url.openConnection() as HttpURLConnection
+                connection.instanceFollowRedirects = true
+                connection.connectTimeout = 15000
+                connection.readTimeout = 30000
+                connection.connect()
+
+                var redirectCount = 0
+                while ((connection.responseCode == HttpURLConnection.HTTP_MOVED_PERM ||
+                        connection.responseCode == HttpURLConnection.HTTP_MOVED_TEMP ||
+                        connection.responseCode == HttpURLConnection.HTTP_SEE_OTHER) && redirectCount < 5) {
+                    val newUrl = connection.getHeaderField("Location")
+                    connection.disconnect()
+                    connection = URL(newUrl).openConnection() as HttpURLConnection
+                    connection.connectTimeout = 15000
+                    connection.readTimeout = 30000
+                    connection.connect()
+                    redirectCount++
+                }
+
+                if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+                    runOnUiThread {
+                        webView.evaluateJavascript("window.app && window.app.onUpdateDownloadError('İndirme hatası: HTTP ${connection.responseCode}');", null)
+                    }
+                    return@thread
+                }
+
+                val fileLength = connection.contentLength
+                val apkFile = File(cacheDir, "TamVakti-update.apk")
+                if (apkFile.exists()) {
+                    apkFile.delete()
+                }
+
+                val input: InputStream = connection.inputStream
+                val output = FileOutputStream(apkFile)
+
+                val data = ByteArray(8192)
+                var total: Long = 0
+                var count: Int
+                var lastPercent = -1
+
+                while (input.read(data).also { count = it } != -1) {
+                    total += count
+                    output.write(data, 0, count)
+
+                    if (fileLength > 0) {
+                        val percent = ((total * 100) / fileLength).toInt()
+                        if (percent != lastPercent) {
+                            lastPercent = percent
+                            runOnUiThread {
+                                webView.evaluateJavascript("window.app && window.app.onUpdateDownloadProgress($percent, '%$percent');", null)
+                            }
+                        }
+                    }
+                }
+
+                output.flush()
+                output.close()
+                input.close()
+                connection.disconnect()
+
+                runOnUiThread {
+                    webView.evaluateJavascript("window.app && window.app.onUpdateDownloadProgress(100, 'Kuruluma hazır!');", null)
+                    promptInstallApk(apkFile)
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                runOnUiThread {
+                    val errMsg = e.message?.replace("'", "\\'") ?: "Bilinmeyen hata"
+                    webView.evaluateJavascript("window.app && window.app.onUpdateDownloadError('$errMsg');", null)
+                }
+            }
+        }
+    }
+
+    private fun promptInstallApk(apkFile: File) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (!packageManager.canRequestPackageInstalls()) {
+                    val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
+                        data = Uri.parse("package:$packageName")
+                    }
+                    startActivity(intent)
+                }
+            }
+
+            val apkUri = FileProvider.getUriForFile(
+                this,
+                "$packageName.fileprovider",
+                apkFile
+            )
+
+            val installIntent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(apkUri, "application/vnd.android.package-archive")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+            }
+            startActivity(installIntent)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            val errMsg = e.message?.replace("'", "\\'") ?: "Bilinmeyen hata"
+            webView.evaluateJavascript("window.app && window.app.onUpdateDownloadError('Kurulum başlatılamadı: $errMsg');", null)
         }
     }
 }

@@ -1,6 +1,6 @@
 /**
  * Tam Vakti - Minimalist Adaçayı Yeşili & Sade Vakit / Kıble Kontrolcüsü
- * Sürüm: v1.00.04
+ * Sürüm: v1.00.05
  */
 
 const PRAYER_LIST = [
@@ -93,6 +93,11 @@ class TamVaktiApp {
     // Sabit Bildirim Tercihi (Varsayılan: Açık)
     this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
 
+    // Otomatik Güncelleme Sistemi (GitHub Releases)
+    this.currentVersion = "v1.00.05";
+    this.updateInfo = null;
+    this.isDownloadingUpdate = false;
+
     this.init();
   }
 
@@ -175,6 +180,9 @@ class TamVaktiApp {
     this.tick();
 
     await this.updatePrayers();
+
+    // Arka planda sessizce yeni GitHub sürümünü denetle
+    setTimeout(() => this.checkForUpdates(true), 2500);
   }
 
   async updatePrayers() {
@@ -567,11 +575,159 @@ class TamVaktiApp {
   }
 
   openAboutModal() {
+    this.renderUpdateCard();
     document.getElementById("aboutModal").classList.remove("hidden");
   }
 
   closeAboutModal() {
     document.getElementById("aboutModal").classList.add("hidden");
+  }
+
+  // Semver / sürüm karşılaştırma (örn: v1.00.05 > v1.00.04 ise 1 döner)
+  compareVersions(v1, v2) {
+    const parse = (v) => (v || "").replace(/^v/, "").split(".").map(Number);
+    const p1 = parse(v1);
+    const p2 = parse(v2);
+    for (let i = 0; i < Math.max(p1.length, p2.length); i++) {
+      const n1 = p1[i] || 0;
+      const n2 = p2[i] || 0;
+      if (n1 > n2) return 1;
+      if (n1 < n2) return -1;
+    }
+    return 0;
+  }
+
+  async checkForUpdates(silent = true) {
+    const statusEl = document.getElementById("updateCheckStatus");
+    const badgeDot = document.getElementById("updateBadgeDot");
+
+    if (!silent && statusEl) {
+      statusEl.textContent = "Denetleniyor...";
+    }
+
+    try {
+      const res = await fetch("https://api.github.com/repos/lyldz/tam-vakti/releases/latest", {
+        headers: { "Accept": "application/vnd.github.v3+json" }
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      const latestTag = data.tag_name || "";
+
+      // APK assetini bul
+      let apkUrl = data.html_url;
+      if (data.assets && data.assets.length > 0) {
+        const apkAsset = data.assets.find(a => a.name.endsWith(".apk") && !a.name.includes("-v1.00.01")) || data.assets.find(a => a.name.endsWith(".apk"));
+        if (apkAsset) {
+          apkUrl = apkAsset.browser_download_url;
+        }
+      }
+
+      if (this.compareVersions(latestTag, this.currentVersion) > 0) {
+        // Yeni sürüm bulundu!
+        this.updateInfo = {
+          version: latestTag,
+          name: data.name || latestTag,
+          body: data.body || "Yeni sürüm yayınlandı.",
+          downloadUrl: apkUrl
+        };
+
+        if (badgeDot) badgeDot.classList.remove("hidden");
+        if (statusEl) statusEl.textContent = `🚀 Yeni: ${latestTag}`;
+        this.renderUpdateCard();
+
+        if (!silent) {
+          alert(`Yeni sürüm mevcut (${latestTag})! Hakkında penceresinden tek dokunuşla indirebilirsiniz.`);
+        }
+      } else {
+        // Güncel
+        this.updateInfo = null;
+        if (badgeDot) badgeDot.classList.add("hidden");
+        if (statusEl) statusEl.textContent = "✓ Sürüm güncel";
+        this.renderUpdateCard();
+
+        if (!silent) {
+          alert("Uygulamanız zaten en güncel sürümde (" + this.currentVersion + ").");
+        }
+      }
+    } catch (e) {
+      console.warn("Update check failed:", e);
+      if (statusEl) statusEl.textContent = "Denetlenemedi";
+      if (!silent) {
+        alert("Güncelleme kontrolü yapılamadı: " + (e.message || "İnternet bağlantınızı kontrol ediniz."));
+      }
+    }
+  }
+
+  renderUpdateCard() {
+    const card = document.getElementById("updateNoticeCard");
+    if (!card) return;
+
+    if (this.updateInfo) {
+      card.classList.remove("hidden");
+      const tagEl = document.getElementById("updateNewVersionTag");
+      const notesEl = document.getElementById("updateReleaseNotes");
+      if (tagEl) tagEl.textContent = this.updateInfo.version;
+      if (notesEl) {
+        const firstLine = this.updateInfo.body
+          .split("\n")
+          .map(l => l.trim())
+          .filter(l => l && !l.startsWith("#"))[0] || "Yeni özellikler ve iyileştirmeler eklendi.";
+        notesEl.textContent = firstLine;
+      }
+    } else {
+      card.classList.add("hidden");
+    }
+  }
+
+  startUpdateDownload() {
+    if (!this.updateInfo || !this.updateInfo.downloadUrl) return;
+    if (this.isDownloadingUpdate) return;
+
+    this.isDownloadingUpdate = true;
+    const progressArea = document.getElementById("updateProgressArea");
+    const btn = document.getElementById("btnStartUpdate");
+    if (progressArea) progressArea.classList.remove("hidden");
+    if (btn) {
+      btn.classList.add("opacity-50", "pointer-events-none");
+      btn.innerHTML = `<span>⏳</span><span>İndirme Başlatılıyor...</span>`;
+    }
+
+    if (window.AndroidBridge && window.AndroidBridge.downloadAndInstallApk) {
+      window.AndroidBridge.downloadAndInstallApk(this.updateInfo.downloadUrl);
+    } else {
+      window.open(this.updateInfo.downloadUrl, "_blank");
+      this.isDownloadingUpdate = false;
+      if (btn) {
+        btn.classList.remove("opacity-50", "pointer-events-none");
+        btn.innerHTML = `<span>⚡</span><span>Şimdi Güncelle ve İndir</span>`;
+      }
+    }
+  }
+
+  onUpdateDownloadProgress(percent, statusText) {
+    const bar = document.getElementById("updateProgressBar");
+    const status = document.getElementById("updateProgressStatus");
+    const btn = document.getElementById("btnStartUpdate");
+
+    if (bar) bar.style.width = `${percent}%`;
+    if (status) status.textContent = statusText || `İndiriliyor... %${percent}`;
+
+    if (percent >= 100 && btn) {
+      btn.innerHTML = `<span>📦</span><span>Paket Yükleyici Başlatılıyor...</span>`;
+    }
+  }
+
+  onUpdateDownloadError(errorMsg) {
+    this.isDownloadingUpdate = false;
+    const progressArea = document.getElementById("updateProgressArea");
+    const btn = document.getElementById("btnStartUpdate");
+
+    if (progressArea) progressArea.classList.add("hidden");
+    if (btn) {
+      btn.classList.remove("opacity-50", "pointer-events-none");
+      btn.innerHTML = `<span>🔄</span><span>Tekrar Dene</span>`;
+    }
+    alert("İndirme sırasında hata oluştu: " + errorMsg);
   }
 
   playAlertTone() {
