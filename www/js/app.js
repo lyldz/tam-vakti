@@ -94,7 +94,7 @@ class TamVaktiApp {
     this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
 
     // Otomatik Güncelleme Sistemi (GitHub Releases)
-    this.currentVersion = "v1.00.05";
+    this.currentVersion = "v1.00.06";
     this.updateInfo = null;
     this.isDownloadingUpdate = false;
 
@@ -162,7 +162,7 @@ class TamVaktiApp {
 
   async init() {
     this.renderCitySelector();
-    this.compass = new QiblaCompass("compassDial", "qiblaAngleVal", "compassStatusText");
+    this.compass = new QiblaCompass("compassDial", "qiblaAngleBig", "compassStatusText");
 
     // Modal açıldığında toggle durumunu senkronize et
     const notifCheckbox = document.getElementById("ongoingNotifToggle");
@@ -206,10 +206,14 @@ class TamVaktiApp {
       this.currentLocation.lon
     );
 
-    // Kıble Açısı
+    // Kıble Açısı ve Mesafe
     const qiblaInfo = this.engine.calculateQibla(this.currentLocation.lat, this.currentLocation.lon);
-    document.getElementById("qiblaAngleVal").textContent = `${qiblaInfo.angle}° GD`;
-    document.getElementById("qiblaDistVal").textContent = `${qiblaInfo.distanceKm.toLocaleString('tr-TR')} km`;
+    const angleBigEl = document.getElementById("qiblaAngleBig");
+    if (angleBigEl) angleBigEl.textContent = `${Math.round(qiblaInfo.angle)}°`;
+    const distSubEl = document.getElementById("qiblaDistanceSub");
+    if (distSubEl) distSubEl.textContent = `Kâbe'ye ≈ ${qiblaInfo.distanceKm.toLocaleString('tr-TR')} km`;
+    const headerCityEl = document.getElementById("qiblaHeaderCity");
+    if (headerCityEl) headerCityEl.textContent = displayName;
     this.compass.setTargetQibla(qiblaInfo.angle);
 
     this.renderPrayerCards();
@@ -572,6 +576,78 @@ class TamVaktiApp {
 
   closeLocationModal() {
     document.getElementById("locationModal").classList.add("hidden");
+  }
+
+  openSettingsModal() {
+    const modal = document.getElementById("settingsModal");
+    if (modal) modal.classList.remove("hidden");
+    const locDesc = document.getElementById("settingsLocationDesc");
+    if (locDesc) {
+      locDesc.textContent = `${this.currentLocation.name || "Ilgın"} • Otomatik`;
+    }
+  }
+
+  closeSettingsModal() {
+    const modal = document.getElementById("settingsModal");
+    if (modal) modal.classList.add("hidden");
+  }
+
+  openBatterySettings() {
+    if (window.AndroidBridge && window.AndroidBridge.openBatteryOptimizationSettings) {
+      window.AndroidBridge.openBatteryOptimizationSettings();
+    } else {
+      alert("Android pil optimizasyon ayarlarına yönlendiriliyor.");
+    }
+  }
+
+  requestExactAlarmSetting() {
+    if (window.AndroidBridge && window.AndroidBridge.openExactAlarmSettings) {
+      window.AndroidBridge.openExactAlarmSettings();
+    } else {
+      alert("Tam zamanlı alarm izni sistemde etkindir.");
+    }
+  }
+
+  sendTestNotification() {
+    if (window.AndroidBridge && window.AndroidBridge.showOngoingPrayerNotification) {
+      const nextTarget = Date.now() + 15 * 60 * 1000;
+      window.AndroidBridge.showOngoingPrayerNotification(
+        this.currentLocation.name || "Ilgın",
+        "Akşam (Test)",
+        "18:26",
+        nextTarget
+      );
+    }
+    this.playAlertTone();
+    if (window.AndroidBridge && window.AndroidBridge.vibrateDevice) {
+      window.AndroidBridge.vibrateDevice(200);
+    } else if (navigator.vibrate) {
+      navigator.vibrate(200);
+    }
+    alert("🔔 Test bildirimi ve ezan sesi gönderildi!");
+  }
+
+  openPrayerModesModal() {
+    alert("Vakit başına bildirim modu: Her vaktin yanındaki ses/titreşim simgesine dokunarak Ezan, Bip veya Sessiz modunu kolayca değiştirebilirsiniz.");
+  }
+
+  cycleReminderMinutes() {
+    const minutes = [10, 15, 20, 30, 45];
+    const el = document.getElementById("settingsReminderTime");
+    const current = el ? parseInt(el.textContent) || 15 : 15;
+    const nextIndex = (minutes.indexOf(current) + 1) % minutes.length;
+    const nextVal = minutes[nextIndex];
+    if (el) el.textContent = `${nextVal} dk`;
+  }
+
+  cycleAthanTone() {
+    const tones = ["Hicaz", "Rast", "Uşşak", "Saba", "Segah"];
+    const el = document.getElementById("settingsAthanTone");
+    const current = el ? el.textContent.trim() : "Hicaz";
+    const nextIndex = (tones.indexOf(current) + 1) % tones.length;
+    const nextVal = tones[nextIndex];
+    if (el) el.textContent = nextVal;
+    this.playAlertTone();
   }
 
   openAboutModal() {

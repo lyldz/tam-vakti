@@ -8,15 +8,18 @@ class QiblaCompass {
     this.dialEl = document.getElementById(dialElementId);
     this.angleEl = document.getElementById(angleDisplayId);
     this.statusEl = document.getElementById(statusDisplayId);
-    this.targetQiblaAngle = 154.2; // Varsayılan Konya Ilgın açısı
+    this.outerRingEl = document.getElementById("qiblaOuterRing");
+    this.alignedBadgeEl = document.getElementById("qiblaAlignedBadge");
+    this.targetQiblaAngle = 152.0; // Varsayılan Ilgın kıble açısı
     this.currentHeading = 0;
     this.isListening = false;
+    this.wasAligned = false;
   }
 
   setTargetQibla(angle) {
     this.targetQiblaAngle = angle;
     if (this.angleEl) {
-      this.angleEl.textContent = `${angle.toFixed(1)}°`;
+      this.angleEl.textContent = `${Math.round(angle)}°`;
     }
     this.updateDial();
   }
@@ -57,7 +60,7 @@ class QiblaCompass {
 
   handleOrientation(event) {
     let heading = 0;
-    if (event.webkitCompassHeading) {
+    if (event.webkitCompassHeading !== undefined && event.webkitCompassHeading !== null) {
       // iOS Safari
       heading = event.webkitCompassHeading;
     } else if (event.alpha !== null) {
@@ -71,15 +74,43 @@ class QiblaCompass {
 
   updateDial() {
     if (!this.dialEl) return;
-    // Kadran cihazın kuzeyine göre ters döner, ibre Kâbe açısını gösterir
+    // Kadran cihazın kuzeyine göre döner, ibre Kâbe istikametini gösterir
     const relativeAngle = (this.targetQiblaAngle - this.currentHeading + 360) % 360;
     this.dialEl.style.transform = `rotate(${relativeAngle}deg)`;
 
-    // Tam kıbleye bakıldığında (±5 derece) titreşim veya renk geri bildirimi
-    const diff = Math.abs(relativeAngle);
-    if ((diff < 6 || diff > 354) && navigator.vibrate) {
-      // Kıble tam hizalandığında hafif titreşim
-      navigator.vibrate(20);
+    // Kıbleye tam hizalanma kontrolü (±3 derece hassasiyet)
+    const isAligned = (relativeAngle <= 3 || relativeAngle >= 357);
+
+    if (this.outerRingEl) {
+      if (isAligned) {
+        this.outerRingEl.classList.add("qibla-aligned");
+      } else {
+        this.outerRingEl.classList.remove("qibla-aligned");
+      }
+    }
+
+    if (this.alignedBadgeEl) {
+      if (isAligned) {
+        this.alignedBadgeEl.classList.remove("hidden");
+      } else {
+        this.alignedBadgeEl.classList.add("hidden");
+      }
+    }
+
+    if (isAligned) {
+      if (!this.wasAligned) {
+        this.wasAligned = true;
+        // Zarif tek seferlik cihaz titreşimi
+        if (window.AndroidBridge && window.AndroidBridge.vibrateDevice) {
+          window.AndroidBridge.vibrateDevice(200);
+        } else if (navigator.vibrate) {
+          navigator.vibrate(200);
+        }
+      }
+    } else {
+      if (relativeAngle > 4 && relativeAngle < 356) {
+        this.wasAligned = false;
+      }
     }
   }
 }

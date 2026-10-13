@@ -412,3 +412,76 @@ html, body {
     opacity: 0.75;
   }
 }
+
+/* Yenilenmiş Modern Kıble Pusulası */
+.qibla-aligned {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.45), inset 0 0 15px rgba(16, 185, 129, 0.15);
+}
+
+.qibla-needle-modern {
+  position: absolute;
+  width: 14px;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.qibla-needle-tip {
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 78px solid #1b4332;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.qibla-needle-center {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #1b4332;
+  border: 3px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  margin: -8px 0;
+}
+
+.qibla-needle-tail {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 60px solid #94a3b8;
+  opacity: 0.85;
+}
+
+.qibla-aligned-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #d1fae5;
+  color: #065f46;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  margin-top: 10px;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  animation: pulse-subtle 2s infinite ease-in-out;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 0.9;
+  }
+}
+

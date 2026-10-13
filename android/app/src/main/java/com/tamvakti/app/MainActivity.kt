@@ -249,9 +249,52 @@ class MainActivity : AppCompatActivity() {
         fun getAppVersion(): String {
             return try {
                 val pInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
-                pInfo.versionName ?: "1.00.05"
+                pInfo.versionName ?: "1.00.06"
             } catch (e: Exception) {
-                "1.00.05"
+                "1.00.06"
+            }
+        }
+
+        @JavascriptInterface
+        fun openBatteryOptimizationSettings() {
+            activity.runOnUiThread {
+                try {
+                    val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                    activity.startActivity(intent)
+                } catch (e: Exception) {
+                    try {
+                        val intent = Intent(Settings.ACTION_SETTINGS)
+                        activity.startActivity(intent)
+                    } catch (e2: Exception) {}
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun openExactAlarmSettings() {
+            activity.runOnUiThread {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    try {
+                        val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                            data = Uri.parse("package:${activity.packageName}")
+                        }
+                        activity.startActivity(intent)
+                    } catch (e: Exception) {}
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun vibrateDevice(durationMs: Long) {
+            activity.runOnUiThread {
+                try {
+                    val vibrator = activity.getSystemService(Context.VIBRATOR_SERVICE) as? android.os.Vibrator
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        vibrator?.vibrate(android.os.VibrationEffect.createOneShot(durationMs, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+                    } else {
+                        vibrator?.vibrate(durationMs)
+                    }
+                } catch (e: Exception) {}
             }
         }
     }
