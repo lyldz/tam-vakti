@@ -57,27 +57,24 @@ jobs:
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.06' }}
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.07' }}
           files: build-output/*.apk
-          name: "Tam Vakti ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.06' }}"
+          name: "Tam Vakti ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.07' }}"
           draft: false
           prerelease: false
           generate_release_notes: true
           body: |
-            ## 🕌 Tam Vakti v1.00.06 - Derli Toplu Ayarlar & Yenilenen Kıble Pusulası
+            ## 🎨 Tam Vakti v1.00.07 - Yepyeni İkon Paketi & Bildirim Simgesi
 
-            - **Sürüm:** `${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.06' }}`
+            - **Sürüm:** `${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.07' }}`
             - **Paket Adı:** `com.tamvakti.app`
             
-            ### 📝 Yenilikler ve Değişiklikler (v1.00.06)
-            - ⚙️ **Derli Toplu Ayarlar Ekranı:** 5 ana grup kartı altında toplanmış modern arayüz (Bildirim Sağlığı, Bildirim & Ezan, Hesaplama, Görünüm, Hakkında).
-            - 🔔 **Bildirim Sağlığı & Test:** Tam zamanlı alarm izni, Android pil optimizasyonunu kapatma köprüsü ve tek dokunuşla anında test bildirimi ve ezan sesi gönderen buton.
-            - 🕋 **Yenilenen Kıble Pusulası:**
-              - Üstte sabit Kâbe hedef pini (🕋) ve çevrimdışı çalışma göstergesi.
-              - Büyük açı göstergesi (`152°`) ve Kâbe mesafesi (`≈ 2.200 km`).
-              - ±3° kıble hizalanmasında yeşil çember parlaması, `✓ Kıble'desin` rozeti ve zarif cihaz titreşimi.
-              - Eğim ve sensör kalibrasyon rehberi.
+            ### 📝 Yenilikler ve Değişiklikler (v1.00.07)
+            - 🌟 **Yeni Uygulama Simgesi (App Launcher Icon):** Android 8-16 için yüksek çözünürlüklü vektör adaptive ikon ve zümrüt mihrap kemeri, parıldayan hilal ve Selçuklu yıldızı motifi.
+            - 🔔 **Yeni Bildirim Simgesi (Notification Status Bar Icon):** Durum çubuğunda kristal netliğinde kubbe ve hilal silüeti (`ic_stat_tamvakti`). Ayrıca bildirim panelinde uygulamanın renkli logosu (`setLargeIcon`).
+            - 🕌 **Yenilenen Vakit İkon Paketi:** İmsak, Güneş, Öğle, İkindi, Akşam ve Yatsı için özel minimalist çizgi sanat (line-art) ikon seti ve pastel tonlu estetik zeminler.
+            - 🔊 **Yüksek Kontrastlı Ses İkonları:** Sessiz ve sesli durumlar için maksimum okunurluk ve netlik.
             
             ### 📱 Kurulum
-            Aşağıdaki `TamVakti-v1.00.06.apk` veya `TamVakti.apk` dosyasını indirip doğrudan cihazınıza kurabilirsiniz.
+            Aşağıdaki `TamVakti-v1.00.07.apk` veya `TamVakti.apk` dosyasını indirip doğrudan cihazınıza kurabilirsiniz.
 

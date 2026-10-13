@@ -8,6 +8,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -168,8 +169,19 @@ class MainActivity : AppCompatActivity() {
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
+        val appIconBitmap = try {
+            BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher)
+        } catch (e: Exception) {
+            null
+        }
+
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_tamvakti)
+            .apply {
+                if (appIconBitmap != null) {
+                    setLargeIcon(appIconBitmap)
+                }
+            }
             .setContentTitle("Tam Vakti • $cityName")
             .setContentText("Sıradaki: $nextPrayerName ($nextPrayerTime)")
             .setOngoing(true)

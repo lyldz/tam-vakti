@@ -1,21 +1,19 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
-    android:viewportWidth="200"
-    android:viewportHeight="240">
-    <!-- Mihrap / Kubbe Çerçevesi (Tam Vakti Logosu) -->
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Mihrap ve Kubbe Silüeti (Android Bildirim Simgesi) -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M14,214 V100 A86,86 0 0,1 186,100 V214 A12,12 0 0,1 174,226 H26 A12,12 0 0,1 14,214 Z" />
-    <!-- Kubbe Tepesindeki Alem / Nokta -->
-    <path
-        android:fillColor="#1B4D3E"
-        android:pathData="M100,56 a6,6 0 1,0 0.1,0 Z" />
+        android:pathData="M12,2 C12.55,2 13,2.45 13,3 C13,3.34 12.83,3.64 12.57,3.82 L12.57,5.08 C16.73,5.56 20,9.09 20,13.4 L20,20 C20,20.55 19.55,21 19,21 H5 C4.45,21 4,20.55 4,20 L4,13.4 C4,9.09 7.27,5.56 11.43,5.08 L11.43,3.82 C11.17,3.64 11,3.34 11,3 C11,2.45 11.45,2 12,2 Z M12,7 C8.69,7 6,9.69 6,13 L6,19 H18 L18,13 C18,9.69 15.31,7 12,7 Z" />
+    
     <!-- İç Hilal ve Yıldız Çizgileri -->
     <path
-        android:fillColor="#1B4D3E"
-        android:pathData="M100,66 a58,58 0 1,0 0,116 a58,58 0 1,0 0,-116 Z M100,74 a50,50 0 1,1 0,100 a50,50 0 1,1 0,-100 Z" />
+        android:fillColor="#FFFFFF"
+        android:pathData="M11.5,9.5 C9.57,9.5 8,11.07 8,13 C8,14.93 9.57,16.5 11.5,16.5 C12.56,16.5 13.51,16.03 14.15,15.29 C12.78,15.29 11.67,14.18 11.67,12.81 C11.67,11.59 12.55,10.57 13.72,10.36 C13.08,9.83 12.33,9.5 11.5,9.5 Z" />
+    
     <path
-        android:fillColor="#1B4D3E"
-        android:pathData="M126,104 l3.2,7.6 8.2,0.8 -6.2,5.4 1.9,8 -7.1,-4.2 -7.1,4.2 1.9,-8 -6.2,-5.4 8.2,-0.8 z" />
+        android:fillColor="#FFFFFF"
+        android:pathData="M14.8,11.5 L15.2,12.3 L16.1,12.4 L15.4,13 L15.6,13.9 L14.8,13.4 L14,13.9 L14.2,13 L13.5,12.4 L14.4,12.3 Z" />
 </vector>

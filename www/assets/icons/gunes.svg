@@ -1,1 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="96" height="112" viewBox="0 0 96 112"><defs><linearGradient id="ggunes" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E6F5B8"/><stop offset="1" stop-color="#A5D468"/></linearGradient></defs><path d="M4 100 V48 A44 44 0 0 1 92 48 V100 A8 8 0 0 1 84 108 H12 A8 8 0 0 1 4 100 Z" fill="url(#ggunes)"/><g fill="none" stroke="#2F6B4A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M33 74 A15 15 0 0 1 63 74"/><line x1="24" y1="74" x2="72" y2="74"/><line x1="48.0" y1="53.0" x2="48.0" y2="46.0"/><line x1="61.5" y1="57.9" x2="66.0" y2="52.6"/><line x1="34.5" y1="57.9" x2="30.0" y2="52.6"/><line x1="67.7" y1="66.8" x2="74.3" y2="64.4"/><line x1="28.3" y1="66.8" x2="21.7" y2="64.4"/><path d="M42 90 L48 84 L54 90"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <!-- Sıcak Şafak / Gün Doğumu Zemini -->
+  <rect width="48" height="48" rx="13" fill="#f4f6d8"/>
+  <!-- Ufuk Çizgisi -->
+  <line x1="11" y1="31" x2="37" y2="31" stroke="#3d5a23" stroke-width="2.3" stroke-linecap="round"/>
+  <!-- Doğan Güneş -->
+  <path d="M17 31 C17 25 20.1 20 24 20 C27.9 20 31 25 31 31" fill="none" stroke="#3d5a23" stroke-width="2.3" stroke-linecap="round"/>
+  <!-- Güneş Işınları -->
+  <line x1="24" y1="13" x2="24" y2="17" stroke="#3d5a23" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="15" y1="17" x2="18" y2="20" stroke="#3d5a23" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="33" y1="17" x2="30" y2="20" stroke="#3d5a23" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="12" y1="24" x2="16" y2="25" stroke="#3d5a23" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="36" y1="24" x2="32" y2="25" stroke="#3d5a23" stroke-width="2.3" stroke-linecap="round"/>
+  <!-- Yükseliş İbresi / Oku -->
+  <path d="M21 37 L24 34 L27 37" fill="none" stroke="#3d5a23" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

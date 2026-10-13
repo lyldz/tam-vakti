@@ -1,1 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="96" height="112" viewBox="0 0 96 112"><defs><linearGradient id="gyatsi" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ADDCC4"/><stop offset="1" stop-color="#5AA68B"/></linearGradient></defs><path d="M4 100 V48 A44 44 0 0 1 92 48 V100 A8 8 0 0 1 84 108 H12 A8 8 0 0 1 4 100 Z" fill="url(#gyatsi)"/><g fill="none" stroke="#2F6B4A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><mask id="mb"><rect width="96" height="112" fill="#fff"/><circle cx="58" cy="54" r="19" fill="#000"/></mask><circle cx="46" cy="62" r="22" fill="#2F6B4A" stroke="none" mask="url(#mb)"/><path d="M72 32 L73.8 36.2 L78 38 L73.8 39.8 L72 44 L70.2 39.8 L66 38 L70.2 36.2 Z" fill="#2F6B4A" stroke="none"/><path d="M74 59.8 L75.26 62.74 L78.2 64 L75.26 65.26 L74 68.2 L72.74 65.26 L69.8 64 L72.74 62.74 Z" fill="#2F6B4A" stroke="none"/><path d="M30 34.4 L31.08 36.92 L33.6 38 L31.08 39.08 L30 41.6 L28.92 39.08 L26.4 38 L28.92 36.92 Z" fill="#2F6B4A" stroke="none"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <!-- Yatsı / Gece Huşû Zemini -->
+  <rect width="48" height="48" rx="13" fill="#d0e6dd"/>
+  <!-- Gece Hilali -->
+  <path d="M23 15 C17 15 12 20 12 26 C12 32 17 37 23 37 C26.8 37 30.2 35 32 32 C27.5 32 23.5 28 23.5 23.5 C23.5 19.8 26 16.8 29.5 15.6 C27.5 15.2 25.3 15 23 15 Z" 
+        fill="none" stroke="#164332" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Gece Parlayan Yıldız -->
+  <path d="M33 21 L34 23.5 L36.5 24.5 L34 25.5 L33 28 L32 25.5 L29.5 24.5 L32 23.5 Z" 
+        fill="#164332"/>
+  <circle cx="27" cy="18" r="1" fill="#164332"/>
+</svg>

@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="96" height="112" viewBox="0 0 96 112"><defs><linearGradient id="gimsak" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C9EBCB"/><stop offset="1" stop-color="#6FB88A"/></linearGradient></defs><path d="M4 100 V48 A44 44 0 0 1 92 48 V100 A8 8 0 0 1 84 108 H12 A8 8 0 0 1 4 100 Z" fill="url(#gimsak)"/><g fill="none" stroke="#2F6B4A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><mask id="ma"><rect width="96" height="112" fill="#fff"/><circle cx="58" cy="54" r="19" fill="#000"/></mask><circle cx="46" cy="62" r="22" fill="#2F6B4A" stroke="none" mask="url(#ma)"/><path d="M72 34 L73.8 38.2 L78 40 L73.8 41.8 L72 46 L70.2 41.8 L66 40 L70.2 38.2 Z" fill="#2F6B4A" stroke="none"/><path d="M66 74.4 L67.08 76.92 L69.6 78 L67.08 79.08 L66 81.6 L64.92 79.08 L62.4 78 L64.92 76.92 Z" fill="#2F6B4A" stroke="none"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <!-- Yumuşak Adaçayı / Nane Zemin -->
+  <rect width="48" height="48" rx="13" fill="#e2ece4"/>
+  <!-- İnce Zümrüt Çizgi İkon: Hilal ve İmsak Yıldızı -->
+  <path d="M25 15 C19 15 14 20 14 26 C14 32 19 37 25 37 C28.5 37 31.7 35.3 33.6 32.7 C29.2 32.7 25.6 29.1 25.6 24.7 C25.6 21.1 28 18 31.3 16.9 C29.5 15.7 27.3 15 25 15 Z" 
+        fill="none" stroke="#1b4332" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Küçük Tan Yıldızı -->
+  <path d="M33 19 L34 21.5 L36.5 22.5 L34 23.5 L33 26 L32 23.5 L29.5 22.5 L32 21.5 Z" 
+        fill="#1b4332"/>
+</svg>

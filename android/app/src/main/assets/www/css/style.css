@@ -224,12 +224,13 @@ html, body {
 }
 
 .card-icon-box {
-  width: 36px;
+  width: 38px;
   height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  border-radius: 12px;
 }
 .card-icon-box img {
   width: 100%;
@@ -293,10 +294,10 @@ html, body {
   transform: scale(0.9);
 }
 .sound-icon-on {
-  color: #2d6a4f;
+  color: #1b4332;
 }
 .sound-icon-off {
-  color: #64748b; /* Net ve okunur gri tonu */
+  color: #475569; /* Yüksek kontrastlı okunur gri */
 }
 
 /* Alt Bar (Segmented Control + Ayarlar) */

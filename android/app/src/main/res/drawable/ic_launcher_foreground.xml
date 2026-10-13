@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:translateX="0"
+        android:translateY="0">
+        <!-- Kubbe / Mihrap Kemeri Dış Hat -->
+        <path
+            android:fillColor="#EAF5EE"
+            android:pathData="M35,76 V52 C35,41.5 43.5,33 54,33 C64.5,33 73,41.5 73,52 V76 C73,78.2 71.2,80 69,80 H39 C36.8,80 35,78.2 35,76 Z" />
+        
+        <!-- İç Mihrap Derinlik Alanı -->
+        <path
+            android:fillColor="#1B4332"
+            android:pathData="M39,76 V53 C39,44.7 45.7,38 54,38 C62.3,38 69,44.7 69,53 V76 H39 Z" />
+
+        <!-- Kubbe Tepesindeki Alem / Tepe Yıldızı -->
+        <path
+            android:fillColor="#D8F3DC"
+            android:pathData="M54,26 C55.6,26 57,27.4 57,29 C57,30.6 55.6,32 54,32 C52.4,32 51,30.6 51,29 C51,27.4 52.4,26 54,26 Z" />
+        <path
+            android:strokeColor="#D8F3DC"
+            android:strokeWidth="1.5"
+            android:strokeLineCap="round"
+            android:pathData="M54,32 L54,35" />
+
+        <!-- Zarif Parıldayan Hilal (Crescent Moon) -->
+        <path
+            android:fillColor="#52B788"
+            android:pathData="M51.5,46 C47.3,46 44,49.3 44,53.5 C44,57.7 47.3,61 51.5,61 C53.8,61 55.9,59.9 57.2,58.2 C54.2,58.2 51.8,55.8 51.8,52.8 C51.8,50.4 53.4,48.3 55.6,47.6 C54.4,46.6 53,46 51.5,46 Z" />
+
+        <!-- 8 Köşeli Selçuklu / İbadet Yıldızı -->
+        <path
+            android:fillColor="#EAF5EE"
+            android:pathData="M59.5,49 L60.4,51.2 L62.6,51.8 L60.9,53.3 L61.4,55.5 L59.5,54.4 L57.6,55.5 L58.1,53.3 L56.4,51.8 L58.6,51.2 Z" />
+    </group>
+</vector>
