@@ -230,12 +230,19 @@ class TamVaktiApp {
     const hicriEl = document.getElementById("hicriDateSub");
     if (hicriEl) {
       try {
-        const parts = new Intl.DateTimeFormat('tr-TR-u-ca-islamic-civil', {
+        const islamicMonths = [
+          "",
+          "Muharrem", "Sefer", "Rebiülevvel", "Rebiülahir",
+          "Cemaziyelevvel", "Cemaziyelahir", "Recep", "Şaban",
+          "Ramazan", "Şevval", "Zilkade", "Zilhicce"
+        ];
+        const parts = new Intl.DateTimeFormat('en-u-ca-islamic-civil', {
           day: 'numeric',
-          month: 'long'
+          month: 'numeric'
         }).formatToParts(now);
         const hDay = parts.find(p => p.type === 'day')?.value || '';
-        const hMonth = parts.find(p => p.type === 'month')?.value || '';
+        const hMonthNum = parseInt(parts.find(p => p.type === 'month')?.value || '1', 10);
+        const hMonth = islamicMonths[hMonthNum] || '';
         hicriEl.textContent = `${dayName} • ${hDay} ${hMonth}`;
       } catch (e) {
         hicriEl.textContent = dayName;
