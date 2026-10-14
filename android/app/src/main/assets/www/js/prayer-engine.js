@@ -59,6 +59,75 @@ class PrayerEngine {
     return { declination: d, equationOfTime: EqT };
   }
 
+  // Canlı Güneş Azimutu (0-360 derece, Kuzeyden saat yönünde) ve Yükseklik Açısı
+  getSunPositionNow(date, lat, lon, tz = 3.0) {
+    const jd = this.julianDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
+    const solar = this.getSolarPosition(jd);
+    const declination = solar.declination;
+    const EqT = solar.equationOfTime;
+
+    const hours = date.getHours() + date.getMinutes() / 60 + date.getSeconds() / 3600;
+    const solarTime = hours + (EqT / 60) + ((lon - 15 * tz) / 15);
+    const hourAngleDeg = (solarTime - 12) * 15;
+    const H = this.d2r(hourAngleDeg);
+    const phi = this.d2r(lat);
+    const delta = this.d2r(declination);
+
+    // Güneş Yüksekliği (Altitude)
+    const sinAlt = Math.sin(phi) * Math.sin(delta) + Math.cos(phi) * Math.cos(delta) * Math.cos(H);
+    const altitudeDeg = this.r2d(Math.asin(Math.max(-1, Math.min(1, sinAlt))));
+
+    // Güneş Azimutu (Kuzeyden saat yönünde 0-360°)
+    const y = -Math.sin(H);
+    const x = Math.tan(delta) * Math.cos(phi) - Math.sin(phi) * Math.cos(H);
+    let azimuth = this.r2d(Math.atan2(y, x));
+    azimuth = (azimuth + 360) % 360;
+
+    return {
+      azimuth: parseFloat(azimuth.toFixed(1)),
+      altitude: parseFloat(altitudeDeg.toFixed(1)),
+      isDaylight: altitudeDeg > -0.833
+    };
+  }
+
+  // Diyanet Klasik Kıble Saati (Güneşin tam Kâbe açısında olduğu saat)
+  calculateQiblaHour(date, lat, lon, qiblaAngle, tz = 3.0) {
+    try {
+      const jd = this.julianDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
+      const solar = this.getSolarPosition(jd);
+      const delta = this.d2r(solar.declination);
+      const phi = this.d2r(lat);
+      const q = this.d2r(qiblaAngle);
+
+      const A = 1 / Math.tan(q);
+      const B = -Math.sin(phi);
+      const C = -Math.cos(phi) * Math.tan(delta);
+
+      const R = Math.sqrt(A * A + B * B);
+      if (R === 0 || Math.abs(C / R) > 1) return null;
+
+      const theta = Math.atan2(B, A);
+      const asinVal = Math.asin(C / R);
+
+      const H1 = this.r2d(asinVal - theta);
+      const H2 = this.r2d(Math.PI - asinVal - theta);
+
+      const candidates = [H1, H2];
+      for (const hDeg of candidates) {
+        const Hrad = this.d2r(hDeg);
+        const sinAlt = Math.sin(phi) * Math.sin(delta) + Math.cos(phi) * Math.cos(delta) * Math.cos(Hrad);
+        if (sinAlt > 0) {
+          const solarHours = 12 + (hDeg / 15);
+          const localHours = solarHours - (solar.equationOfTime / 60) - ((lon - 15 * tz) / 15);
+          return this.formatTime(localHours);
+        }
+      }
+    } catch (e) {
+      console.warn("Kıble saati hesaplanamadı:", e);
+    }
+    return null;
+  }
+
   julianDate(year, month, day) {
     if (month <= 2) {
       year -= 1;

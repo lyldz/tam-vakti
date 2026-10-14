@@ -19,6 +19,11 @@ import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.hardware.GeomagneticField
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -32,7 +37,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.concurrent.thread
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private lateinit var webView: WebView
     private val LOCATION_PERMISSION_REQUEST = 1001
@@ -42,6 +47,30 @@ class MainActivity : AppCompatActivity() {
 
     private var pendingGeoCallback: GeolocationPermissions.Callback? = null
     private var pendingGeoOrigin: String? = null
+
+    // Native Pusula & Sensör Değişkenleri
+    private var sensorManager: SensorManager? = null
+    private var rotationSensor: Sensor? = null
+    private var accelerometer: Sensor? = null
+    private var magnetometer: Sensor? = null
+
+    private val rotationMatrix = FloatArray(9)
+    private val remappedMatrix = FloatArray(9)
+    private val orientationAngles = FloatArray(3)
+    private val lastAccelerometer = FloatArray(3)
+    private val lastMagnetometer = FloatArray(3)
+    private var hasAccelerometer = false
+    private var hasMagnetometer = false
+
+    private var userLat = 38.28
+    private var userLon = 31.9
+    private var isCompassListening = false
+
+    // Titremeyi önleyen birim çember EMA filtresi
+    private var smoothedSin = 0.0
+    private var smoothedCos = 0.0
+    private val smoothingFactor = 0.18
+    private var lastUpdateTimestamp: Long = 0
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -220,7 +249,158 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // ==========================================
+    // CANLI DONANIM PUSULA VE SENSÖR YÖNETİMİ
+    // ==========================================
+
+    fun startCompassListening(lat: Double, lon: Double) {
+        userLat = lat
+        userLon = lon
+        if (isCompassListening) return
+
+        if (sensorManager == null) {
+            sensorManager = getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+        }
+
+        sensorManager?.let { sm ->
+            // En yüksek doğruluk için donanım Kalman filtreli ROTATION_VECTOR tercih edilir
+            rotationSensor = sm.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+                ?: sm.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)
+
+            if (rotationSensor != null) {
+                sm.registerListener(this, rotationSensor, SensorManager.SENSOR_DELAY_UI)
+            } else {
+                accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+                magnetometer = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+                accelerometer?.let { sm.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
+                magnetometer?.let { sm.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
+            }
+            isCompassListening = true
+        }
+    }
+
+    fun stopCompassListening() {
+        if (!isCompassListening) return
+        sensorManager?.unregisterListener(this)
+        isCompassListening = false
+        smoothedSin = 0.0
+        smoothedCos = 0.0
+        hasAccelerometer = false
+        hasMagnetometer = false
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stopCompassListening()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopCompassListening()
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
+    override fun onSensorChanged(event: SensorEvent) {
+        if (!isCompassListening) return
+
+        var success = false
+        if (event.sensor.type == Sensor.TYPE_ROTATION_VECTOR ||
+            event.sensor.type == Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR) {
+            SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+            success = true
+        } else if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+            System.arraycopy(event.values, 0, lastAccelerometer, 0, 3)
+            hasAccelerometer = true
+            if (hasMagnetometer) {
+                success = SensorManager.getRotationMatrix(rotationMatrix, null, lastAccelerometer, lastMagnetometer)
+            }
+        } else if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD) {
+            System.arraycopy(event.values, 0, lastMagnetometer, 0, 3)
+            hasMagnetometer = true
+            if (hasAccelerometer) {
+                success = SensorManager.getRotationMatrix(rotationMatrix, null, lastAccelerometer, lastMagnetometer)
+            }
+        }
+
+        if (success) {
+            processOrientation(event.accuracy)
+        }
+    }
+
+    private fun processOrientation(accuracy: Int) {
+        // Dikey tutuş için eksen remap
+        SensorManager.remapCoordinateSystem(
+            rotationMatrix,
+            SensorManager.AXIS_X,
+            SensorManager.AXIS_Y,
+            remappedMatrix
+        )
+        SensorManager.getOrientation(remappedMatrix, orientationAngles)
+
+        var azimuthDeg = Math.toDegrees(orientationAngles[0].toDouble())
+        if (azimuthDeg < 0) azimuthDeg += 360.0
+
+        // Kullanıcının GPS konumuna göre Manyetik Sapma (True North) düzeltmesi
+        try {
+            val geoField = GeomagneticField(
+                userLat.toFloat(),
+                userLon.toFloat(),
+                0f,
+                System.currentTimeMillis()
+            )
+            azimuthDeg += geoField.declination
+            if (azimuthDeg < 0) azimuthDeg += 360.0
+            if (azimuthDeg >= 360.0) azimuthDeg -= 360.0
+        } catch (e: Exception) {}
+
+        // Titreşimi engelleyen ve 360 wrap sıçramasını çözen dairesel EMA filtresi
+        val rad = Math.toRadians(azimuthDeg)
+        if (smoothedSin == 0.0 && smoothedCos == 0.0) {
+            smoothedSin = Math.sin(rad)
+            smoothedCos = Math.cos(rad)
+        } else {
+            smoothedSin = smoothedSin * (1.0 - smoothingFactor) + Math.sin(rad) * smoothingFactor
+            smoothedCos = smoothedCos * (1.0 - smoothingFactor) + Math.cos(rad) * smoothingFactor
+        }
+
+        var filteredDeg = Math.toDegrees(Math.atan2(smoothedSin, smoothedCos))
+        if (filteredDeg < 0) filteredDeg += 360.0
+
+        val now = System.currentTimeMillis()
+        if (now - lastUpdateTimestamp >= 30) { // ~33 FPS UI güncelleme hızı
+            lastUpdateTimestamp = now
+            val pitchDeg = Math.toDegrees(orientationAngles[1].toDouble())
+            val rollDeg = Math.toDegrees(orientationAngles[2].toDouble())
+
+            val formattedDeg = String.format(java.util.Locale.US, "%.1f", filteredDeg)
+            val formattedPitch = String.format(java.util.Locale.US, "%.1f", pitchDeg)
+            val formattedRoll = String.format(java.util.Locale.US, "%.1f", rollDeg)
+
+            runOnUiThread {
+                webView.evaluateJavascript(
+                    "window.app && window.app.onNativeCompassUpdate($formattedDeg, $accuracy, $formattedPitch, $formattedRoll);",
+                    null
+                )
+            }
+        }
+    }
+
     inner class WebAppInterface(private val activity: MainActivity) {
+        @JavascriptInterface
+        fun startCompass(lat: Double, lon: Double) {
+            activity.runOnUiThread {
+                activity.startCompassListening(lat, lon)
+            }
+        }
+
+        @JavascriptInterface
+        fun stopCompass() {
+            activity.runOnUiThread {
+                activity.stopCompassListening()
+            }
+        }
+
         @JavascriptInterface
         fun updatePrayerNotification(
             cityName: String,
@@ -261,9 +441,9 @@ class MainActivity : AppCompatActivity() {
         fun getAppVersion(): String {
             return try {
                 val pInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
-                pInfo.versionName ?: "1.00.06"
+                pInfo.versionName ?: "1.00.08"
             } catch (e: Exception) {
-                "1.00.06"
+                "1.00.08"
             }
         }
 

@@ -57,24 +57,27 @@ jobs:
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.07' }}
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.08' }}
           files: build-output/*.apk
-          name: "Tam Vakti ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.07' }}"
+          name: "Tam Vakti ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.08' }}"
           draft: false
           prerelease: false
           generate_release_notes: true
           body: |
-            ## 🎨 Tam Vakti v1.00.07 - Yepyeni İkon Paketi & Bildirim Simgesi
+            ## 🧭 Tam Vakti v1.00.08 - Yenilenen Canlı Donanım Pusulası & Harita ile Kıble
 
-            - **Sürüm:** `${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.07' }}`
+            - **Sürüm:** `${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.08' }}`
             - **Paket Adı:** `com.tamvakti.app`
             
-            ### 📝 Yenilikler ve Değişiklikler (v1.00.07)
-            - 🌟 **Yeni Uygulama Simgesi (App Launcher Icon):** Android 8-16 için yüksek çözünürlüklü vektör adaptive ikon ve zümrüt mihrap kemeri, parıldayan hilal ve Selçuklu yıldızı motifi.
-            - 🔔 **Yeni Bildirim Simgesi (Notification Status Bar Icon):** Durum çubuğunda kristal netliğinde kubbe ve hilal silüeti (`ic_stat_tamvakti`). Ayrıca bildirim panelinde uygulamanın renkli logosu (`setLargeIcon`).
-            - 🕌 **Yenilenen Vakit İkon Paketi:** İmsak, Güneş, Öğle, İkindi, Akşam ve Yatsı için özel minimalist çizgi sanat (line-art) ikon seti ve pastel tonlu estetik zeminler.
-            - 🔊 **Yüksek Kontrastlı Ses İkonları:** Sessiz ve sesli durumlar için maksimum okunurluk ve netlik.
+            ### 📝 Yenilikler ve Değişiklikler (v1.00.08)
+            - 🧭 **Android Native Donanım Sensörü (SensorManager):** WebView'ın tutarsız çalışan sensörü yerine Android'in kalibreli `Rotation Vector` donanım füzyon sensörü entegre edildi.
+            - 📍 **Gerçek Coğrafi Kuzey (True North Declination):** `GeomagneticField` ile kullanıcının GPS konumuna göre manyetik sapma açısı otomatik düzeltilerek %100 coğrafi kıble açısı hesaplanır.
+            - 🟢 **Dairesel EMA Titreşim Filtresi:** İbrenin titremesini ve 360° sıçramalarını engelleyen yumuşak süzgeç eklendi.
+            - 🎯 **Akıllı Kılavuz Rozeti:** Ekranda dinamik `→ 35° Sağa dön`, `← 15° Sola dön` ve tam hedefe ulaşıldığında `✓ KIBLE YÖNÜNDESİN` rozeti ve titreşimli geri bildirim.
+            - ⚖️ **Dijital Su Terazisi (Bubble Level):** Kadranın merkezinde telefonun düz tutulup tutulmadığını gösteren canlı su terazisi balonu.
+            - ☀️ **Canlı Güneş İbresi & Kıble Saati:** Kadran üzerinde anlık güneş yönü ikonu ve Diyanet klasik Kıble Saati ("Güneşe baktığınız an Kâbe yönündesiniz") bilgi kartı.
+            - 🗺️ **Harita / Sokak Yönü (Pusulasız Kesin Çözüm):** Manyetik bozulmalardan hiç etkilenmeyen; evinizi, balkonunuzu ve sokağınızı harita üzerinde görerek Kâbe'ye uzanan yeşil hattı takip edebileceğiniz interaktif harita modu eklendi.
             
             ### 📱 Kurulum
-            Aşağıdaki `TamVakti-v1.00.07.apk` veya `TamVakti.apk` dosyasını indirip doğrudan cihazınıza kurabilirsiniz.
+            Aşağıdaki `TamVakti-v1.00.08.apk` veya `TamVakti.apk` dosyasını indirip doğrudan cihazınıza kurabilirsiniz.
 

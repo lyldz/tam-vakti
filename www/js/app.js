@@ -94,11 +94,24 @@ class TamVaktiApp {
     this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
 
     // Otomatik Güncelleme Sistemi (GitHub Releases)
-    this.currentVersion = "v1.00.07";
+    this.currentVersion = "v1.00.08";
     this.updateInfo = null;
     this.isDownloadingUpdate = false;
 
+    // Kıble Modu (compass: Canlı Pusula, map: Harita Görünümü)
+    this.qiblaMode = "compass";
+    this.qiblaMap = null;
+    this.qiblaMapLine = null;
+    this.qiblaMapUserMarker = null;
+    this.qiblaMapKaabaMarker = null;
+
     this.init();
+  }
+
+  onNativeCompassUpdate(heading, accuracy, pitch, roll) {
+    if (this.compass && this.qiblaMode === "compass") {
+      this.compass.onNativeUpdate(heading, accuracy, pitch, roll);
+    }
   }
 
   loadOngoingNotifSetting() {
@@ -162,7 +175,7 @@ class TamVaktiApp {
 
   async init() {
     this.renderCitySelector();
-    this.compass = new QiblaCompass("compassDial", "qiblaAngleBig", "compassStatusText");
+    this.compass = new QiblaCompass();
 
     // Modal açıldığında toggle durumunu senkronize et
     const notifCheckbox = document.getElementById("ongoingNotifToggle");
@@ -214,7 +227,10 @@ class TamVaktiApp {
     if (distSubEl) distSubEl.textContent = `Kâbe'ye ≈ ${qiblaInfo.distanceKm.toLocaleString('tr-TR')} km`;
     const headerCityEl = document.getElementById("qiblaHeaderCity");
     if (headerCityEl) headerCityEl.textContent = displayName;
-    this.compass.setTargetQibla(qiblaInfo.angle);
+    this.compass.setTargetQibla(qiblaInfo.angle, this.currentLocation.lat, this.currentLocation.lon);
+    if (this.qiblaMode === "map" && this.qiblaMap) {
+      this.updateQiblaMap();
+    }
 
     this.renderPrayerCards();
     this.evaluateCurrentPrayer();
@@ -494,15 +510,121 @@ class TamVaktiApp {
       viewQibla.classList.add("hidden");
       btnPrayer.classList.add("active");
       btnQibla.classList.remove("active");
+      if (this.compass) {
+        this.compass.stopCompass();
+      }
     } else if (tab === "qibla") {
       viewPrayer.classList.add("hidden");
       viewQibla.classList.remove("hidden");
       btnPrayer.classList.remove("active");
       btnQibla.classList.add("active");
+      if (this.qiblaMode === "compass") {
+        if (this.compass) {
+          this.compass.startCompass();
+        }
+      } else if (this.qiblaMode === "map") {
+        this.initQiblaMap();
+      }
+    }
+  }
+
+  // Kıble Alt Modu: Canlı Pusula vs Harita / Sokak Yönü
+  switchQiblaMode(mode) {
+    this.qiblaMode = mode;
+    const btnCompass = document.getElementById("qiblaSubTab-compass");
+    const btnMap = document.getElementById("qiblaSubTab-map");
+    const cCompass = document.getElementById("qiblaModeContainer-compass");
+    const cMap = document.getElementById("qiblaModeContainer-map");
+
+    if (mode === "compass") {
+      if (btnCompass) btnCompass.className = "qibla-mode-btn active flex-1 py-1.5 rounded-xl text-xs font-black transition-all";
+      if (btnMap) btnMap.className = "qibla-mode-btn flex-1 py-1.5 rounded-xl text-xs font-bold text-slate-500 transition-all";
+      if (cCompass) cCompass.classList.remove("hidden");
+      if (cMap) cMap.classList.add("hidden");
       if (this.compass) {
         this.compass.startCompass();
       }
+    } else if (mode === "map") {
+      if (btnCompass) btnCompass.className = "qibla-mode-btn flex-1 py-1.5 rounded-xl text-xs font-bold text-slate-500 transition-all";
+      if (btnMap) btnMap.className = "qibla-mode-btn active flex-1 py-1.5 rounded-xl text-xs font-black transition-all";
+      if (cCompass) cCompass.classList.add("hidden");
+      if (cMap) cMap.classList.remove("hidden");
+      if (this.compass) {
+        this.compass.stopCompass();
+      }
+      this.initQiblaMap();
     }
+  }
+
+  initQiblaMap() {
+    setTimeout(() => {
+      const mapContainer = document.getElementById("qiblaMapContainer");
+      if (!mapContainer || typeof L === 'undefined') return;
+
+      const userLat = this.currentLocation.lat;
+      const userLon = this.currentLocation.lon;
+      const kaabaLat = 21.4225;
+      const kaabaLon = 39.8262;
+
+      if (!this.qiblaMap) {
+        this.qiblaMap = L.map('qiblaMapContainer', {
+          zoomControl: true,
+          attributionControl: false
+        }).setView([userLat, userLon], 16);
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19
+        }).addTo(this.qiblaMap);
+
+        const kaabaIcon = L.divIcon({
+          className: 'kaaba-map-icon',
+          html: '<div style="font-size:24px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">🕋</div>',
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        });
+
+        const userIcon = L.divIcon({
+          className: 'user-map-icon',
+          html: '<div style="width:16px;height:16px;border-radius:50%;background:#059669;border:3px solid #ffffff;box-shadow:0 0 10px rgba(5,150,105,0.9);"></div>',
+          iconSize: [16, 16],
+          iconAnchor: [8, 8]
+        });
+
+        this.qiblaMapUserMarker = L.marker([userLat, userLon], { icon: userIcon }).addTo(this.qiblaMap)
+          .bindPopup(`<b>Bulunduğunuz Yer</b><br>${this.currentLocation.name}`);
+
+        this.qiblaMapKaabaMarker = L.marker([kaabaLat, kaabaLon], { icon: kaabaIcon }).addTo(this.qiblaMap)
+          .bindPopup("<b>Mekke-i Mükerreme</b><br>Kâbe-i Muazzama");
+
+        this.qiblaMapLine = L.polyline([[userLat, userLon], [kaabaLat, kaabaLon]], {
+          color: '#059669',
+          weight: 4,
+          opacity: 0.95,
+          dashArray: '8, 8'
+        }).addTo(this.qiblaMap);
+      } else {
+        this.updateQiblaMap();
+      }
+      this.qiblaMap.invalidateSize();
+    }, 150);
+  }
+
+  updateQiblaMap() {
+    if (!this.qiblaMap) return;
+    const userLat = this.currentLocation.lat;
+    const userLon = this.currentLocation.lon;
+    const kaabaLat = 21.4225;
+    const kaabaLon = 39.8262;
+
+    this.qiblaMap.setView([userLat, userLon], 16);
+    if (this.qiblaMapUserMarker) {
+      this.qiblaMapUserMarker.setLatLng([userLat, userLon]);
+      this.qiblaMapUserMarker.setPopupContent(`<b>Bulunduğunuz Yer</b><br>${this.currentLocation.name}`);
+    }
+    if (this.qiblaMapLine) {
+      this.qiblaMapLine.setLatLngs([[userLat, userLon], [kaabaLat, kaabaLon]]);
+    }
+    this.qiblaMap.invalidateSize();
   }
 
   // Şehir / Konum Seçimi
