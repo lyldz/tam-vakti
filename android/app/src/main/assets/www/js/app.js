@@ -99,7 +99,7 @@ class TamVaktiApp {
     this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
 
     // Otomatik Güncelleme Sistemi (GitHub Releases)
-    this.currentVersion = "v1.00.09";
+    this.currentVersion = "v1.00.10";
     this.updateInfo = null;
     this.isDownloadingUpdate = false;
 
@@ -109,6 +109,12 @@ class TamVaktiApp {
     this.qiblaMapLine = null;
     this.qiblaMapUserMarker = null;
     this.qiblaMapKaabaMarker = null;
+
+    // Easter Egg (7 Dokunuş Sayacı)
+    this.easterEggRemaining = 7;
+    this.easterEggResetTimeout = null;
+    this.easterEggModalTimeout = null;
+    this.countdownFadeTimeout = null;
 
     this.init();
   }
@@ -948,6 +954,96 @@ class TamVaktiApp {
       osc.start();
       osc.stop(ctx.currentTime + 0.7);
     } catch (e) {}
+  }
+
+  // ==========================================
+  // EASTER EGG: 7 Dokunuş Sayacı & Hayırlı Cumalar
+  // ==========================================
+  onTitleClick() {
+    this.easterEggRemaining--;
+
+    // Dokunma titreşimi
+    if (window.AndroidBridge && window.AndroidBridge.vibrateClick) {
+      window.AndroidBridge.vibrateClick();
+    } else if (navigator.vibrate) {
+      navigator.vibrate(30);
+    }
+
+    if (this.easterEggRemaining > 0) {
+      // 6, 5, 4, 3, 2, 1 sayısını göster
+      this.showEasterEggCountdown(this.easterEggRemaining);
+
+      // 4 saniye basılmazsa sayacı tekrar 7'ye sıfırla
+      if (this.easterEggResetTimeout) clearTimeout(this.easterEggResetTimeout);
+      this.easterEggResetTimeout = setTimeout(() => {
+        this.easterEggRemaining = 7;
+        this.hideEasterEggCountdown();
+      }, 4000);
+    } else {
+      // 0'a ulaşıldı: Hayırlı Cumalar Aşko penceresini aç!
+      this.hideEasterEggCountdown();
+      this.openEasterEgg();
+      this.easterEggRemaining = 7;
+    }
+  }
+
+  showEasterEggCountdown(num) {
+    const el = document.getElementById("easterEggCountdown");
+    const numEl = document.getElementById("easterEggNumber");
+    if (!el || !numEl) return;
+
+    numEl.textContent = num;
+    el.classList.remove("opacity-0", "scale-50", "pointer-events-none");
+    el.classList.add("opacity-100", "scale-100");
+
+    if (this.countdownFadeTimeout) clearTimeout(this.countdownFadeTimeout);
+    this.countdownFadeTimeout = setTimeout(() => {
+      this.hideEasterEggCountdown();
+    }, 850);
+  }
+
+  hideEasterEggCountdown() {
+    const el = document.getElementById("easterEggCountdown");
+    if (el) {
+      el.classList.remove("opacity-100", "scale-100");
+      el.classList.add("opacity-0", "scale-50", "pointer-events-none");
+    }
+  }
+
+  openEasterEgg() {
+    const modal = document.getElementById("easterEggModal");
+    if (!modal) return;
+
+    modal.classList.remove("opacity-0", "pointer-events-none", "scale-95");
+    modal.classList.add("opacity-100", "pointer-events-auto", "scale-100");
+
+    // İki kısa kutlama titreşimi
+    if (window.AndroidBridge && window.AndroidBridge.vibrateClick) {
+      window.AndroidBridge.vibrateClick();
+      setTimeout(() => {
+        if (window.AndroidBridge && window.AndroidBridge.vibrateClick) {
+          window.AndroidBridge.vibrateClick();
+        }
+      }, 150);
+    }
+
+    // 4 saniye sonra otomatik kaybolsun
+    if (this.easterEggModalTimeout) clearTimeout(this.easterEggModalTimeout);
+    this.easterEggModalTimeout = setTimeout(() => {
+      this.closeEasterEgg();
+    }, 4000);
+  }
+
+  closeEasterEgg() {
+    const modal = document.getElementById("easterEggModal");
+    if (modal) {
+      modal.classList.remove("opacity-100", "pointer-events-auto", "scale-100");
+      modal.classList.add("opacity-0", "pointer-events-none", "scale-95");
+    }
+    if (this.easterEggModalTimeout) {
+      clearTimeout(this.easterEggModalTimeout);
+      this.easterEggModalTimeout = null;
+    }
   }
 }
 

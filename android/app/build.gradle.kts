@@ -12,9 +12,9 @@ android {
         minSdk = 24
         targetSdk = 34
         
-        // Sürüm Yapılandırması: v1.00.09
-        versionCode = 10009
-        versionName = "1.00.09"
+        // Sürüm Yapılandırması: v1.00.10
+        versionCode = 10010
+        versionName = "1.00.10"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

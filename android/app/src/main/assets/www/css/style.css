@@ -48,23 +48,28 @@ html, body {
   margin-bottom: 18px;
 }
 
-/* Şık Uygulama İsmi Rozeti */
+/* Şık Uygulama İsmi Rozeti (Ortalanmış) */
 .app-title-pill {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background-color: rgba(255, 255, 255, 0.85);
+  justify-content: center;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(8px);
-  padding: 7px 15px;
+  padding: 8px 18px;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 .app-title-pill span {
   font-weight: 900;
   font-size: 14px;
   color: var(--text-dark);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
+  text-align: center;
 }
 
 /* Şehir Rozeti */
