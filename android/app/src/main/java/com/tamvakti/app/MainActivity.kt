@@ -263,19 +263,17 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
 
         sensorManager?.let { sm ->
-            // En yüksek doğruluk için donanım Kalman filtreli ROTATION_VECTOR tercih edilir
             rotationSensor = sm.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
                 ?: sm.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)
+            accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+            magnetometer = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
 
-            if (rotationSensor != null) {
-                sm.registerListener(this, rotationSensor, SensorManager.SENSOR_DELAY_UI)
-            } else {
-                accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-                magnetometer = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
-                accelerometer?.let { sm.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
-                magnetometer?.let { sm.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
-            }
+            rotationSensor?.let { sm.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
+            accelerometer?.let { sm.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
+            magnetometer?.let { sm.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
+
             isCompassListening = true
+            android.util.Log.d("TamVaktiCompass", "Started compass: rv=${rotationSensor != null}, acc=${accelerometer != null}, mag=${magnetometer != null}")
         }
     }
 
@@ -287,6 +285,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         smoothedCos = 0.0
         hasAccelerometer = false
         hasMagnetometer = false
+        android.util.Log.d("TamVaktiCompass", "Stopped compass listening")
     }
 
     override fun onPause() {
@@ -377,11 +376,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val formattedPitch = String.format(java.util.Locale.US, "%.1f", pitchDeg)
             val formattedRoll = String.format(java.util.Locale.US, "%.1f", rollDeg)
 
+            val jsCmd = "if (window.onNativeCompassUpdate) { window.onNativeCompassUpdate($formattedDeg, $accuracy, $formattedPitch, $formattedRoll); } else if (window.app && window.app.onNativeCompassUpdate) { window.app.onNativeCompassUpdate($formattedDeg, $accuracy, $formattedPitch, $formattedRoll); }"
             runOnUiThread {
-                webView.evaluateJavascript(
-                    "window.app && window.app.onNativeCompassUpdate($formattedDeg, $accuracy, $formattedPitch, $formattedRoll);",
-                    null
-                )
+                webView.evaluateJavascript(jsCmd, null)
             }
         }
     }

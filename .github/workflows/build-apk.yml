@@ -57,27 +57,29 @@ jobs:
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.08' }}
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.09' }}
           files: build-output/*.apk
-          name: "Tam Vakti ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.08' }}"
+          name: "Tam Vakti ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.09' }}"
           draft: false
           prerelease: false
           generate_release_notes: true
           body: |
-            ## 🧭 Tam Vakti v1.00.08 - Yenilenen Canlı Donanım Pusulası & Harita ile Kıble
+            ## 🎨 Tam Vakti v1.00.09 - Orijinal Yeşil Logo, Siyah-Beyaz Bildirim İkonu & Gelişmiş Donanım Pusulası
 
-            - **Sürüm:** `${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.08' }}`
+            - **Sürüm:** `${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.09' }}`
             - **Paket Adı:** `com.tamvakti.app`
             
-            ### 📝 Yenilikler ve Değişiklikler (v1.00.08)
-            - 🧭 **Android Native Donanım Sensörü (SensorManager):** WebView'ın tutarsız çalışan sensörü yerine Android'in kalibreli `Rotation Vector` donanım füzyon sensörü entegre edildi.
-            - 📍 **Gerçek Coğrafi Kuzey (True North Declination):** `GeomagneticField` ile kullanıcının GPS konumuna göre manyetik sapma açısı otomatik düzeltilerek %100 coğrafi kıble açısı hesaplanır.
-            - 🟢 **Dairesel EMA Titreşim Filtresi:** İbrenin titremesini ve 360° sıçramalarını engelleyen yumuşak süzgeç eklendi.
-            - 🎯 **Akıllı Kılavuz Rozeti:** Ekranda dinamik `→ 35° Sağa dön`, `← 15° Sola dön` ve tam hedefe ulaşıldığında `✓ KIBLE YÖNÜNDESİN` rozeti ve titreşimli geri bildirim.
-            - ⚖️ **Dijital Su Terazisi (Bubble Level):** Kadranın merkezinde telefonun düz tutulup tutulmadığını gösteren canlı su terazisi balonu.
-            - ☀️ **Canlı Güneş İbresi & Kıble Saati:** Kadran üzerinde anlık güneş yönü ikonu ve Diyanet klasik Kıble Saati ("Güneşe baktığınız an Kâbe yönündesiniz") bilgi kartı.
-            - 🗺️ **Harita / Sokak Yönü (Pusulasız Kesin Çözüm):** Manyetik bozulmalardan hiç etkilenmeyen; evinizi, balkonunuzu ve sokağınızı harita üzerinde görerek Kâbe'ye uzanan yeşil hattı takip edebileceğiniz interaktif harita modu eklendi.
+            ### 📝 Yenilikler ve Değişiklikler (v1.00.09)
+            - 🟢 **Orijinal Yeşil Uygulama Logosu:** Cihaz ana ekranı ve uygulama çekmecesi için orijinal su yeşili logo paketi entegre edildi.
+            - ⚪ **Siyah-Beyaz / Beyaz Bildirim Simgesi:** Android durum çubuğu ve bildirim gölgesi için temiz, net, şeffaf arka planlı monokrom bildirim simgesi eklendi.
+            - 🧭 **Android Native Donanım Sensörü (SensorManager):** WebView yerine donanımsal `Rotation Vector`, `Accelerometer` ve `Magnetometer` sensör füzyonu entegre edildi.
+            - 📍 **Gerçek Coğrafi Kuzey (True North Declination):** `GeomagneticField` ile kullanıcının GPS koordinatlarına göre manyetik sapma açısı düzeltildi.
+            - 🟢 **Dairesel EMA Titreşim Filtresi:** İbrenin titremesini ve 360° sıçramalarını önleyen süzgeç.
+            - 🎯 **Dinamik Kılavuz Rozeti:** Dönüş yönü (`→ XX° Sağa dön`, `✓ KIBLE YÖNÜNDESİN`) ve titreşimli geri bildirim.
+            - ⚖️ **Dijital Su Terazisi (Bubble Level):** Kadran merkezinde canlı su terazisi balonu.
+            - ☀️ **Canlı Güneş İbresi & Diyanet Kıble Saati:** Kadran üzerinde anlık güneş yönü ve Diyanet klasik Kıble Saati bilgisi.
+            - 🗺️ **Harita / Sokak Yönü (Offline Leaflet):** Manyetik bozulmalardan etkilenmeyen sokak ve bina bazlı Kâbe istikameti haritası.
             
             ### 📱 Kurulum
-            Aşağıdaki `TamVakti-v1.00.08.apk` veya `TamVakti.apk` dosyasını indirip doğrudan cihazınıza kurabilirsiniz.
+            Aşağıdaki `TamVakti-v1.00.09.apk` veya `TamVakti.apk` dosyasını indirip doğrudan cihazınıza kurabilirsiniz.
 

@@ -5,7 +5,8 @@
  */
 
 class QiblaCompass {
-  constructor() {
+  constructor(engine) {
+    this.engine = engine || (window.app ? window.app.engine : null);
     this.dialEl = document.getElementById("compassDial");
     this.needleEl = document.getElementById("qiblaNeedle");
     this.angleEl = document.getElementById("qiblaAngleBig");
@@ -40,9 +41,10 @@ class QiblaCompass {
   }
 
   updateSunPosition() {
-    if (window.app && window.app.engine) {
+    const eng = this.engine || (window.app ? window.app.engine : null);
+    if (eng) {
       const now = new Date();
-      const sun = window.app.engine.getSunPositionNow(now, this.userLat, this.userLon);
+      const sun = eng.getSunPositionNow(now, this.userLat, this.userLon);
       this.sunAzimuth = sun.azimuth;
 
       if (this.sunIndicatorEl) {
@@ -56,7 +58,7 @@ class QiblaCompass {
       }
 
       if (this.qiblaHourEl) {
-        const qHour = window.app.engine.calculateQiblaHour(now, this.userLat, this.userLon, this.targetQiblaAngle);
+        const qHour = eng.calculateQiblaHour(now, this.userLat, this.userLon, this.targetQiblaAngle);
         if (qHour) {
           this.qiblaHourEl.textContent = qHour;
         }

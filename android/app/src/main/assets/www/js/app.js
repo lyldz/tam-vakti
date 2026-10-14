@@ -80,6 +80,11 @@ const PRAYER_DETAILS = {
 
 class TamVaktiApp {
   constructor() {
+    window.app = this;
+    window.onNativeCompassUpdate = (heading, accuracy, pitch, roll) => {
+      this.onNativeCompassUpdate(heading, accuracy, pitch, roll);
+    };
+
     this.engine = new PrayerEngine();
     this.compass = null;
 
@@ -94,7 +99,7 @@ class TamVaktiApp {
     this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
 
     // Otomatik Güncelleme Sistemi (GitHub Releases)
-    this.currentVersion = "v1.00.08";
+    this.currentVersion = "v1.00.09";
     this.updateInfo = null;
     this.isDownloadingUpdate = false;
 
@@ -175,7 +180,7 @@ class TamVaktiApp {
 
   async init() {
     this.renderCitySelector();
-    this.compass = new QiblaCompass();
+    this.compass = new QiblaCompass(this.engine);
 
     // Modal açıldığında toggle durumunu senkronize et
     const notifCheckbox = document.getElementById("ongoingNotifToggle");
@@ -949,4 +954,5 @@ class TamVaktiApp {
 let app = null;
 window.addEventListener("DOMContentLoaded", () => {
   app = new TamVaktiApp();
+  window.app = app;
 });
