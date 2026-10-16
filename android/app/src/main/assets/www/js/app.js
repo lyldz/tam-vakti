@@ -99,7 +99,7 @@ class TamVaktiApp {
     this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
 
     // Otomatik Güncelleme Sistemi (GitHub Releases)
-    this.currentVersion = "v1.00.10";
+    this.currentVersion = "v1.01";
     this.updateInfo = null;
     this.isDownloadingUpdate = false;
 
@@ -110,11 +110,7 @@ class TamVaktiApp {
     this.qiblaMapUserMarker = null;
     this.qiblaMapKaabaMarker = null;
 
-    // Easter Egg (7 Dokunuş Sayacı)
-    this.easterEggRemaining = 7;
-    this.easterEggResetTimeout = null;
-    this.easterEggModalTimeout = null;
-    this.countdownFadeTimeout = null;
+    this.isFriday = false;
 
     this.init();
   }
@@ -261,6 +257,7 @@ class TamVaktiApp {
     const monthName = months[now.getMonth()];
     const yearNum = now.getFullYear();
     const dayName = days[now.getDay()];
+    this.isFriday = (now.getDay() === 5);
 
     const mainEl = document.getElementById("miladiDateMain");
     if (mainEl) mainEl.textContent = `${dayNum} ${monthName} ${yearNum}`;
@@ -299,18 +296,30 @@ class TamVaktiApp {
 
     container.innerHTML = PRAYER_LIST.map((item, idx) => {
       const timeVal = this.currentTimes[item.key] || "--:--";
-      const isCurrent = item.key === this.activePrayerKey;
-      const isNext = idx === nextIdx;
-      const isPast = currentIdx >= 0 ? idx < currentIdx : false;
+      const isNext = (idx === nextIdx);
+      
+      // Geçmiş vakit: Sıradaki vakitten öncekiler tamamen soluklaştırılır (Güneş de dahil)
+      let isPast = false;
+      if (nextIdx === 0) {
+        // Eğer sıradaki yarınki İmsak ise, bugünün tüm vakitleri geçmiştir
+        isPast = (idx !== 0);
+      } else {
+        isPast = (idx < nextIdx);
+      }
+
       const isSoundOn = this.soundSettings[item.key];
 
       let cardClass = "prayer-card-item";
-      if (isCurrent) {
-        cardClass += " current";
-      } else if (isNext) {
+      if (isNext) {
         cardClass += " next";
       } else if (isPast) {
         cardClass += " past";
+      }
+
+      // Cuma günleri Öğle vaktinin adı "Cuma (Öğle)" olarak gösterilir
+      let displayName = item.name;
+      if (item.key === "ogle" && this.isFriday) {
+        displayName = "Cuma (Öğle)";
       }
 
       // Net ve kontrastlı ses ikonu
@@ -321,23 +330,24 @@ class TamVaktiApp {
       return `
         <div onclick="app.showPrayerDetail('${item.key}')" class="${cardClass}">
           
-          <!-- Sol Kısım: Vektör İkon + Vakit Adı + (Şimdi Rozeti) -->
+          <!-- Sol Kısım: Vektör İkon + Vakit Adı + Sıradaki Rozeti -->
           <div class="card-left-part">
             <div class="card-icon-box">
-              <img src="${item.iconSvg}" alt="${item.name}" class="drop-shadow-xs">
+              <img src="${item.iconSvg}" alt="${displayName}" class="drop-shadow-xs">
             </div>
             <div class="card-title-group">
-              <span class="card-row-name">${item.name}</span>
-              ${isCurrent ? `<span class="now-pill">Şimdi</span>` : ''}
+              <span class="card-row-name">${displayName}</span>
+              ${isNext ? `<span class="next-pill">Sıradaki</span>` : ''}
             </div>
           </div>
 
-          <!-- Sağ Kısım: Tabular Saat + Net Ses Butonu -->
-          <div class="card-right-part">
+          <!-- Sağ Kısım: Tabular Saat + Erken Hatırlatma (-15dk) + Net Ses Butonu -->
+          <div class="card-right-part flex items-center gap-2">
             <span class="card-row-time">${timeVal}</span>
+            ${isSoundOn ? `<span class="early-reminder-pill">-15dk</span>` : ''}
             <button onclick="app.toggleSound('${item.key}', event)" 
                     class="card-sound-btn"
-                    title="${isSoundOn ? 'Ses Açık' : 'Sessiz'}">
+                    title="${isSoundOn ? '15 Dk Önce Hatırlatıcı Açık' : 'Sessiz'}">
               ${soundSvg}
             </button>
           </div>
@@ -383,6 +393,14 @@ class TamVaktiApp {
     const d = new Date(baseDate);
     d.setHours(h, m, 0, 0);
     return d;
+  }
+
+  getKerahatTime(targetDate, minusMinutes = 45) {
+    if (!targetDate) return "--:--";
+    const kerahatDate = new Date(targetDate.getTime() - minusMinutes * 60 * 1000);
+    const kh = String(kerahatDate.getHours()).padStart(2, '0');
+    const km = String(kerahatDate.getMinutes()).padStart(2, '0');
+    return `${kh}:${km}`;
   }
 
   evaluateCurrentPrayer() {
@@ -485,8 +503,41 @@ class TamVaktiApp {
     }
 
     const endLbl = document.getElementById("progressEndLabel");
-    if (endLbl) {
-      endLbl.textContent = `${current.nextName} ${current.nextTimeStr}`;
+    const kStartZone = document.getElementById("kerahatStartZone");
+    const kEndZone = document.getElementById("kerahatEndZone");
+
+    if (current.key === "gunes") {
+      const kerahatStr = this.getKerahatTime(tOgle, 45);
+      if (endLbl) {
+        endLbl.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-amber-500 mr-0.5"></span> Kerahat: ${kerahatStr}`;
+      }
+      if (kStartZone) {
+        const startPct = Math.min(25, Math.max(8, (45 * 60 * 1000 / totalDuration) * 100));
+        kStartZone.style.width = `${startPct.toFixed(1)}%`;
+        kStartZone.classList.remove("hidden");
+      }
+      if (kEndZone) {
+        const endPct = Math.min(25, Math.max(8, (45 * 60 * 1000 / totalDuration) * 100));
+        kEndZone.style.width = `${endPct.toFixed(1)}%`;
+        kEndZone.classList.remove("hidden");
+      }
+    } else if (current.key === "ikindi") {
+      const kerahatStr = this.getKerahatTime(tAksam, 45);
+      if (endLbl) {
+        endLbl.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-amber-500 mr-0.5"></span> Kerahat: ${kerahatStr}`;
+      }
+      if (kStartZone) kStartZone.classList.add("hidden");
+      if (kEndZone) {
+        const endPct = Math.min(25, Math.max(8, (45 * 60 * 1000 / totalDuration) * 100));
+        kEndZone.style.width = `${endPct.toFixed(1)}%`;
+        kEndZone.classList.remove("hidden");
+      }
+    } else {
+      if (endLbl) {
+        endLbl.textContent = `${current.nextName} ${current.nextTimeStr}`;
+      }
+      if (kStartZone) kStartZone.classList.add("hidden");
+      if (kEndZone) kEndZone.classList.add("hidden");
     }
 
     // 3. Android Durum Çubuğu Sabit Bildirimini Güncelle
@@ -956,95 +1007,7 @@ class TamVaktiApp {
     } catch (e) {}
   }
 
-  // ==========================================
-  // EASTER EGG: 7 Dokunuş Sayacı & Hayırlı Cumalar
-  // ==========================================
-  onTitleClick() {
-    this.easterEggRemaining--;
 
-    // Dokunma titreşimi
-    if (window.AndroidBridge && window.AndroidBridge.vibrateClick) {
-      window.AndroidBridge.vibrateClick();
-    } else if (navigator.vibrate) {
-      navigator.vibrate(30);
-    }
-
-    if (this.easterEggRemaining > 0) {
-      // 6, 5, 4, 3, 2, 1 sayısını göster
-      this.showEasterEggCountdown(this.easterEggRemaining);
-
-      // 4 saniye basılmazsa sayacı tekrar 7'ye sıfırla
-      if (this.easterEggResetTimeout) clearTimeout(this.easterEggResetTimeout);
-      this.easterEggResetTimeout = setTimeout(() => {
-        this.easterEggRemaining = 7;
-        this.hideEasterEggCountdown();
-      }, 4000);
-    } else {
-      // 0'a ulaşıldı: Hayırlı Cumalar Aşko penceresini aç!
-      this.hideEasterEggCountdown();
-      this.openEasterEgg();
-      this.easterEggRemaining = 7;
-    }
-  }
-
-  showEasterEggCountdown(num) {
-    const el = document.getElementById("easterEggCountdown");
-    const numEl = document.getElementById("easterEggNumber");
-    if (!el || !numEl) return;
-
-    numEl.textContent = num;
-    el.classList.remove("opacity-0", "scale-50", "pointer-events-none");
-    el.classList.add("opacity-100", "scale-100");
-
-    if (this.countdownFadeTimeout) clearTimeout(this.countdownFadeTimeout);
-    this.countdownFadeTimeout = setTimeout(() => {
-      this.hideEasterEggCountdown();
-    }, 850);
-  }
-
-  hideEasterEggCountdown() {
-    const el = document.getElementById("easterEggCountdown");
-    if (el) {
-      el.classList.remove("opacity-100", "scale-100");
-      el.classList.add("opacity-0", "scale-50", "pointer-events-none");
-    }
-  }
-
-  openEasterEgg() {
-    const modal = document.getElementById("easterEggModal");
-    if (!modal) return;
-
-    modal.classList.remove("opacity-0", "pointer-events-none", "scale-95");
-    modal.classList.add("opacity-100", "pointer-events-auto", "scale-100");
-
-    // İki kısa kutlama titreşimi
-    if (window.AndroidBridge && window.AndroidBridge.vibrateClick) {
-      window.AndroidBridge.vibrateClick();
-      setTimeout(() => {
-        if (window.AndroidBridge && window.AndroidBridge.vibrateClick) {
-          window.AndroidBridge.vibrateClick();
-        }
-      }, 150);
-    }
-
-    // 4 saniye sonra otomatik kaybolsun
-    if (this.easterEggModalTimeout) clearTimeout(this.easterEggModalTimeout);
-    this.easterEggModalTimeout = setTimeout(() => {
-      this.closeEasterEgg();
-    }, 4000);
-  }
-
-  closeEasterEgg() {
-    const modal = document.getElementById("easterEggModal");
-    if (modal) {
-      modal.classList.remove("opacity-100", "pointer-events-auto", "scale-100");
-      modal.classList.add("opacity-0", "pointer-events-none", "scale-95");
-    }
-    if (this.easterEggModalTimeout) {
-      clearTimeout(this.easterEggModalTimeout);
-      this.easterEggModalTimeout = null;
-    }
-  }
 }
 
 let app = null;

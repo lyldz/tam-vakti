@@ -57,31 +57,25 @@ jobs:
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.10' }}
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.01' }}
           files: build-output/*.apk
-          name: "Tam Vakti ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.10' }}"
+          name: "Tam Vakti ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.01' }}"
           draft: false
           prerelease: false
           generate_release_notes: true
           body: |
-            ## 🌟 Tam Vakti v1.00.10 - Ortalanmış Başlık, Özel Hayırlı Cumalar Sürprizi & Yeni İkon Paketi
+            ## 🌟 Tam Vakti v1.01 - Sadeleşmiş Üst Bar, Kerahat Göstergesi, Tek Odaklı Vakit & Bütünleşik Alt Bar
 
-            - **Sürüm:** `${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.00.10' }}`
+            - **Sürüm:** `${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.01' }}`
             - **Paket Adı:** `com.tamvakti.app`
             
-            ### 📝 Yenilikler ve Değişiklikler (v1.00.10)
-            - 🎯 **Ortalanmış Tam Vakti Başlığı:** Üst bardaki ikon kaldırılarak "Tam Vakti" başlığı tam ortaya şık ve dengeli bir rozet olarak hizalandı.
-            - 🌹 **Özel Hayırlı Cumalar Sürprizi (Easter Egg):** "Tam Vakti" başlığına her dokunulduğunda ekranın ortasında 7'den geriye sayım rozeti (6, 5, 4, 3, 2, 1) belirir; 7. dokunuşta "Hayırlı Cumalar Aşko" görseli tam ekran açılır ve 4 saniye sonra otomatik olarak kaybolur.
-            - 🟢 **Orijinal Yeşil Uygulama Logosu:** Cihaz ana ekranı ve uygulama çekmecesi için orijinal su yeşili logo paketi entegre edildi.
-            - ⚪ **Siyah-Beyaz / Beyaz Bildirim Simgesi:** Android durum çubuğu ve bildirim gölgesi için temiz, net, şeffaf arka planlı monokrom bildirim simgesi eklendi.
-            - 🧭 **Android Native Donanım Sensörü (SensorManager):** Donanımsal `Rotation Vector`, `Accelerometer` ve `Magnetometer` sensör füzyonu, manyetik sapma düzeltmesi ve harita modu.
-            - 📍 **Gerçek Coğrafi Kuzey (True North Declination):** `GeomagneticField` ile kullanıcının GPS koordinatlarına göre manyetik sapma açısı düzeltildi.
-            - 🟢 **Dairesel EMA Titreşim Filtresi:** İbrenin titremesini ve 360° sıçramalarını önleyen süzgeç.
-            - 🎯 **Dinamik Kılavuz Rozeti:** Dönüş yönü (`→ XX° Sağa dön`, `✓ KIBLE YÖNÜNDESİN`) ve titreşimli geri bildirim.
-            - ⚖️ **Dijital Su Terazisi (Bubble Level):** Kadran merkezinde canlı su terazisi balonu.
-            - ☀️ **Canlı Güneş İbresi & Diyanet Kıble Saati:** Kadran üzerinde anlık güneş yönü ve Diyanet klasik Kıble Saati bilgisi.
-            - 🗺️ **Harita / Sokak Yönü (Offline Leaflet):** Manyetik bozulmalardan etkilenmeyen sokak ve bina bazlı Kâbe istikameti haritası.
+            ### 📝 Yenilikler ve Değişiklikler (v1.01)
+            - 🌿 **Üst Bar Sadeleşmesi:** Ortadaki "Tam Vakti" butonu kaldırılarak üst alan ferahlatıldı; sağdaki tarih alanına takvim ikonu ve gün geçiş oku (>) eklendi.
+            - 🟠 **Kerahat Vakti Göstergesi:** İlerleme çubuğunun başına ve sonuna kehribar rengi kerahat dilimleri eklendi, sağ alttaki mükerrer vakit yazısı yerine anlık kehribar rozetli "Kerahat: 11:58" bilgisi yerleştirildi.
+            - 🎯 **Tek Odaklı Vakit Vurgusu:** Geçmiş olan Güneş satırı da İmsak gibi soluklaştırıldı; tüm odak "Cuma (Öğle)" ve "Sıradaki" etiketiyle tek bir satırda toplandı.
+            - 🔔 **Erken Hatırlatma Rozeti:** Hoparlör ikonunun yanına vakitten önce bildirim verileceğini gösteren küçük bir `-15dk` rozeti eklendi.
+            - 🎛️ **Bütünleşik Alt Bar:** Sol altta tek başına duran çark ikonu kaldırılarak `Vakitler | Kıble | Ayarlar ⚙️` şeklinde tek bir kapsül menüde birleştirildi.
             
             ### 📱 Kurulum
-            Aşağıdaki `TamVakti-v1.00.09.apk` veya `TamVakti.apk` dosyasını indirip doğrudan cihazınıza kurabilirsiniz.
+            Aşağıdaki `TamVakti-v1.01.apk` veya `TamVakti.apk` dosyasını indirip doğrudan cihazınıza kurabilirsiniz.
 
