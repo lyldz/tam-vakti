@@ -344,7 +344,7 @@ class TamVaktiApp {
           <!-- Sağ Kısım: Tabular Saat + Erken Hatırlatma (-15dk) + Net Ses Butonu -->
           <div class="card-right-part flex items-center gap-2">
             <span class="card-row-time">${timeVal}</span>
-            ${isSoundOn ? `<span class="early-reminder-pill">-15dk</span>` : ''}
+            ${(isNext && isSoundOn) ? `<span class="early-reminder-pill">-15dk</span>` : ''}
             <button onclick="app.toggleSound('${item.key}', event)" 
                     class="card-sound-btn"
                     title="${isSoundOn ? '15 Dk Önce Hatırlatıcı Açık' : 'Sessiz'}">
