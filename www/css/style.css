@@ -588,3 +588,10 @@ html, body {
   }
 }
 
+/* In-App Toast Bildirimi */
+#appToast.toast-visible {
+  opacity: 1 !important;
+  transform: translate(-50%, 0) !important;
+  pointer-events: auto !important;
+}
+

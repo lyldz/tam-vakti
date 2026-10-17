@@ -99,7 +99,7 @@ class TamVaktiApp {
     this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
 
     // Otomatik Güncelleme Sistemi (GitHub Releases)
-    this.currentVersion = "v1.01";
+    this.currentVersion = "v1.02";
     this.updateInfo = null;
     this.isDownloadingUpdate = false;
 
@@ -743,13 +743,13 @@ class TamVaktiApp {
           if (btn) btn.textContent = "GPS ile Otomatik Bul";
         },
         (err) => {
-          alert("GPS konumu alınamadı. Lütfen listeden şehir seçiniz.");
+          this.showToast("GPS konumu alınamadı. Lütfen listeden şehir seçiniz.", "⚠️");
           if (btn) btn.textContent = "GPS ile Otomatik Bul";
         },
         { enableHighAccuracy: true, timeout: 8000 }
       );
     } else {
-      alert("GPS desteği bulunamadı.");
+      this.showToast("GPS desteği bulunamadı.", "⚠️");
       if (btn) btn.textContent = "GPS ile Otomatik Bul";
     }
   }
@@ -780,7 +780,7 @@ class TamVaktiApp {
     if (window.AndroidBridge && window.AndroidBridge.openBatteryOptimizationSettings) {
       window.AndroidBridge.openBatteryOptimizationSettings();
     } else {
-      alert("Android pil optimizasyon ayarlarına yönlendiriliyor.");
+      this.showToast("Android pil optimizasyon ayarlarına yönlendiriliyor...", "⚙️");
     }
   }
 
@@ -788,7 +788,7 @@ class TamVaktiApp {
     if (window.AndroidBridge && window.AndroidBridge.openExactAlarmSettings) {
       window.AndroidBridge.openExactAlarmSettings();
     } else {
-      alert("Tam zamanlı alarm izni sistemde etkindir.");
+      this.showToast("Tam zamanlı alarm izni sistemde etkindir.", "✓");
     }
   }
 
@@ -808,11 +808,11 @@ class TamVaktiApp {
     } else if (navigator.vibrate) {
       navigator.vibrate(200);
     }
-    alert("🔔 Test bildirimi ve ezan sesi gönderildi!");
+    this.showToast("Test bildirimi ve ezan sesi gönderildi!", "🔔");
   }
 
   openPrayerModesModal() {
-    alert("Vakit başına bildirim modu: Her vaktin yanındaki ses/titreşim simgesine dokunarak Ezan, Bip veya Sessiz modunu kolayca değiştirebilirsiniz.");
+    this.showToast("Vakit modunu değiştirmek için ana ekrandaki ses simgesine dokunabilirsiniz.", "💡", 4000);
   }
 
   cycleReminderMinutes() {
@@ -857,6 +857,97 @@ class TamVaktiApp {
     return 0;
   }
 
+  showToast(msg, icon = "✓", duration = 3000) {
+    const toast = document.getElementById("appToast");
+    const msgEl = document.getElementById("toastMsg");
+    const iconEl = document.getElementById("toastIcon");
+    if (!toast || !msgEl) return;
+
+    msgEl.textContent = msg;
+    if (iconEl) iconEl.textContent = icon;
+
+    toast.classList.add("toast-visible");
+
+    if (this._toastTimeout) clearTimeout(this._toastTimeout);
+    this._toastTimeout = setTimeout(() => {
+      toast.classList.remove("toast-visible");
+    }, duration);
+  }
+
+  formatChangelog(rawText) {
+    if (!rawText) return "<div class='text-slate-500 py-1'>Yeni özellikler ve performans iyileştirmeleri.</div>";
+
+    const lines = rawText.split("\n");
+    const bulletItems = [];
+
+    for (let line of lines) {
+      let trimmed = line.trim();
+      if (!trimmed) continue;
+      if (trimmed.startsWith("#") || trimmed.startsWith("- **Sürüm:**") || trimmed.startsWith("- **Paket Adı:**")) {
+        continue;
+      }
+      if (trimmed.includes("Kurulum") || trimmed.includes("TamVakti") || trimmed.includes(".apk")) {
+        continue;
+      }
+      if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+        let content = trimmed.substring(2).trim();
+        content = content.replace(/\*\*(.*?)\*\*/g, "<strong class='text-emerald-950 font-bold'>$1</strong>");
+        bulletItems.push(content);
+      } else if (trimmed.length > 5 && !trimmed.startsWith("```")) {
+        let content = trimmed.replace(/\*\*(.*?)\*\*/g, "<strong class='text-emerald-950 font-bold'>$1</strong>");
+        bulletItems.push(content);
+      }
+    }
+
+    if (bulletItems.length === 0) {
+      return `<div class="p-1 text-slate-700">${rawText.replace(/\n/g, "<br>")}</div>`;
+    }
+
+    return bulletItems.map(item => `
+      <div class="flex items-start gap-2 py-1.5 border-b border-emerald-900/5 last:border-0">
+        <span class="text-emerald-600 text-sm leading-none mt-0.5">•</span>
+        <div class="text-[11.5px] text-slate-700 leading-snug">${item}</div>
+      </div>
+    `).join("");
+  }
+
+  openUpdateFoundModal() {
+    if (!this.updateInfo) return;
+    const modal = document.getElementById("updateFoundModal");
+    const tagEl = document.getElementById("updateModalNewTag");
+    const notesEl = document.getElementById("updateModalChangelog");
+    const progressArea = document.getElementById("modalUpdateProgressArea");
+    const btn = document.getElementById("modalBtnStartUpdate");
+
+    if (tagEl) tagEl.textContent = this.updateInfo.version;
+    if (notesEl) notesEl.innerHTML = this.formatChangelog(this.updateInfo.body);
+    if (progressArea) progressArea.classList.add("hidden");
+    if (btn) {
+      btn.classList.remove("opacity-50", "pointer-events-none");
+      btn.innerHTML = `<span>⚡</span><span>Şimdi Güncelle</span>`;
+    }
+
+    if (modal) {
+      modal.classList.remove("hidden");
+    }
+  }
+
+  closeUpdateFoundModal() {
+    const modal = document.getElementById("updateFoundModal");
+    if (modal) modal.classList.add("hidden");
+  }
+
+  startUpdateDownloadFromModal() {
+    const progressArea = document.getElementById("modalUpdateProgressArea");
+    const btn = document.getElementById("modalBtnStartUpdate");
+    if (progressArea) progressArea.classList.remove("hidden");
+    if (btn) {
+      btn.classList.add("opacity-50", "pointer-events-none");
+      btn.innerHTML = `<span>⏳</span><span>İndirme Başlatılıyor...</span>`;
+    }
+    this.startUpdateDownload();
+  }
+
   async checkForUpdates(silent = true) {
     const statusEl = document.getElementById("updateCheckStatus");
     const badgeDot = document.getElementById("updateBadgeDot");
@@ -895,9 +986,8 @@ class TamVaktiApp {
         if (statusEl) statusEl.textContent = `🚀 Yeni: ${latestTag}`;
         this.renderUpdateCard();
 
-        if (!silent) {
-          alert(`Yeni sürüm mevcut (${latestTag})! Hakkında penceresinden tek dokunuşla indirebilirsiniz.`);
-        }
+        // Otomatik olarak yeni güncelleme ekranını ve değişiklik listesini aç!
+        this.openUpdateFoundModal();
       } else {
         // Güncel
         this.updateInfo = null;
@@ -906,14 +996,14 @@ class TamVaktiApp {
         this.renderUpdateCard();
 
         if (!silent) {
-          alert("Uygulamanız zaten en güncel sürümde (" + this.currentVersion + ").");
+          this.showToast("Uygulamanız zaten en güncel sürümde (" + this.currentVersion + ").", "✓");
         }
       }
     } catch (e) {
       console.warn("Update check failed:", e);
       if (statusEl) statusEl.textContent = "Denetlenemedi";
       if (!silent) {
-        alert("Güncelleme kontrolü yapılamadı: " + (e.message || "İnternet bağlantınızı kontrol ediniz."));
+        this.showToast("Güncelleme kontrolü yapılamadı. İnternet bağlantınızı kontrol ediniz.", "⚠️");
       }
     }
   }
@@ -969,11 +1059,20 @@ class TamVaktiApp {
     const status = document.getElementById("updateProgressStatus");
     const btn = document.getElementById("btnStartUpdate");
 
-    if (bar) bar.style.width = `${percent}%`;
-    if (status) status.textContent = statusText || `İndiriliyor... %${percent}`;
+    const modalBar = document.getElementById("modalUpdateProgressBar");
+    const modalStatus = document.getElementById("modalUpdateProgressStatus");
+    const modalBtn = document.getElementById("modalBtnStartUpdate");
 
-    if (percent >= 100 && btn) {
-      btn.innerHTML = `<span>📦</span><span>Paket Yükleyici Başlatılıyor...</span>`;
+    const txt = statusText || `İndiriliyor... %${percent}`;
+    if (bar) bar.style.width = `${percent}%`;
+    if (status) status.textContent = txt;
+    if (modalBar) modalBar.style.width = `${percent}%`;
+    if (modalStatus) modalStatus.textContent = txt;
+
+    if (percent >= 100) {
+      const finishText = `<span>📦</span><span>Paket Yükleyici Başlatılıyor...</span>`;
+      if (btn) btn.innerHTML = finishText;
+      if (modalBtn) modalBtn.innerHTML = finishText;
     }
   }
 
@@ -981,13 +1080,22 @@ class TamVaktiApp {
     this.isDownloadingUpdate = false;
     const progressArea = document.getElementById("updateProgressArea");
     const btn = document.getElementById("btnStartUpdate");
+    const modalProgressArea = document.getElementById("modalUpdateProgressArea");
+    const modalBtn = document.getElementById("modalBtnStartUpdate");
 
     if (progressArea) progressArea.classList.add("hidden");
+    if (modalProgressArea) modalProgressArea.classList.add("hidden");
+
     if (btn) {
       btn.classList.remove("opacity-50", "pointer-events-none");
       btn.innerHTML = `<span>🔄</span><span>Tekrar Dene</span>`;
     }
-    alert("İndirme sırasında hata oluştu: " + errorMsg);
+    if (modalBtn) {
+      modalBtn.classList.remove("opacity-50", "pointer-events-none");
+      modalBtn.innerHTML = `<span>⚡</span><span>Şimdi Güncelle</span>`;
+    }
+
+    this.showToast("İndirme sırasında hata oluştu: " + errorMsg, "⚠️", 4000);
   }
 
   playAlertTone() {

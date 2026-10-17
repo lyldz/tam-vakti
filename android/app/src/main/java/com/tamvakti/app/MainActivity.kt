@@ -15,7 +15,9 @@ import android.os.Bundle
 import android.provider.Settings
 import android.webkit.GeolocationPermissions
 import android.webkit.JavascriptInterface
+import android.webkit.JsResult
 import android.webkit.WebChromeClient
+import androidx.appcompat.app.AlertDialog
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -110,6 +112,22 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                         LOCATION_PERMISSION_REQUEST
                     )
                 }
+            }
+
+            override fun onJsAlert(
+                view: WebView?,
+                url: String?,
+                message: String?,
+                result: JsResult?
+            ): Boolean {
+                AlertDialog.Builder(this@MainActivity)
+                    .setTitle("Tam Vakti")
+                    .setMessage(message ?: "")
+                    .setPositiveButton("Tamam") { _, _ -> result?.confirm() }
+                    .setOnCancelListener { result?.cancel() }
+                    .create()
+                    .show()
+                return true
             }
         }
 
