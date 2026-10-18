@@ -595,3 +595,286 @@ html, body {
   pointer-events: auto !important;
 }
 
+/* =========================================================
+   KOYU TEMA (DARK MODE) - GECE & ADAÇAYI ZÜMRÜT PALETİ
+   ========================================================= */
+
+html.dark {
+  --bg-sage: #0b1411;
+  --text-dark: #ecfdf5;
+  --text-muted: #8faea0;
+  --card-bg: #14241d;
+  --accent-green: #10b981;
+  --active-blue: #60a5fa;
+  --border-subtle: rgba(52, 211, 153, 0.15);
+  color-scheme: dark;
+}
+
+html.dark,
+html.dark body {
+  background-color: #0b1411 !important;
+  color: #ecfdf5 !important;
+}
+
+/* Sayfa ve Arka Plan */
+html.dark .minimal-app {
+  background-color: #0b1411;
+}
+
+/* Üst Başlık (Header) */
+html.dark .location-pill {
+  background-color: #14241d !important;
+  color: #ecfdf5 !important;
+  border-color: rgba(52, 211, 153, 0.18) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+}
+html.dark .location-pill svg {
+  color: #34d399 !important;
+}
+
+html.dark .date-header-card {
+  background-color: rgba(20, 36, 29, 0.88) !important;
+  border-color: rgba(52, 211, 153, 0.18) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+}
+html.dark .date-header-card svg {
+  color: #34d399 !important;
+}
+html.dark #miladiDateMain {
+  color: #f0fdf4 !important;
+}
+html.dark #hicriDateSub {
+  color: #8faea0 !important;
+}
+
+/* Mihrap Kubbesi */
+html.dark .mihrab-frame {
+  background: rgba(16, 30, 24, 0.72) !important;
+  border: 1.5px solid rgba(52, 211, 153, 0.2) !important;
+  box-shadow: inset 0 2px 14px rgba(255, 255, 255, 0.02), 0 8px 30px rgba(0, 0, 0, 0.45) !important;
+}
+html.dark .next-vakit-label {
+  color: #6ee7b7 !important;
+}
+html.dark .big-countdown .cd-main {
+  color: #f0fdf4 !important;
+}
+html.dark .big-countdown .cd-sec {
+  color: #34d399 !important;
+}
+html.dark .prayer-progress-track {
+  background-color: #1a3328 !important;
+}
+html.dark .prayer-progress-fill {
+  background-color: #10b981 !important;
+}
+html.dark .prayer-progress-labels {
+  color: #8faea0 !important;
+}
+
+/* Vakit Kartları */
+html.dark .prayer-card-item {
+  background: #14241d !important;
+  border-color: rgba(52, 211, 153, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+}
+html.dark .prayer-card-item .card-row-name {
+  color: #e2ebe5 !important;
+}
+html.dark .prayer-card-item .card-row-time {
+  color: #93c5fd !important;
+}
+html.dark .prayer-card-item.past {
+  opacity: 0.38 !important;
+  background: #0f1c16 !important;
+}
+html.dark .prayer-card-item.next {
+  background: #1b3d2e !important;
+  border-color: #10b981 !important;
+  box-shadow: 0 4px 22px rgba(16, 185, 129, 0.28) !important;
+  opacity: 1 !important;
+}
+html.dark .prayer-card-item.next .card-row-name {
+  color: #ffffff !important;
+}
+html.dark .prayer-card-item.next .card-row-time {
+  color: #ffffff !important;
+}
+html.dark .early-reminder-pill {
+  background-color: rgba(16, 185, 129, 0.22) !important;
+  color: #6ee7b7 !important;
+}
+html.dark .next-pill {
+  background-color: #10b981 !important;
+  color: #042f1a !important;
+}
+html.dark .sound-icon-on {
+  color: #34d399 !important;
+}
+html.dark .sound-icon-off {
+  color: #64748b !important;
+}
+
+/* Bütünleşik Alt Bar */
+html.dark .unified-dock-capsule,
+html.dark .segment-container {
+  background-color: rgba(16, 30, 24, 0.94) !important;
+  border-color: rgba(52, 211, 153, 0.2) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+}
+html.dark .segment-btn {
+  color: #8faea0 !important;
+}
+html.dark .segment-btn.active {
+  background-color: #244635 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Ayarlar Ekranı (#settingsModal) */
+html.dark #settingsModal {
+  background-color: #0b1411 !important;
+}
+html.dark #settingsModal > div:first-child {
+  background-color: rgba(11, 20, 17, 0.95) !important;
+  border-color: rgba(52, 211, 153, 0.15) !important;
+}
+html.dark #settingsModal button {
+  color: #ecfdf5 !important;
+}
+html.dark #settingsModal .text-xs.font-mono.font-bold {
+  background-color: #173827 !important;
+  color: #6ee7b7 !important;
+}
+
+/* Pil Uyarısı Kutucuğu */
+html.dark #settingsModal .bg-\[\#fef3c7\] {
+  background-color: #261a09 !important;
+  border-color: #78350f !important;
+}
+html.dark #settingsModal .text-amber-950 {
+  color: #fde68a !important;
+}
+html.dark #settingsModal .bg-\[\#fde68a\] {
+  background-color: #451a03 !important;
+  color: #fde68a !important;
+}
+
+/* Grup Başlıkları ve Kartları */
+html.dark #settingsModal .text-\[\#3d695b\] {
+  color: #6ee7b7 !important;
+}
+html.dark #settingsModal .bg-white {
+  background-color: #14241d !important;
+  border-color: rgba(52, 211, 153, 0.15) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+}
+html.dark #settingsModal .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+html.dark #settingsModal .text-\[\#0f3e2e\] {
+  color: #ecfdf5 !important;
+}
+html.dark #settingsModal .text-slate-500,
+html.dark #settingsModal .text-slate-600,
+html.dark #settingsModal .text-slate-400 {
+  color: #8faea0 !important;
+}
+html.dark #settingsModal svg.text-slate-500 {
+  color: #8faea0 !important;
+}
+html.dark #settingsModal .text-emerald-700 {
+  color: #34d399 !important;
+}
+html.dark #athanPreviewBtn.bg-emerald-100 {
+  background-color: #1a3628 !important;
+  color: #6ee7b7 !important;
+}
+html.dark #athanPreviewBtn.bg-amber-100 {
+  background-color: #451a03 !important;
+  color: #fde68a !important;
+  border-color: #b45309 !important;
+}
+html.dark .w-11.h-6.bg-slate-200 {
+  background-color: #233a2e !important;
+}
+
+/* Modallar (Şehir Seçici, Hakkında, Detay, Yeni Güncelleme) */
+html.dark .modal-overlay {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+html.dark .modal-overlay .bg-white {
+  background-color: #14241d !important;
+  border: 1px solid rgba(52, 211, 153, 0.2) !important;
+  color: #ecfdf5 !important;
+}
+html.dark .modal-overlay .border-slate-100 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+html.dark .modal-overlay .text-\[\#0f3e2e\] {
+  color: #ecfdf5 !important;
+}
+html.dark .modal-overlay .text-slate-500,
+html.dark .modal-overlay .text-slate-400,
+html.dark .modal-overlay .text-slate-600 {
+  color: #8faea0 !important;
+}
+html.dark #citySearchInput {
+  background-color: #0d1813 !important;
+  border-color: rgba(52, 211, 153, 0.2) !important;
+  color: #ecfdf5 !important;
+}
+html.dark #gpsLocateBtn {
+  background-color: #1b4332 !important;
+}
+html.dark .city-item {
+  color: #ecfdf5 !important;
+}
+html.dark .city-item:hover {
+  background-color: #1e3a2c !important;
+}
+html.dark #updateNoticeCard,
+html.dark #updateModalChangelog {
+  background-color: #0e1c15 !important;
+  border-color: rgba(52, 211, 153, 0.2) !important;
+  color: #e2ebe5 !important;
+}
+html.dark #detailModalRakahs > div {
+  background-color: #0e1c15 !important;
+  border-color: rgba(52, 211, 153, 0.15) !important;
+}
+
+/* Kıble Pusulası Koyu Mod */
+html.dark .qibla-view-container {
+  background: rgba(16, 30, 24, 0.75) !important;
+  border-color: rgba(52, 211, 153, 0.2) !important;
+}
+html.dark .qibla-needle-tip {
+  border-bottom-color: #10b981 !important;
+}
+html.dark .qibla-needle-center {
+  background: #0b1411 !important;
+  border-color: #10b981 !important;
+}
+html.dark .bubble-target {
+  border-color: rgba(52, 211, 153, 0.35) !important;
+  background: rgba(11, 20, 17, 0.7) !important;
+}
+html.dark .qibla-mode-btn {
+  color: #8faea0 !important;
+}
+html.dark .qibla-mode-btn.active {
+  background: #1e3a2c !important;
+  color: #ffffff !important;
+}
+html.dark .qibla-guide-pill.guide-turn {
+  background: #271a08 !important;
+  color: #fde68a !important;
+  border-color: #78350f !important;
+}
+
+/* Yumuşak Tema Geçişleri */
+html, body, .minimal-app, .mihrab-frame, .prayer-card-item, .unified-dock-capsule, #settingsModal, .bg-white {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
+}
+

@@ -110,7 +110,7 @@ class TamVaktiApp {
     this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
 
     // Otomatik Güncelleme Sistemi (GitHub Releases)
-    this.currentVersion = "v1.03";
+    this.currentVersion = "v1.04";
     this.updateInfo = null;
     this.isDownloadingUpdate = false;
 
@@ -215,6 +215,16 @@ class TamVaktiApp {
     // Canlı Saat & Tarih Sayacı
     setInterval(() => this.tick(), 1000);
     this.tick();
+
+    // Tema Sistemini Başlat (Otomatik / Koyu / Açık)
+    this.applyTheme(this.themeMode);
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (this.themeMode === "Otomatik") {
+          this.applyTheme("Otomatik");
+        }
+      });
+    }
 
     await this.updatePrayers();
 
@@ -955,13 +965,33 @@ class TamVaktiApp {
     this.showToast("Hesaplama yöntemi: Diyanet İşleri Başkanlığı (±0 dk)", "🎛️", 3500);
   }
 
+  applyTheme(mode) {
+    let isDark = false;
+    if (mode === "Koyu") {
+      isDark = true;
+    } else if (mode === "Açık") {
+      isDark = false;
+    } else {
+      // Otomatik: Sistem renk düzenini denetle
+      isDark = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }
+
   cycleTheme() {
-    const themes = ["Otomatik", "Açık", "Koyu"];
+    const themes = ["Otomatik", "Koyu", "Açık"];
     const current = this.themeMode || "Otomatik";
     const nextIndex = (themes.indexOf(current) + 1) % themes.length;
     const nextVal = themes[nextIndex];
     this.themeMode = nextVal;
     localStorage.setItem("tamvakti_theme_mode", nextVal);
+
+    this.applyTheme(nextVal);
 
     const el = document.getElementById("settingsThemeMode");
     if (el) el.textContent = nextVal;
