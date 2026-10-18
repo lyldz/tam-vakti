@@ -251,7 +251,7 @@
 
   </div>
 
-  <!-- MODAL: Derli Toplu Ayarlar Ekranı (5 Grup Kartı) -->
+  <!-- MODAL: Derli Toplu Ayarlar Ekranı (3 Grup Kartı + Pil Uyarısı) -->
   <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-[#ebf4ee] overflow-y-auto">
     <!-- Üst Bar: Geri Dön Butonu & Başlık -->
     <div class="sticky top-0 z-10 bg-[#ebf4ee]/95 backdrop-blur-md px-4 py-3 border-b border-emerald-900/10 flex items-center justify-between">
@@ -261,174 +261,180 @@
         </svg>
         <span>Ayarlar</span>
       </button>
-      <span class="text-xs font-mono font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full">v1.02</span>
+      <span class="text-xs font-mono font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full">v1.03</span>
     </div>
 
-    <div class="max-w-md mx-auto px-4 py-4 space-y-5 pb-28">
+    <div class="max-w-md mx-auto px-4 py-3 space-y-4 pb-28">
 
-      <!-- 1. BİLDİRİM SAĞLIĞI -->
-      <div class="space-y-2">
-        <div class="text-[11px] font-black text-[#52796f] uppercase tracking-wider px-1">Bildirim Sağlığı</div>
-        <div class="bg-white rounded-3xl p-4 shadow-sm border border-emerald-900/5 space-y-3">
+      <!-- PİL KISITLAMASI UYARI BARI -->
+      <div class="bg-[#fef3c7] border border-amber-300/80 rounded-[20px] p-3 flex items-center justify-between shadow-xs">
+        <div class="flex items-center gap-2.5">
+          <span class="text-base text-amber-700">⚠️</span>
+          <span class="text-[12.5px] font-semibold text-amber-950">Pil kısıtlaması açık • Ezan gecikebilir</span>
+        </div>
+        <button onclick="app.openBatterySettings()" class="px-3.5 py-1 rounded-full bg-[#fde68a] text-amber-900 text-xs font-extrabold hover:bg-[#fcd34d] active:scale-95 transition-all cursor-pointer">
+          Düzelt
+        </button>
+      </div>
+
+      <!-- 1. KONUM VE HESAPLAMA -->
+      <div class="space-y-1.5">
+        <div class="text-[11px] font-black text-[#3d695b] uppercase tracking-wider px-1">KONUM VE HESAPLAMA</div>
+        <div class="bg-white rounded-3xl p-3.5 shadow-xs border border-emerald-900/5 divide-y divide-slate-100">
           
-          <!-- Tam zamanlı alarm izni -->
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-[#0f3e2e]">Tam zamanlı alarm izni</span>
-            <button onclick="app.requestExactAlarmSetting()" class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-extrabold cursor-pointer hover:bg-emerald-200 transition-colors">
-              Açık
-            </button>
-          </div>
-
-          <!-- Pil optimizasyonu -->
-          <div class="flex items-center justify-between pt-1 border-t border-slate-100">
-            <div>
-              <div class="text-xs font-bold text-[#0f3e2e]">Pil optimizasyonu</div>
-              <div class="text-[10px] text-slate-400 font-medium">Vaktinde ezan için kapatılmalı</div>
+          <!-- Konum -->
+          <div onclick="app.openLocationModal()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
+            <div class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              </svg>
+              <div>
+                <div class="text-xs font-bold text-[#0f3e2e]">Konum</div>
+                <div class="text-[10px] text-slate-400 font-medium" id="settingsLocationDesc">Ilgın • Otomatik</div>
+              </div>
             </div>
-            <button onclick="app.openBatterySettings()" class="px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-[11px] font-extrabold border border-amber-300 hover:bg-amber-200 transition-colors cursor-pointer flex items-center gap-1">
-              <span>Kapat</span>
-              <span class="text-[10px]">⚙️</span>
-            </button>
+            <div class="text-xs font-bold text-emerald-700 flex items-center gap-1">
+              <span>Değiştir</span>
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </div>
           </div>
 
-          <!-- Test bildirimi gönder butonu -->
-          <div class="pt-2">
-            <button onclick="app.sendTestNotification()" class="w-full py-3 px-4 bg-[#1b4332] hover:bg-[#2d6a4f] active:scale-[0.98] text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer">
-              <span class="text-base">🔔</span>
-              <span>Test bildirimi gönder</span>
-            </button>
+          <!-- Hesaplama & İhtiyat -->
+          <div onclick="app.openIhtiyatModal()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
+            <div class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+              </svg>
+              <span class="text-xs font-bold text-[#0f3e2e]">Hesaplama & İhtiyat</span>
+            </div>
+            <div class="text-xs font-semibold text-slate-500 flex items-center gap-1">
+              <span id="settingsCalcMethod">Diyanet • ±0 dk</span>
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </div>
           </div>
 
         </div>
       </div>
 
       <!-- 2. BİLDİRİM VE EZAN -->
-      <div class="space-y-2">
-        <div class="text-[11px] font-black text-[#52796f] uppercase tracking-wider px-1">Bildirim ve Ezan</div>
-        <div class="bg-white rounded-3xl p-3.5 shadow-sm border border-emerald-900/5 divide-y divide-slate-100">
+      <div class="space-y-1.5">
+        <div class="text-[11px] font-black text-[#3d695b] uppercase tracking-wider px-1">BİLDİRİM VE EZAN</div>
+        <div class="bg-white rounded-3xl p-3.5 shadow-xs border border-emerald-900/5 divide-y divide-slate-100">
           
+          <!-- Vakit Bildirimleri -->
           <div onclick="app.openPrayerModesModal()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
-            <span class="text-xs font-bold text-[#0f3e2e]">Vakit başına mod</span>
+            <div class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+              </svg>
+              <span class="text-xs font-bold text-[#0f3e2e]">Vakit Bildirimleri</span>
+            </div>
             <div class="text-xs font-semibold text-slate-500 flex items-center gap-1">
               <span>Ezan · Bip · Sessiz</span>
-              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
           </div>
 
+          <!-- Vakit Çıkmadan Hatırlat -->
           <div onclick="app.cycleReminderMinutes()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
-            <span class="text-xs font-bold text-[#0f3e2e]">Önceden hatırlat</span>
+            <div class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span class="text-xs font-bold text-[#0f3e2e]">Vakit Çıkmadan Hatırlat</span>
+            </div>
             <div class="text-xs font-semibold text-slate-500 flex items-center gap-1">
-              <span id="settingsReminderTime">15 dk</span>
-              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              <span id="settingsReminderTime">15 dk önce</span>
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
           </div>
 
+          <!-- Ezan Makamı & Dinle -->
           <div onclick="app.cycleAthanTone()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
-            <span class="text-xs font-bold text-[#0f3e2e]">Ezan sesi</span>
-            <div class="text-xs font-semibold text-slate-500 flex items-center gap-1">
-              <span id="settingsAthanTone">Hicaz</span>
-              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <div class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z"/>
+              </svg>
+              <span class="text-xs font-bold text-[#0f3e2e]">Ezan Makamı</span>
             </div>
+            <div class="flex items-center gap-2.5">
+              <span id="settingsAthanTone" class="text-xs font-semibold text-slate-600">Hicaz</span>
+              <button id="athanPreviewBtn" onclick="app.toggleAthanPreview(event)" class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-extrabold flex items-center gap-1 hover:bg-emerald-200 active:scale-95 transition-all cursor-pointer">
+                <span id="athanPreviewIcon">▶</span>
+                <span id="athanPreviewText">Dinle</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Namazda Otomatik Sessize Al -->
+          <div class="py-2.5 flex items-center justify-between px-1.5">
+            <div class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636M12 18h.01M9 3h6a2 2 0 012 2v14a2 2 0 01-2 2H9a2 2 0 01-2-2V5a2 2 0 012-2z"/>
+              </svg>
+              <span class="text-xs font-bold text-[#0f3e2e]">Namazda Otomatik Sessize Al</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="autoSilentToggle" onchange="app.toggleAutoSilent(this.checked)" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+            </label>
           </div>
 
         </div>
       </div>
 
-      <!-- 3. HESAPLAMA -->
-      <div class="space-y-2">
-        <div class="text-[11px] font-black text-[#52796f] uppercase tracking-wider px-1">Hesaplama</div>
-        <div class="bg-white rounded-3xl p-3.5 shadow-sm border border-emerald-900/5 divide-y divide-slate-100">
+      <!-- 3. GÖRÜNÜM VE DİĞER -->
+      <div class="space-y-1.5">
+        <div class="text-[11px] font-black text-[#3d695b] uppercase tracking-wider px-1">GÖRÜNÜM VE DİĞER</div>
+        <div class="bg-white rounded-3xl p-3.5 shadow-xs border border-emerald-900/5 divide-y divide-slate-100">
           
-          <div onclick="app.openLocationModal()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
-            <div>
-              <div class="text-xs font-bold text-[#0f3e2e]">Konum</div>
-              <div class="text-[10px] text-slate-400 font-medium" id="settingsLocationDesc">Ilgın • Otomatik</div>
+          <!-- Tema ve Görünüm -->
+          <div onclick="app.cycleTheme()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
+            <div class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4 4 4 0 014-4c.82 0 1.57.25 2.19.68L18 5a2.828 2.828 0 114 4l-8.68 8.81A3.978 3.978 0 019 19c-.64 0-1.25-.15-1.79-.42L7 21z"/>
+              </svg>
+              <span class="text-xs font-bold text-[#0f3e2e]">Tema ve Görünüm</span>
             </div>
-            <div class="text-xs font-bold text-emerald-700 flex items-center gap-1">
-              <span>Değiştir</span>
-              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </div>
-          </div>
-
-          <div class="py-2.5 flex items-center justify-between px-1.5">
-            <span class="text-xs font-bold text-[#0f3e2e]">Yöntem</span>
             <div class="text-xs font-semibold text-slate-500 flex items-center gap-1">
-              <span>Diyanet</span>
-              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              <span id="settingsThemeMode">Otomatik</span>
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
           </div>
 
-          <div class="py-2.5 flex items-center justify-between px-1.5">
-            <span class="text-xs font-bold text-[#0f3e2e]">Vakit ihtiyatı (± dk)</span>
+          <!-- Ana Ekran Widget'ı -->
+          <div onclick="app.showWidgetInfo()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
+            <div class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+              </svg>
+              <span class="text-xs font-bold text-[#0f3e2e]">Ana Ekran Widget'ı</span>
+            </div>
             <div class="text-xs font-semibold text-slate-500 flex items-center gap-1">
-              <span>İmsak +0 ...</span>
-              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              <span>Özelleştir</span>
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
           </div>
 
-        </div>
-      </div>
-
-      <!-- 4. GÖRÜNÜM -->
-      <div class="space-y-2">
-        <div class="text-[11px] font-black text-[#52796f] uppercase tracking-wider px-1">Görünüm</div>
-        <div class="bg-white rounded-3xl p-3.5 shadow-sm border border-emerald-900/5 divide-y divide-slate-100">
-          
-          <div class="py-2.5 flex items-center justify-between px-1.5">
-            <span class="text-xs font-bold text-[#0f3e2e]">Tema</span>
-            <div class="text-xs font-semibold text-slate-500 flex items-center gap-1">
-              <span>Otomatik</span>
-              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </div>
-          </div>
-
-          <div class="py-2.5 flex items-center justify-between px-1.5">
-            <span class="text-xs font-bold text-[#0f3e2e]">Saat biçimi</span>
-            <div class="text-xs font-semibold text-slate-500 flex items-center gap-1">
-              <span>24 saat</span>
-              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </div>
-          </div>
-
-          <div class="py-2.5 flex items-center justify-between px-1.5">
-            <span class="text-xs font-bold text-[#0f3e2e]">Widget</span>
-            <div class="text-xs font-semibold text-slate-500 flex items-center gap-1">
-              <span>Seç</span>
-              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- 5. HAKKINDA & GÜVENLİK -->
-      <div class="space-y-2">
-        <div class="text-[11px] font-black text-[#52796f] uppercase tracking-wider px-1">Hakkında</div>
-        <div class="bg-white rounded-3xl p-3.5 shadow-sm border border-emerald-900/5 divide-y divide-slate-100">
-          
+          <!-- Hakkında & Geri Bildirim -->
           <div onclick="app.openAboutModal()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
-            <div class="flex items-center gap-2">
-              <img src="assets/icons/logo.svg" alt="Logo" class="w-5 h-5 object-contain">
-              <span class="text-xs font-bold text-[#0f3e2e]">Tam Vakti & Güncellemeler</span>
+            <div class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+              <span class="text-xs font-bold text-[#0f3e2e]">Hakkında & Geri Bildirim</span>
             </div>
-            <div class="text-xs font-bold text-emerald-800 flex items-center gap-1">
-              <span class="font-mono bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded-full text-[10px]">v1.02</span>
-              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <div class="text-xs font-semibold text-slate-500 flex items-center gap-1">
+              <span>v1.03 • GitHub</span>
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
           </div>
-
-          <a href="https://github.com/lyldz/tam-vakti/issues" target="_blank" class="py-2.5 flex items-center justify-between px-1.5 hover:bg-slate-50/50 rounded-xl transition-colors">
-            <span class="text-xs font-bold text-[#0f3e2e]">Geri bildirim gönder</span>
-            <div class="text-xs font-semibold text-slate-500 flex items-center gap-1">
-              <span>GitHub</span>
-              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </div>
-          </a>
 
         </div>
 
         <!-- Güvenlik / Gizlilik Notu -->
-        <div class="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-slate-400 pt-2 text-center">
+        <div class="flex items-center justify-center gap-1.5 text-[11px] font-medium text-slate-400 pt-2 text-center">
           <span>🔒</span>
           <span>Konumun cihazında kalır, sunucuya gönderilmez.</span>
         </div>
@@ -471,7 +477,7 @@
       <!-- Sürüm Bilgisi -->
       <div class="px-3 py-2 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-semibold">
         <span>Tam Vakti</span>
-        <span class="font-mono bg-slate-200/60 px-2 py-0.5 rounded-full text-slate-600">v1.02</span>
+        <span class="font-mono bg-slate-200/60 px-2 py-0.5 rounded-full text-slate-600">v1.03</span>
       </div>
 
       <div class="p-3 overflow-y-auto flex-1 space-y-1" id="cityListContainer"></div>
@@ -488,7 +494,7 @@
           <img src="assets/icons/logo.svg" alt="Tam Vakti Logo" class="w-8 h-9 object-contain drop-shadow-xs">
           <div class="text-left">
             <h3 class="font-extrabold text-base text-[#0f3e2e]">Tam Vakti</h3>
-            <span class="inline-block text-[11px] font-mono font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">v1.02</span>
+            <span class="inline-block text-[11px] font-mono font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">v1.03</span>
           </div>
         </div>
         <button onclick="app.closeAboutModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold leading-none">&times;</button>
@@ -511,7 +517,7 @@
             <span class="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
             Yeni Güncelleme!
           </span>
-          <span id="updateNewVersionTag" class="text-[10px] font-mono font-bold bg-emerald-200/80 text-emerald-900 px-2 py-0.5 rounded-full">v1.02</span>
+          <span id="updateNewVersionTag" class="text-[10px] font-mono font-bold bg-emerald-200/80 text-emerald-900 px-2 py-0.5 rounded-full">v1.03</span>
         </div>
         <p id="updateReleaseNotes" class="text-[11px] text-slate-600 leading-snug line-clamp-3">
           Yeni sürüm hazır.
@@ -579,8 +585,8 @@
           <div>
             <h3 class="font-extrabold text-base text-[#0f3e2e] leading-tight">Yeni Güncelleme Mevcut!</h3>
             <div class="flex items-center gap-2 mt-1">
-              <span id="updateModalNewTag" class="text-[11px] font-mono font-bold bg-emerald-700 text-white px-2.5 py-0.5 rounded-full">v1.02</span>
-              <span class="text-[10px] font-semibold text-slate-400">Mevcut: v1.02</span>
+              <span id="updateModalNewTag" class="text-[11px] font-mono font-bold bg-emerald-700 text-white px-2.5 py-0.5 rounded-full">v1.03</span>
+              <span class="text-[10px] font-semibold text-slate-400">Mevcut: v1.03</span>
             </div>
           </div>
         </div>

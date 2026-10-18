@@ -78,6 +78,17 @@ const PRAYER_DETAILS = {
   }
 };
 
+const ATHAN_SOUNDS = {
+  "Hicaz": "assets/audio/ezan_turkey_1.mp3",
+  "Saba": "assets/audio/ezan_fajr.mp3",
+  "Rast": "assets/audio/ezan_madinah.mp3",
+  "Segah": "assets/audio/ezan_turkey_2.mp3",
+  "Mekke": "assets/audio/ezan_makkah.mp3",
+  "Kudüs": "assets/audio/ezan_alaqsa.mp3",
+  "Afasi": "assets/audio/ezan_alafasy.mp3"
+};
+const ATHAN_ORDER = ["Hicaz", "Saba", "Rast", "Segah", "Mekke", "Kudüs", "Afasi"];
+
 class TamVaktiApp {
   constructor() {
     window.app = this;
@@ -99,9 +110,15 @@ class TamVaktiApp {
     this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
 
     // Otomatik Güncelleme Sistemi (GitHub Releases)
-    this.currentVersion = "v1.02";
+    this.currentVersion = "v1.03";
     this.updateInfo = null;
     this.isDownloadingUpdate = false;
+
+    // Ezan Makamı & Ses Önizleme
+    this.currentAthanTone = localStorage.getItem("tamvakti_athan_tone") || "Hicaz";
+    this.athanAudio = null;
+    this.autoSilent = localStorage.getItem("tamvakti_auto_silent") !== "false";
+    this.themeMode = localStorage.getItem("tamvakti_theme_mode") || "Otomatik";
 
     // Kıble Modu (compass: Canlı Pusula, map: Harita Görünümü)
     this.qiblaMode = "compass";
@@ -769,9 +786,22 @@ class TamVaktiApp {
     if (locDesc) {
       locDesc.textContent = `${this.currentLocation.name || "Ilgın"} • Otomatik`;
     }
+    const toneEl = document.getElementById("settingsAthanTone");
+    if (toneEl) {
+      toneEl.textContent = this.currentAthanTone || "Hicaz";
+    }
+    const silentToggle = document.getElementById("autoSilentToggle");
+    if (silentToggle) {
+      silentToggle.checked = this.autoSilent;
+    }
+    const themeEl = document.getElementById("settingsThemeMode");
+    if (themeEl) {
+      themeEl.textContent = this.themeMode || "Otomatik";
+    }
   }
 
   closeSettingsModal() {
+    this.stopAthanPreview();
     const modal = document.getElementById("settingsModal");
     if (modal) modal.classList.add("hidden");
   }
@@ -812,7 +842,7 @@ class TamVaktiApp {
   }
 
   openPrayerModesModal() {
-    this.showToast("Vakit modunu değiştirmek için ana ekrandaki ses simgesine dokunabilirsiniz.", "💡", 4000);
+    this.showToast("Vakit bildirim sesini ana ekrandaki hoparlör simgesinden değiştirebilirsiniz.", "💡", 4000);
   }
 
   cycleReminderMinutes() {
@@ -821,17 +851,125 @@ class TamVaktiApp {
     const current = el ? parseInt(el.textContent) || 15 : 15;
     const nextIndex = (minutes.indexOf(current) + 1) % minutes.length;
     const nextVal = minutes[nextIndex];
-    if (el) el.textContent = `${nextVal} dk`;
+    if (el) el.textContent = `${nextVal} dk önce`;
+    this.showToast(`Vakit çıkmadan ${nextVal} dk önce hatırlatılacak`, "⏱️", 2500);
   }
 
   cycleAthanTone() {
-    const tones = ["Hicaz", "Rast", "Uşşak", "Saba", "Segah"];
+    const current = this.currentAthanTone || "Hicaz";
+    const nextIndex = (ATHAN_ORDER.indexOf(current) + 1) % ATHAN_ORDER.length;
+    const nextVal = ATHAN_ORDER[nextIndex];
+    this.currentAthanTone = nextVal;
+    localStorage.setItem("tamvakti_athan_tone", nextVal);
+
     const el = document.getElementById("settingsAthanTone");
-    const current = el ? el.textContent.trim() : "Hicaz";
-    const nextIndex = (tones.indexOf(current) + 1) % tones.length;
-    const nextVal = tones[nextIndex];
     if (el) el.textContent = nextVal;
-    this.playAlertTone();
+
+    if (this.athanAudio && !this.athanAudio.paused) {
+      this.playAthanPreview();
+    }
+    this.showToast(`${nextVal} Makamı seçildi`, "🔊", 2000);
+  }
+
+  toggleAthanPreview(event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (this.athanAudio && !this.athanAudio.paused) {
+      this.stopAthanPreview();
+    } else {
+      this.playAthanPreview();
+    }
+  }
+
+  playAthanPreview() {
+    this.stopAthanPreview();
+
+    const tone = this.currentAthanTone || "Hicaz";
+    const soundFile = ATHAN_SOUNDS[tone] || ATHAN_SOUNDS["Hicaz"];
+
+    const btn = document.getElementById("athanPreviewBtn");
+    const icon = document.getElementById("athanPreviewIcon");
+    const text = document.getElementById("athanPreviewText");
+
+    try {
+      this.athanAudio = new Audio(soundFile);
+      this.athanAudio.onended = () => {
+        this.stopAthanPreview();
+      };
+      this.athanAudio.onerror = () => {
+        this.stopAthanPreview();
+        this.showToast("Ezan sesi yüklenemedi", "⚠️");
+      };
+
+      if (btn) {
+        btn.classList.remove("bg-emerald-100", "text-emerald-800");
+        btn.classList.add("bg-amber-100", "text-amber-900", "ring-1", "ring-amber-300");
+      }
+      if (icon) icon.textContent = "⏹";
+      if (text) text.textContent = "Durdur";
+
+      this.athanAudio.play().catch(err => {
+        console.warn("Audio play error:", err);
+        this.stopAthanPreview();
+      });
+    } catch (err) {
+      console.error(err);
+      this.stopAthanPreview();
+    }
+  }
+
+  stopAthanPreview() {
+    if (this.athanAudio) {
+      try {
+        this.athanAudio.pause();
+        this.athanAudio.currentTime = 0;
+      } catch (e) {}
+      this.athanAudio = null;
+    }
+
+    const btn = document.getElementById("athanPreviewBtn");
+    const icon = document.getElementById("athanPreviewIcon");
+    const text = document.getElementById("athanPreviewText");
+
+    if (btn) {
+      btn.classList.remove("bg-amber-100", "text-amber-900", "ring-1", "ring-amber-300");
+      btn.classList.add("bg-emerald-100", "text-emerald-800");
+    }
+    if (icon) icon.textContent = "▶";
+    if (text) text.textContent = "Dinle";
+  }
+
+  toggleAutoSilent(checked) {
+    this.autoSilent = !!checked;
+    localStorage.setItem("tamvakti_auto_silent", this.autoSilent ? "true" : "false");
+    if (this.autoSilent) {
+      this.showToast("Namaz esnasında telefon otomatik sessize alınacak.", "📵", 3000);
+    } else {
+      this.showToast("Otomatik sessize alma kapatıldı.", "🔔", 2500);
+    }
+  }
+
+  openIhtiyatModal() {
+    this.showToast("Hesaplama yöntemi: Diyanet İşleri Başkanlığı (±0 dk)", "🎛️", 3500);
+  }
+
+  cycleTheme() {
+    const themes = ["Otomatik", "Açık", "Koyu"];
+    const current = this.themeMode || "Otomatik";
+    const nextIndex = (themes.indexOf(current) + 1) % themes.length;
+    const nextVal = themes[nextIndex];
+    this.themeMode = nextVal;
+    localStorage.setItem("tamvakti_theme_mode", nextVal);
+
+    const el = document.getElementById("settingsThemeMode");
+    if (el) el.textContent = nextVal;
+    this.showToast(`Görünüm teması: ${nextVal}`, "🎨", 2000);
+  }
+
+  showWidgetInfo() {
+    this.showToast("Ana ekrana uzun basarak Tam Vakti widget'ını ekleyebilirsiniz.", "🪟", 4000);
   }
 
   openAboutModal() {
