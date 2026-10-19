@@ -110,7 +110,7 @@ class TamVaktiApp {
     this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
 
     // Otomatik Güncelleme Sistemi (GitHub Releases)
-    this.currentVersion = "v1.04";
+    this.currentVersion = "v1.05";
     this.updateInfo = null;
     this.isDownloadingUpdate = false;
 
@@ -133,9 +133,9 @@ class TamVaktiApp {
   }
 
   onNativeCompassUpdate(heading, accuracy, pitch, roll) {
-    if (this.compass && this.qiblaMode === "compass") {
-      this.compass.onNativeUpdate(heading, accuracy, pitch, roll);
-    }
+    // if (this.compass && this.qiblaMode === "compass") { // v1.05: geçici devre dışı
+    //   this.compass.onNativeUpdate(heading, accuracy, pitch, roll);
+    // }
   }
 
   loadOngoingNotifSetting() {
@@ -199,7 +199,7 @@ class TamVaktiApp {
 
   async init() {
     this.renderCitySelector();
-    this.compass = new QiblaCompass(this.engine);
+    // this.compass = new QiblaCompass(this.engine); // v1.05: geçici devre dışı
 
     // Modal açıldığında toggle durumunu senkronize et
     const notifCheckbox = document.getElementById("ongoingNotifToggle");
