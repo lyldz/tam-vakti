@@ -110,7 +110,9 @@ class TamVaktiApp {
     this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
 
     // Otomatik Güncelleme Sistemi (GitHub Releases)
-    this.currentVersion = "v1.05";
+    this.currentVersion = "v1.06";
+    this.monthlyYear = null;
+    this.monthlyMonth = null;
     this.updateInfo = null;
     this.isDownloadingUpdate = false;
 
@@ -253,17 +255,19 @@ class TamVaktiApp {
       this.currentLocation.lon
     );
 
-    // Kıble Açısı ve Mesafe
-    const qiblaInfo = this.engine.calculateQibla(this.currentLocation.lat, this.currentLocation.lon);
-    const angleBigEl = document.getElementById("qiblaAngleBig");
-    if (angleBigEl) angleBigEl.textContent = `${Math.round(qiblaInfo.angle)}°`;
-    const distSubEl = document.getElementById("qiblaDistanceSub");
-    if (distSubEl) distSubEl.textContent = `Kâbe'ye ≈ ${qiblaInfo.distanceKm.toLocaleString('tr-TR')} km`;
-    const headerCityEl = document.getElementById("qiblaHeaderCity");
-    if (headerCityEl) headerCityEl.textContent = displayName;
-    this.compass.setTargetQibla(qiblaInfo.angle, this.currentLocation.lat, this.currentLocation.lon);
-    if (this.qiblaMode === "map" && this.qiblaMap) {
-      this.updateQiblaMap();
+    // Kıble Açısı ve Mesafe (Kıble etkinse güvenli çalıştır)
+    if (this.compass) {
+      const qiblaInfo = this.engine.calculateQibla(this.currentLocation.lat, this.currentLocation.lon);
+      const angleBigEl = document.getElementById("qiblaAngleBig");
+      if (angleBigEl) angleBigEl.textContent = `${Math.round(qiblaInfo.angle)}°`;
+      const distSubEl = document.getElementById("qiblaDistanceSub");
+      if (distSubEl) distSubEl.textContent = `Kâbe'ye ≈ ${qiblaInfo.distanceKm.toLocaleString('tr-TR')} km`;
+      const headerCityEl = document.getElementById("qiblaHeaderCity");
+      if (headerCityEl) headerCityEl.textContent = displayName;
+      this.compass.setTargetQibla(qiblaInfo.angle, this.currentLocation.lat, this.currentLocation.lon);
+      if (this.qiblaMode === "map" && this.qiblaMap) {
+        this.updateQiblaMap();
+      }
     }
 
     this.renderPrayerCards();
@@ -587,32 +591,156 @@ class TamVaktiApp {
     }
   }
 
-  // Sekme Değiştirici: Vakitler / Kıble
+  // Sekme Değiştirici: Vakitler / Aylık Vakitler / Ayarlar
   switchTab(tab) {
     const viewPrayer = document.getElementById("viewPrayer");
-    const viewQibla = document.getElementById("viewQibla");
     const btnPrayer = document.getElementById("tabBtn-prayer");
-    const btnQibla = document.getElementById("tabBtn-qibla");
+    const btnMonthly = document.getElementById("tabBtn-monthly");
 
     if (tab === "prayer") {
-      viewPrayer.classList.remove("hidden");
-      viewQibla.classList.add("hidden");
-      btnPrayer.classList.add("active");
-      btnQibla.classList.remove("active");
-      if (this.compass) {
-        this.compass.stopCompass();
+      this.closeMonthlyModal();
+      this.closeSettingsModal();
+      if (viewPrayer) viewPrayer.classList.remove("hidden");
+      if (btnPrayer) btnPrayer.classList.add("active");
+      if (btnMonthly) btnMonthly.classList.remove("active");
+    } else if (tab === "monthly") {
+      this.openMonthlyModal();
+    }
+  }
+
+  // ==========================================
+  // AYLIK NAMAZ VAKİTLERİ (İMSAKİYE) YÖNETİMİ
+  // ==========================================
+  openMonthlyModal() {
+    const modal = document.getElementById("monthlyModal");
+    if (!modal) return;
+
+    const btnPrayer = document.getElementById("tabBtn-prayer");
+    const btnMonthly = document.getElementById("tabBtn-monthly");
+    if (btnPrayer) btnPrayer.classList.remove("active");
+    if (btnMonthly) btnMonthly.classList.add("active");
+
+    const now = new Date();
+    if (!this.monthlyYear || !this.monthlyMonth) {
+      this.monthlyYear = now.getFullYear();
+      this.monthlyMonth = now.getMonth() + 1;
+    }
+
+    modal.classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+
+    this.loadMonthlyData();
+  }
+
+  closeMonthlyModal() {
+    const modal = document.getElementById("monthlyModal");
+    if (modal) modal.classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+
+    const btnPrayer = document.getElementById("tabBtn-prayer");
+    const btnMonthly = document.getElementById("tabBtn-monthly");
+    if (btnPrayer) btnPrayer.classList.add("active");
+    if (btnMonthly) btnMonthly.classList.remove("active");
+  }
+
+  changeMonthlyMonth(delta) {
+    this.monthlyMonth += delta;
+    if (this.monthlyMonth < 1) {
+      this.monthlyMonth = 12;
+      this.monthlyYear -= 1;
+    } else if (this.monthlyMonth > 12) {
+      this.monthlyMonth = 1;
+      this.monthlyYear += 1;
+    }
+    this.loadMonthlyData();
+  }
+
+  scrollMonthlyToToday() {
+    const todayRow = document.getElementById("monthlyRow-today");
+    if (todayRow) {
+      todayRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      this.showToast("Bugünkü vakitler gösteriliyor");
+    } else {
+      const now = new Date();
+      this.monthlyYear = now.getFullYear();
+      this.monthlyMonth = now.getMonth() + 1;
+      this.loadMonthlyData(true);
+    }
+  }
+
+  async loadMonthlyData(autoScroll = true) {
+    const titleEl = document.getElementById("monthlyTitleText");
+    const hijriEl = document.getElementById("monthlyHijriText");
+    const cityEl = document.getElementById("monthlyCityName");
+    const tableBody = document.getElementById("monthlyTableBody");
+    const sourceEl = document.getElementById("monthlySourceBadge");
+
+    if (cityEl) cityEl.textContent = this.currentLocation.name || "Ilgın";
+
+    const trMonths = [
+      '', 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+    ];
+    if (titleEl) {
+      titleEl.textContent = `${trMonths[this.monthlyMonth] || ''} ${this.monthlyYear}`;
+    }
+
+    if (tableBody) {
+      tableBody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400 font-sans text-xs">Vakitler yükleniyor...</td></tr>`;
+    }
+
+    try {
+      const data = await this.engine.getMonthlyPrayerTimes(
+        this.monthlyYear,
+        this.monthlyMonth,
+        this.currentLocation.lat,
+        this.currentLocation.lon
+      );
+
+      if (hijriEl) {
+        hijriEl.textContent = data.hijriSummary || "Hicri Takvim";
       }
-    } else if (tab === "qibla") {
-      viewPrayer.classList.add("hidden");
-      viewQibla.classList.remove("hidden");
-      btnPrayer.classList.remove("active");
-      btnQibla.classList.add("active");
-      if (this.qiblaMode === "compass") {
-        if (this.compass) {
-          this.compass.startCompass();
-        }
-      } else if (this.qiblaMode === "map") {
-        this.initQiblaMap();
+
+      if (sourceEl) {
+        sourceEl.textContent = data.source === 'diyanet-api' ? 'Diyanet Çevrimiçi' : 'Diyanet Çevrimdışı';
+      }
+
+      if (!tableBody || !data.days) return;
+
+      tableBody.innerHTML = data.days.map(d => {
+        const rowClass = d.isToday ? 'monthly-row-today' : (d.isFriday ? 'monthly-row-friday' : '');
+        const rowId = d.isToday ? 'id="monthlyRow-today"' : '';
+        const todayBadge = d.isToday ? '<span class="monthly-today-badge">Bugün</span>' : '';
+        const friDot = d.isFriday && !d.isToday ? ' •' : '';
+
+        return `
+          <tr ${rowId} class="${rowClass} hover:bg-emerald-50/40 transition-colors">
+            <td class="py-2.5 px-1.5 text-left pl-3 font-sans">
+              <span class="font-extrabold">${d.day}</span>
+              <span class="text-[10px] opacity-75 font-semibold ml-0.5">${d.dayOfWeekShort}${friDot}</span>
+              ${todayBadge}
+            </td>
+            <td class="py-2 px-1">${d.imsak}</td>
+            <td class="py-2 px-1">${d.gunes}</td>
+            <td class="py-2 px-1">${d.ogle}</td>
+            <td class="py-2 px-1">${d.ikindi}</td>
+            <td class="py-2 px-1">${d.aksam}</td>
+            <td class="py-2 px-1 pr-3 font-semibold">${d.yatsi}</td>
+          </tr>
+        `;
+      }).join('');
+
+      if (autoScroll) {
+        setTimeout(() => {
+          const todayRow = document.getElementById("monthlyRow-today");
+          if (todayRow) {
+            todayRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 120);
+      }
+    } catch (e) {
+      if (tableBody) {
+        tableBody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-rose-500 font-sans text-xs">Hesaplama yapılamadı: ${e.message}</td></tr>`;
       }
     }
   }
@@ -755,6 +883,11 @@ class TamVaktiApp {
     this.saveLocation({ name, lat, lon });
     this.closeLocationModal();
     this.updatePrayers();
+
+    const monthlyModal = document.getElementById("monthlyModal");
+    if (monthlyModal && !monthlyModal.classList.contains("hidden")) {
+      this.loadMonthlyData();
+    }
   }
 
   locateWithGPS() {

@@ -209,7 +209,7 @@ class PrayerEngine {
     const cacheKey = `tamvakti_${lat.toFixed(2)}_${lon.toFixed(2)}_${dateStr}`;
 
     // Önbellek kontrolü
-    const cached = localStorage.getItem(cacheKey);
+    const cached = typeof localStorage !== "undefined" ? localStorage.getItem(cacheKey) : null;
     if (cached) {
       try {
         return JSON.parse(cached);
@@ -252,7 +252,151 @@ class PrayerEngine {
 
     return offlineTimes;
   }
+
+  // Aylık Namaz Vakitleri (Çevrimiçi Diyanet API veya %100 Çevrimdışı Astronomik Hesaplama)
+  async getMonthlyPrayerTimes(year, month, lat, lon, tz = 3.0) {
+    const monthPadded = String(month).padStart(2, '0');
+    const cacheKey = `tamvakti_monthly_${lat.toFixed(2)}_${lon.toFixed(2)}_${year}_${monthPadded}`;
+
+    const trMonths = [
+      '', 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+    ];
+    const trDaysShort = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+    const trDaysFull = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+    // 1. Önbellek kontrolü
+    const cached = typeof localStorage !== "undefined" ? localStorage.getItem(cacheKey) : null;
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (parsed && Array.isArray(parsed.days) && parsed.days.length > 0) {
+          // Güncel 'isToday' durumunu yenile
+          parsed.days.forEach(d => {
+            d.isToday = (d.dateStr === todayStr);
+          });
+          return parsed;
+        }
+      } catch (e) {}
+    }
+
+    // 2. Çevrimiçi Aladhan Diyanet Calendar API (Method 13)
+    try {
+      const url = `https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${lat}&longitude=${lon}&method=13`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const json = await res.json();
+        if (json && Array.isArray(json.data) && json.data.length > 0) {
+          let hijriSummary = '';
+          const days = json.data.map(item => {
+            const t = item.timings;
+            const greg = item.date.gregorian;
+            const hijri = item.date.hijri;
+            const dNum = parseInt(greg.day, 10);
+            const dDate = new Date(year, month - 1, dNum);
+            const dateStr = `${year}-${monthPadded}-${String(dNum).padStart(2, '0')}`;
+
+            if (hijri && hijri.month && !hijriSummary) {
+              hijriSummary = `${hijri.month.tr || hijri.month.en} ${hijri.year}`;
+            }
+
+            return {
+              day: dNum,
+              dateStr: dateStr,
+              dayOfWeekShort: trDaysShort[dDate.getDay()],
+              dayOfWeekFull: trDaysFull[dDate.getDay()],
+              isFriday: (dDate.getDay() === 5),
+              isToday: (dateStr === todayStr),
+              imsak: t.Fajr.substring(0, 5),
+              gunes: t.Sunrise.substring(0, 5),
+              ogle: t.Dhuhr.substring(0, 5),
+              ikindi: t.Asr.substring(0, 5),
+              aksam: t.Maghrib.substring(0, 5),
+              yatsi: t.Isha.substring(0, 5),
+              hijriDay: hijri ? `${hijri.day} ${hijri.month.tr || hijri.month.en}` : null
+            };
+          });
+
+          const result = {
+            year,
+            month,
+            monthName: trMonths[month] || '',
+            hijriSummary: hijriSummary || '',
+            days,
+            source: 'diyanet-api'
+          };
+          try {
+            if (typeof localStorage !== "undefined") { localStorage.setItem(cacheKey, JSON.stringify(result)); }
+          } catch(e) {}
+          return result;
+        }
+      }
+    } catch (e) {
+      // Ağ hatasında hemen yerel hesaba geç
+    }
+
+    // 3. %100 Çevrimdışı Astronomik Hesaplama (Yedek & Tam Güvenilirlik)
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const days = [];
+    let hijriSummaryOffline = '';
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dDate = new Date(year, month - 1, d);
+      const times = this.calculateTimesOffline(dDate, lat, lon, tz);
+      const isFri = (dDate.getDay() === 5);
+      const isTod = (times.date === todayStr);
+
+      let hijriDayStr = null;
+      try {
+        const parts = new Intl.DateTimeFormat('en-u-ca-islamic-civil', {
+          day: 'numeric',
+          month: 'numeric'
+        }).formatToParts(dDate);
+        const islamicMonths = [
+          '', 'Muharrem', 'Sefer', 'Rebiülevvel', 'Rebiülahir',
+          'Cemaziyelevvel', 'Cemaziyelahir', 'Recep', 'Şaban',
+          'Ramazan', 'Şevval', 'Zilkade', 'Zilhicce'
+        ];
+        const hDay = parts.find(p => p.type === 'day')?.value || '';
+        const hMonthNum = parseInt(parts.find(p => p.type === 'month')?.value || '1', 10);
+        const hMonth = islamicMonths[hMonthNum] || '';
+        hijriDayStr = `${hDay} ${hMonth}`;
+        if (d === 15) {
+          hijriSummaryOffline = hMonth;
+        }
+      } catch(e) {}
+
+      days.push({
+        day: d,
+        dateStr: times.date,
+        dayOfWeekShort: trDaysShort[dDate.getDay()],
+        dayOfWeekFull: trDaysFull[dDate.getDay()],
+        isFriday: isFri,
+        isToday: isTod,
+        imsak: times.imsak,
+        gunes: times.gunes,
+        ogle: times.ogle,
+        ikindi: times.ikindi,
+        aksam: times.aksam,
+        yatsi: times.yatsi,
+        hijriDay: hijriDayStr
+      });
+    }
+
+    return {
+      year,
+      month,
+      monthName: trMonths[month] || '',
+      hijriSummary: hijriSummaryOffline,
+      days,
+      source: 'offline-astronomical'
+    };
+  }
 }
+
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { PrayerEngine };

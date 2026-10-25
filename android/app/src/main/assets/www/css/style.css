@@ -878,3 +878,103 @@ html, body, .minimal-app, .mihrab-frame, .prayer-card-item, .unified-dock-capsul
   transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
 }
 
+
+/* =========================================================
+   AYLIK NAMAZ VAKİTLERİ (İMSAKİYE) TABLOSU VE STİLLERİ
+   ========================================================= */
+
+.monthly-row-today {
+  background-color: #d1fae5 !important;
+  font-weight: 800 !important;
+  color: #064e3b !important;
+  border-top: 1.5px solid #059669 !important;
+  border-bottom: 1.5px solid #059669 !important;
+}
+
+.monthly-today-badge {
+  font-size: 9px;
+  background-color: #059669;
+  color: #ffffff;
+  padding: 1px 4px;
+  border-radius: 9999px;
+  font-weight: 800;
+  margin-left: 3px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.monthly-row-friday {
+  color: #047857;
+  font-weight: 700;
+}
+
+/* Koyu Mod: Aylık Vakitler Ekranı (#monthlyModal) */
+html.dark #monthlyModal {
+  background-color: #0b1411 !important;
+  color: #ecfdf5 !important;
+}
+
+html.dark #monthlyModal > div:first-child {
+  background-color: rgba(11, 20, 17, 0.95) !important;
+  border-color: rgba(52, 211, 153, 0.15) !important;
+}
+
+html.dark #monthlyModal .bg-white {
+  background-color: #14241d !important;
+  border-color: rgba(52, 211, 153, 0.15) !important;
+}
+
+html.dark #monthlyModal table thead tr {
+  background-color: rgba(20, 36, 29, 0.9) !important;
+  color: #a7f3d0 !important;
+  border-color: rgba(52, 211, 153, 0.2) !important;
+}
+
+html.dark #monthlyModal table tbody tr {
+  border-color: rgba(52, 211, 153, 0.1) !important;
+  color: #e2ebe5 !important;
+}
+
+html.dark #monthlyModal table tbody tr:nth-child(even) {
+  background-color: rgba(16, 30, 24, 0.4) !important;
+}
+
+html.dark .monthly-row-today {
+  background-color: #1a4231 !important;
+  color: #ffffff !important;
+  border-top: 1.5px solid #10b981 !important;
+  border-bottom: 1.5px solid #10b981 !important;
+}
+
+html.dark .monthly-today-badge {
+  background-color: #10b981 !important;
+  color: #042f1a !important;
+}
+
+html.dark .monthly-row-friday {
+  color: #34d399 !important;
+}
+
+html.dark #monthlyTitleText {
+  color: #ffffff !important;
+}
+
+html.dark #monthlyHijriText {
+  color: #6ee7b7 !important;
+}
+
+html.dark #monthlyModal button.bg-emerald-50 {
+  background-color: #1e3a2c !important;
+  color: #ecfdf5 !important;
+}
+
+html.dark #monthlyModal button.bg-emerald-100 {
+  background-color: #1e4635 !important;
+  color: #6ee7b7 !important;
+}
+
+html.dark #monthlySourceBadge {
+  background-color: #0e1c15 !important;
+  border-color: rgba(52, 211, 153, 0.2) !important;
+  color: #8faea0 !important;
+}

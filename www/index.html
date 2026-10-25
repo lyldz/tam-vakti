@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Tam Vakti - Namaz & Kıble</title>
+  <title>Tam Vakti - Namaz Vakitleri & İmsakiye</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="lib/leaflet/leaflet.css">
+  <!-- <link rel="stylesheet" href="lib/leaflet/leaflet.css"> (v1.06: kıble yeniden yapılandırılana dek devre dışı) -->
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <script>
     if (typeof tailwind !== 'undefined') {
@@ -42,7 +42,7 @@
       </button>
 
       <!-- Sağ: Tarih & Takvim Kartı (Takvim İkonu + Günler + Geçiş Oku) -->
-      <button onclick="app.openAboutModal()" class="date-header-card flex items-center gap-2.5 px-3 py-1.5 bg-white/80 backdrop-blur-md rounded-2xl border border-white/90 shadow-2xs hover:bg-white active:scale-95 transition-all cursor-pointer relative" title="Uygulama Hakkında & Takvim">
+      <button onclick="app.openMonthlyModal()" class="date-header-card flex items-center gap-2.5 px-3 py-1.5 bg-white/80 backdrop-blur-md rounded-2xl border border-white/90 shadow-2xs hover:bg-white active:scale-95 transition-all cursor-pointer relative" title="Aylık Namaz Vakitleri & İmsakiye">
         <span id="updateBadgeDot" class="update-badge-dot hidden" title="Yeni güncelleme mevcut!"></span>
         <!-- Takvim İkonu -->
         <svg class="w-4 h-4 text-emerald-700 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -104,15 +104,24 @@
       </section>
 
       <!-- GÖRÜNÜM 2: KIBLE BULUCU (CANLI PUSULA & HARİTA İLE SOKAK YÖNÜ) -->
-      <section id="viewQibla" class="hidden space-y-3"><!-- Kıble modu v1.05\'te geçici olarak kaldırıldı --></section>
+      <section id="viewQibla" class="hidden space-y-3"><!-- Kıble modu v1.06\'te geçici olarak kaldırıldı --></section>
 
     </main>
 
     <!-- 3. BÜTÜNLEŞİK ALT DOCK (VAKİTLER | KIBLE | AYARLAR ⚙️) -->
-    <div class="minimal-dock flex justify-center">
+        <div class="minimal-dock flex justify-center">
       <div class="segment-container unified-dock-capsule">
         <button onclick="app.switchTab('prayer')" id="tabBtn-prayer" class="segment-btn active">
           Vakitler
+        </button>
+        <button onclick="app.openMonthlyModal()" id="tabBtn-monthly" class="segment-btn flex items-center gap-1.5">
+          <span>Aylık Vakitler</span>
+          <svg class="w-3.5 h-3.5 opacity-80" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
         </button>
         <button onclick="app.openSettingsModal()" id="tabBtn-settings" class="segment-btn flex items-center gap-1.5">
           <span>Ayarlar</span>
@@ -126,6 +135,95 @@
 
   </div>
 
+  
+  <!-- MODAL: AYLIK NAMAZ VAKİTLERİ (İMSAKİYE) EKRANI -->
+  <div id="monthlyModal" class="hidden fixed inset-0 z-50 bg-[#ebf4ee] overflow-y-auto">
+    <!-- Üst Yapışkan Bar: Geri Dön & Şehir Rozeti -->
+    <div class="sticky top-0 z-20 bg-[#ebf4ee]/95 backdrop-blur-md px-4 py-3 border-b border-emerald-900/10 flex items-center justify-between">
+      <button onclick="app.closeMonthlyModal()" class="flex items-center gap-2 text-[#0f3e2e] font-extrabold text-sm hover:text-emerald-800 cursor-pointer">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+        <span>Vakitler</span>
+      </button>
+      <div class="flex items-center gap-2">
+        <button onclick="app.openLocationModal()" class="location-pill text-[11px] py-1 px-2.5 shadow-none" title="Konum Değiştir">
+          <span class="text-emerald-700">📍</span>
+          <span id="monthlyCityName">Ilgın</span>
+        </button>
+        <button onclick="app.closeMonthlyModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold px-1 leading-none cursor-pointer">&times;</button>
+      </div>
+    </div>
+
+    <!-- İçerik Alanı -->
+    <div class="max-w-md mx-auto p-3 space-y-3 pb-24">
+      
+      <!-- Ay Değiştirici ve Bilgi Başlığı Kartı -->
+      <div class="bg-white rounded-3xl p-3.5 shadow-xs border border-emerald-950/5 space-y-3">
+        <div class="flex items-center justify-between">
+          <!-- Önceki Ay Butonu -->
+          <button onclick="app.changeMonthlyMonth(-1)" class="w-9 h-9 rounded-2xl bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-emerald-900 flex items-center justify-center font-black transition-all cursor-pointer" title="Önceki Ay">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          
+          <!-- Ay & Yıl Başlığı -->
+          <div class="text-center">
+            <h2 id="monthlyTitleText" class="text-base font-extrabold text-[#0f3e2e] tracking-tight">Ekim 2026</h2>
+            <p id="monthlyHijriText" class="text-[11px] font-semibold text-emerald-700/80 mt-0.5">Hicri Yıl</p>
+          </div>
+          
+          <!-- Sonraki Ay Butonu -->
+          <button onclick="app.changeMonthlyMonth(1)" class="w-9 h-9 rounded-2xl bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-emerald-900 flex items-center justify-center font-black transition-all cursor-pointer" title="Sonraki Ay">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Ara Butonlar: Bugüne Git & Bilgi Rozeti -->
+        <div class="flex items-center justify-between pt-1 border-t border-slate-100">
+          <button onclick="app.scrollMonthlyToToday()" class="flex items-center gap-1.5 px-3 py-1 bg-emerald-100 hover:bg-emerald-200 active:scale-95 text-[#0f3e2e] text-[11px] font-bold rounded-full transition-all cursor-pointer">
+            <span>📍</span>
+            <span>Bugüne Git</span>
+          </button>
+          <span id="monthlySourceBadge" class="text-[10px] font-semibold text-slate-500 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200/60">
+            Diyanet Uyumlu
+          </span>
+        </div>
+      </div>
+
+      <!-- İmsakiye Tablosu Kartı -->
+      <div class="bg-white rounded-3xl shadow-xs border border-emerald-950/5 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-center border-collapse text-xs">
+            <thead>
+              <tr class="bg-emerald-900/5 text-[#0f3e2e] font-extrabold text-[11px] border-b border-emerald-950/10">
+                <th class="py-2.5 px-1.5 text-left pl-3" style="width: 22%;">Gün</th>
+                <th class="py-2.5 px-1" style="width: 13%;">İmsak</th>
+                <th class="py-2.5 px-1" style="width: 13%;">Güneş</th>
+                <th class="py-2.5 px-1" style="width: 13%;">Öğle</th>
+                <th class="py-2.5 px-1" style="width: 13%;">İkindi</th>
+                <th class="py-2.5 px-1" style="width: 13%;">Akşam</th>
+                <th class="py-2.5 px-1 pr-3" style="width: 13%;">Yatsı</th>
+              </tr>
+            </thead>
+            <tbody id="monthlyTableBody" class="divide-y divide-emerald-950/5 font-mono text-[11.5px]">
+              <!-- JS ile dinamik doldurulacak -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Açıklama Notu -->
+      <div class="text-[11px] text-slate-500 text-center leading-relaxed px-2">
+        Vakitler Diyanet İşleri Başkanlığı takvim ve astronomik kriterlerine tam uyumludur. Yeşil zeminli satır bugünü simgeler.
+      </div>
+
+    </div>
+  </div>
+
   <!-- MODAL: Derli Toplu Ayarlar Ekranı (3 Grup Kartı + Pil Uyarısı) -->
   <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-[#ebf4ee] overflow-y-auto">
     <!-- Üst Bar: Geri Dön Butonu & Başlık -->
@@ -136,7 +234,7 @@
         </svg>
         <span>Ayarlar</span>
       </button>
-      <span class="text-xs font-mono font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full">v1.05</span>
+      <span class="text-xs font-mono font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full">v1.06</span>
     </div>
 
     <div class="max-w-md mx-auto px-4 py-3 space-y-4 pb-28">
@@ -157,6 +255,21 @@
         <div class="text-[11px] font-black text-[#3d695b] uppercase tracking-wider px-1">KONUM VE HESAPLAMA</div>
         <div class="bg-white rounded-3xl p-3.5 shadow-xs border border-emerald-900/5 divide-y divide-slate-100">
           
+                    <!-- Aylık Vakitler & İmsakiye -->
+          <div onclick="app.openMonthlyModal()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
+            <div class="flex items-center gap-2.5">
+              <span class="text-base text-emerald-700">📅</span>
+              <div>
+                <div class="text-xs font-bold text-[#0f3e2e]">Aylık Namaz Vakitleri</div>
+                <div class="text-[10px] text-slate-400 font-medium">Tüm ayın namaz vakitleri ve imsakiye çizelgesi</div>
+              </div>
+            </div>
+            <div class="text-xs font-bold text-emerald-700 flex items-center gap-1">
+              <span>Görüntüle</span>
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </div>
+          </div>
+
           <!-- Konum -->
           <div onclick="app.openLocationModal()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
             <div class="flex items-center gap-2.5">
@@ -201,7 +314,7 @@
           <div onclick="app.openPrayerModesModal()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
             <div class="flex items-center gap-2.5">
               <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.065-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
               </svg>
               <span class="text-xs font-bold text-[#0f3e2e]">Vakit Bildirimleri</span>
             </div>
@@ -301,7 +414,7 @@
               <span class="text-xs font-bold text-[#0f3e2e]">Hakkında & Geri Bildirim</span>
             </div>
             <div class="text-xs font-semibold text-slate-500 flex items-center gap-1">
-              <span>v1.05 • GitHub</span>
+              <span>v1.06 • GitHub</span>
               <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
           </div>
@@ -352,7 +465,7 @@
       <!-- Sürüm Bilgisi -->
       <div class="px-3 py-2 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-semibold">
         <span>Tam Vakti</span>
-        <span class="font-mono bg-slate-200/60 px-2 py-0.5 rounded-full text-slate-600">v1.05</span>
+        <span class="font-mono bg-slate-200/60 px-2 py-0.5 rounded-full text-slate-600">v1.06</span>
       </div>
 
       <div class="p-3 overflow-y-auto flex-1 space-y-1" id="cityListContainer"></div>
@@ -369,7 +482,7 @@
           <img src="assets/icons/logo.svg" alt="Tam Vakti Logo" class="w-8 h-9 object-contain drop-shadow-xs">
           <div class="text-left">
             <h3 class="font-extrabold text-base text-[#0f3e2e]">Tam Vakti</h3>
-            <span class="inline-block text-[11px] font-mono font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">v1.05</span>
+            <span class="inline-block text-[11px] font-mono font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">v1.06</span>
           </div>
         </div>
         <button onclick="app.closeAboutModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold leading-none">&times;</button>
@@ -392,7 +505,7 @@
             <span class="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
             Yeni Güncelleme!
           </span>
-          <span id="updateNewVersionTag" class="text-[10px] font-mono font-bold bg-emerald-200/80 text-emerald-900 px-2 py-0.5 rounded-full">v1.05</span>
+          <span id="updateNewVersionTag" class="text-[10px] font-mono font-bold bg-emerald-200/80 text-emerald-900 px-2 py-0.5 rounded-full">v1.06</span>
         </div>
         <p id="updateReleaseNotes" class="text-[11px] text-slate-600 leading-snug line-clamp-3">
           Yeni sürüm hazır.
@@ -460,8 +573,8 @@
           <div>
             <h3 class="font-extrabold text-base text-[#0f3e2e] leading-tight">Yeni Güncelleme Mevcut!</h3>
             <div class="flex items-center gap-2 mt-1">
-              <span id="updateModalNewTag" class="text-[11px] font-mono font-bold bg-emerald-700 text-white px-2.5 py-0.5 rounded-full">v1.05</span>
-              <span class="text-[10px] font-semibold text-slate-400">Mevcut: v1.05</span>
+              <span id="updateModalNewTag" class="text-[11px] font-mono font-bold bg-emerald-700 text-white px-2.5 py-0.5 rounded-full">v1.06</span>
+              <span class="text-[10px] font-semibold text-slate-400">Mevcut: v1.06</span>
             </div>
           </div>
         </div>
@@ -507,10 +620,10 @@
   </div>
 
   <!-- Uygulama Scriptleri -->
-  <script src="lib/leaflet/leaflet.js"></script>
+  <!-- <script src="lib/leaflet/leaflet.js"></script> (v1.06: kıble yeniden yapılandırılana dek devre dışı) -->
   <script src="js/cities.js"></script>
   <script src="js/prayer-engine.js"></script>
-  <!-- compass.js geçici devre dışı v1.05 -->
+  <!-- compass.js geçici devre dışı v1.06 -->
   <script src="js/app.js"></script>
 </body>
 </html>
