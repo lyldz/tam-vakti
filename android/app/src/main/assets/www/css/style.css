@@ -375,15 +375,33 @@ html, body {
 }
 
 .segment-btn {
-  padding: 9px 22px;
+  padding: 8px 14px;
   border-radius: 9999px;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 12px;
   border: none;
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+@media (max-width: 375px) {
+  .minimal-dock {
+    left: 8px;
+    right: 8px;
+    bottom: 12px;
+  }
+  .segment-btn {
+    padding: 7px 10px;
+    font-size: 11px;
+    gap: 3px;
+  }
 }
 
 .segment-btn.active {

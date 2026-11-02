@@ -110,7 +110,7 @@ class TamVaktiApp {
     this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
 
     // Otomatik Güncelleme Sistemi (GitHub Releases)
-    this.currentVersion = "v1.06";
+    this.currentVersion = "v1.07";
     this.monthlyYear = null;
     this.monthlyMonth = null;
     this.updateInfo = null;
@@ -135,9 +135,9 @@ class TamVaktiApp {
   }
 
   onNativeCompassUpdate(heading, accuracy, pitch, roll) {
-    // if (this.compass && this.qiblaMode === "compass") { // v1.05: geçici devre dışı
-    //   this.compass.onNativeUpdate(heading, accuracy, pitch, roll);
-    // }
+    if (this.compass && this.qiblaMode === "compass") {
+      this.compass.onNativeUpdate(heading, accuracy, pitch, roll);
+    }
   }
 
   loadOngoingNotifSetting() {
@@ -201,7 +201,7 @@ class TamVaktiApp {
 
   async init() {
     this.renderCitySelector();
-    // this.compass = new QiblaCompass(this.engine); // v1.05: geçici devre dışı
+    this.compass = new QiblaCompass(this.engine);
 
     // Modal açıldığında toggle durumunu senkronize et
     const notifCheckbox = document.getElementById("ongoingNotifToggle");
@@ -591,20 +591,50 @@ class TamVaktiApp {
     }
   }
 
-  // Sekme Değiştirici: Vakitler / Aylık Vakitler / Ayarlar
+  // Sekme Değiştirici: Vakitler / Kıble / Aylık Vakitler / Ayarlar
   switchTab(tab) {
     const viewPrayer = document.getElementById("viewPrayer");
+    const viewQibla = document.getElementById("viewQibla");
     const btnPrayer = document.getElementById("tabBtn-prayer");
+    const btnQibla = document.getElementById("tabBtn-qibla");
     const btnMonthly = document.getElementById("tabBtn-monthly");
+    const btnSettings = document.getElementById("tabBtn-settings");
 
     if (tab === "prayer") {
       this.closeMonthlyModal();
       this.closeSettingsModal();
       if (viewPrayer) viewPrayer.classList.remove("hidden");
+      if (viewQibla) viewQibla.classList.add("hidden");
       if (btnPrayer) btnPrayer.classList.add("active");
+      if (btnQibla) btnQibla.classList.remove("active");
       if (btnMonthly) btnMonthly.classList.remove("active");
+      if (btnSettings) btnSettings.classList.remove("active");
+      if (this.compass) {
+        this.compass.stopCompass();
+      }
+    } else if (tab === "qibla") {
+      this.closeMonthlyModal();
+      this.closeSettingsModal();
+      if (viewPrayer) viewPrayer.classList.add("hidden");
+      if (viewQibla) viewQibla.classList.remove("hidden");
+      if (btnPrayer) btnPrayer.classList.remove("active");
+      if (btnQibla) btnQibla.classList.add("active");
+      if (btnMonthly) btnMonthly.classList.remove("active");
+      if (btnSettings) btnSettings.classList.remove("active");
+
+      if (this.compass) {
+        const qiblaInfo = this.engine.calculateQibla(this.currentLocation.lat, this.currentLocation.lon);
+        this.compass.setTargetQibla(qiblaInfo.angle, this.currentLocation.lat, this.currentLocation.lon);
+        if (this.qiblaMode === "compass") {
+          this.compass.startCompass();
+        } else if (this.qiblaMode === "map") {
+          this.initQiblaMap();
+        }
+      }
     } else if (tab === "monthly") {
       this.openMonthlyModal();
+    } else if (tab === "settings") {
+      this.openSettingsModal();
     }
   }
 
@@ -612,12 +642,17 @@ class TamVaktiApp {
   // AYLIK NAMAZ VAKİTLERİ (İMSAKİYE) YÖNETİMİ
   // ==========================================
   openMonthlyModal() {
+    if (this.compass) {
+      this.compass.stopCompass();
+    }
     const modal = document.getElementById("monthlyModal");
     if (!modal) return;
 
     const btnPrayer = document.getElementById("tabBtn-prayer");
+    const btnQibla = document.getElementById("tabBtn-qibla");
     const btnMonthly = document.getElementById("tabBtn-monthly");
     if (btnPrayer) btnPrayer.classList.remove("active");
+    if (btnQibla) btnQibla.classList.remove("active");
     if (btnMonthly) btnMonthly.classList.add("active");
 
     const now = new Date();
@@ -637,10 +672,24 @@ class TamVaktiApp {
     if (modal) modal.classList.add("hidden");
     document.body.classList.remove("overflow-hidden");
 
-    const btnPrayer = document.getElementById("tabBtn-prayer");
     const btnMonthly = document.getElementById("tabBtn-monthly");
-    if (btnPrayer) btnPrayer.classList.add("active");
     if (btnMonthly) btnMonthly.classList.remove("active");
+
+    const viewQibla = document.getElementById("viewQibla");
+    const isQiblaActive = viewQibla && !viewQibla.classList.contains("hidden");
+    const btnPrayer = document.getElementById("tabBtn-prayer");
+    const btnQibla = document.getElementById("tabBtn-qibla");
+
+    if (isQiblaActive) {
+      if (btnQibla) btnQibla.classList.add("active");
+      if (btnPrayer) btnPrayer.classList.remove("active");
+      if (this.compass && this.qiblaMode === "compass") {
+        this.compass.startCompass();
+      }
+    } else {
+      if (btnPrayer) btnPrayer.classList.add("active");
+      if (btnQibla) btnQibla.classList.remove("active");
+    }
   }
 
   changeMonthlyMonth(delta) {
@@ -923,6 +972,9 @@ class TamVaktiApp {
   }
 
   openSettingsModal() {
+    if (this.compass) {
+      this.compass.stopCompass();
+    }
     const modal = document.getElementById("settingsModal");
     if (modal) modal.classList.remove("hidden");
     const locDesc = document.getElementById("settingsLocationDesc");
@@ -947,6 +999,22 @@ class TamVaktiApp {
     this.stopAthanPreview();
     const modal = document.getElementById("settingsModal");
     if (modal) modal.classList.add("hidden");
+
+    const viewQibla = document.getElementById("viewQibla");
+    const isQiblaActive = viewQibla && !viewQibla.classList.contains("hidden");
+    const btnPrayer = document.getElementById("tabBtn-prayer");
+    const btnQibla = document.getElementById("tabBtn-qibla");
+
+    if (isQiblaActive) {
+      if (btnQibla) btnQibla.classList.add("active");
+      if (btnPrayer) btnPrayer.classList.remove("active");
+      if (this.compass && this.qiblaMode === "compass") {
+        this.compass.startCompass();
+      }
+    } else {
+      if (btnPrayer) btnPrayer.classList.add("active");
+      if (btnQibla) btnQibla.classList.remove("active");
+    }
   }
 
   openBatterySettings() {
