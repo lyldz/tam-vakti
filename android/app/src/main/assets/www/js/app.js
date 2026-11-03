@@ -110,7 +110,7 @@ class TamVaktiApp {
     this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
 
     // Otomatik Güncelleme Sistemi (GitHub Releases)
-    this.currentVersion = "v1.08";
+    this.currentVersion = "v1.09";
     this.onboardingStep = 1;
     this.monthlyYear = null;
     this.monthlyMonth = null;
@@ -1486,6 +1486,15 @@ class TamVaktiApp {
     if (!modal) return;
     modal.classList.remove("hidden");
     document.body.classList.add("overflow-hidden");
+    document.body.classList.add("onboarding-active");
+    
+    // Kurulum esnasında alt sekmeler / dock tamamen gizlenir
+    const dock = document.getElementById("mainBottomDock") || document.querySelector(".minimal-dock");
+    if (dock) {
+      dock.classList.add("hidden");
+      dock.style.setProperty("display", "none", "important");
+    }
+
     this.goToOnboardingStep(step);
     this.updateOnboardingLocationDisplay();
   }
@@ -1497,6 +1506,14 @@ class TamVaktiApp {
     const modal = document.getElementById("onboardingModal");
     if (modal) modal.classList.add("hidden");
     document.body.classList.remove("overflow-hidden");
+    document.body.classList.remove("onboarding-active");
+
+    // Kurulum bittiğinde veya atlandığında alt sekmeleri geri aç
+    const dock = document.getElementById("mainBottomDock") || document.querySelector(".minimal-dock");
+    if (dock) {
+      dock.classList.remove("hidden");
+      dock.style.removeProperty("display");
+    }
   }
 
   updateOnboardingLocationDisplay() {

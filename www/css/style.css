@@ -1002,8 +1002,24 @@ html.dark #monthlySourceBadge {
    ========================================================= */
 
 #onboardingModal {
+  position: fixed;
+  inset: 0;
+  z-index: 99999 !important;
   background: linear-gradient(180deg, #f0f7f3 0%, #ebf4ee 100%);
   transition: opacity 0.3s ease, transform 0.3s ease;
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+/* Kurulum esnasında alt sekmeler / dock KESİNLİKLE görünmez */
+body.onboarding-active .minimal-dock,
+body.onboarding-active #mainBottomDock,
+#onboardingModal:not(.hidden) ~ .minimal-dock,
+#onboardingModal:not(.hidden) ~ #mainBottomDock,
+#onboardingModal:not(.hidden) ~ * .minimal-dock {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 html.dark #onboardingModal {
