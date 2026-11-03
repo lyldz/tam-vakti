@@ -996,3 +996,78 @@ html.dark #monthlySourceBadge {
   border-color: rgba(52, 211, 153, 0.2) !important;
   color: #8faea0 !important;
 }
+
+/* =========================================================
+   BAŞLANGIÇ & KURULUM SİHİRBAZI (ONBOARDING WIZARD)
+   ========================================================= */
+
+#onboardingModal {
+  background: linear-gradient(180deg, #f0f7f3 0%, #ebf4ee 100%);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+html.dark #onboardingModal {
+  background: linear-gradient(180deg, #071710 0%, #0d281e 100%) !important;
+}
+
+/* Sayfa Nokta İndikatörleri */
+.onboarding-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background-color: #cbd5e1;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html.dark .onboarding-dot {
+  background-color: rgba(52, 211, 153, 0.25);
+}
+
+.onboarding-dot.active {
+  width: 24px;
+  background-color: #059669;
+}
+
+html.dark .onboarding-dot.active {
+  background-color: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+/* Radar Dalga Animasyonu (Adım 2) */
+@keyframes radar-ripple {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.radar-circle-1 {
+  animation: radar-ripple 2.4s infinite cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.radar-circle-2 {
+  animation: radar-ripple 2.4s infinite cubic-bezier(0.2, 0.8, 0.2, 1) 0.8s;
+}
+
+/* Adım Geçişleri */
+.onboarding-step-pane {
+  animation: fadeInStep 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes fadeInStep {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

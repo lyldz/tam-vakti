@@ -110,7 +110,8 @@ class TamVaktiApp {
     this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
 
     // Otomatik Güncelleme Sistemi (GitHub Releases)
-    this.currentVersion = "v1.07";
+    this.currentVersion = "v1.08";
+    this.onboardingStep = 1;
     this.monthlyYear = null;
     this.monthlyMonth = null;
     this.updateInfo = null;
@@ -229,6 +230,15 @@ class TamVaktiApp {
     }
 
     await this.updatePrayers();
+    if (typeof this.updateOnboardingLocationDisplay === "function") {
+      this.updateOnboardingLocationDisplay();
+    }
+
+    // Başlangıç Kurulum Sihirbazı (İlk açılışta veya kullanıcı istediğinde açılır)
+    const onboardingDone = localStorage.getItem("tamvakti_onboarding_completed") === "true";
+    if (!onboardingDone) {
+      this.openOnboarding(1);
+    }
 
     // Arka planda sessizce yeni GitHub sürümünü denetle
     setTimeout(() => this.checkForUpdates(true), 2500);
@@ -1465,6 +1475,147 @@ class TamVaktiApp {
     }
 
     this.showToast("İndirme sırasında hata oluştu: " + errorMsg, "⚠️", 4000);
+  }
+
+
+  // ==========================================
+  // BAŞLANGIÇ & KURULUM SİHİRBAZI (ONBOARDING)
+  // ==========================================
+  openOnboarding(step = 1) {
+    const modal = document.getElementById("onboardingModal");
+    if (!modal) return;
+    modal.classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+    this.goToOnboardingStep(step);
+    this.updateOnboardingLocationDisplay();
+  }
+
+  closeOnboarding(savePreference = true) {
+    if (savePreference) {
+      localStorage.setItem("tamvakti_onboarding_completed", "true");
+    }
+    const modal = document.getElementById("onboardingModal");
+    if (modal) modal.classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+  }
+
+  updateOnboardingLocationDisplay() {
+    if (!this.currentLocation) return;
+    const cityName = this.currentLocation.name.includes(",")
+      ? this.currentLocation.name.split(",")[1].trim()
+      : this.currentLocation.name.includes("/")
+      ? this.currentLocation.name.split("/")[1].trim()
+      : this.currentLocation.name;
+    const cEl = document.getElementById("onboardingCurrentCity");
+    if (cEl) cEl.textContent = cityName;
+    const nEl = document.getElementById("onboardingNotifCity");
+    if (nEl) nEl.textContent = cityName;
+  }
+
+  goToOnboardingStep(step) {
+    this.onboardingStep = Math.max(1, Math.min(5, step));
+
+    // 1. Panelleri ve buton gruplarını göster/gizle
+    for (let i = 1; i <= 5; i++) {
+      const pane = document.getElementById(`onboardingStep-${i}`);
+      const btnGroup = document.getElementById(`onboardingBtnGroup-${i}`);
+      if (pane) {
+        if (i === this.onboardingStep) {
+          pane.classList.remove("hidden");
+        } else {
+          pane.classList.add("hidden");
+        }
+      }
+      if (btnGroup) {
+        if (i === this.onboardingStep) {
+          btnGroup.classList.remove("hidden");
+        } else {
+          btnGroup.classList.add("hidden");
+        }
+      }
+    }
+
+    // 2. Geri Butonu Yönetimi (1. adımda gizli, 2-5 te görünür)
+    const backBtn = document.getElementById("onboardingBackBtn");
+    if (backBtn) {
+      if (this.onboardingStep > 1) {
+        backBtn.classList.remove("invisible");
+      } else {
+        backBtn.classList.add("invisible");
+      }
+    }
+
+    // 3. Nokta İndikatörleri
+    const dotsContainer = document.getElementById("onboardingDotsBar");
+    if (dotsContainer) {
+      const dots = dotsContainer.querySelectorAll(".onboarding-dot");
+      dots.forEach((dot, idx) => {
+        if (idx + 1 === this.onboardingStep) {
+          dot.classList.add("active");
+        } else {
+          dot.classList.remove("active");
+        }
+      });
+    }
+
+    this.updateOnboardingLocationDisplay();
+  }
+
+  prevOnboardingStep() {
+    if (this.onboardingStep > 1) {
+      this.goToOnboardingStep(this.onboardingStep - 1);
+    }
+  }
+
+  onboardingLocateWithGPS() {
+    const btn = document.getElementById("onboardingGpsBtn");
+    const origHtml = btn ? btn.innerHTML : "";
+    if (btn) btn.innerHTML = `<span>⏳</span><span>Konum tespiti yapılıyor...</span>`;
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          this.selectLocation("Konumum", lat, lon);
+          this.updateOnboardingLocationDisplay();
+          this.showToast("Konumunuz başarıyla tespit edildi.", "✓");
+          if (btn) btn.innerHTML = origHtml;
+          setTimeout(() => this.goToOnboardingStep(3), 600);
+        },
+        (err) => {
+          this.showToast("GPS konumu alınamadı, lütfen listeden seçiniz.", "⚠️");
+          if (btn) btn.innerHTML = origHtml;
+          this.openLocationModal();
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    } else {
+      this.showToast("GPS desteği bulunamadı.", "⚠️");
+      if (btn) btn.innerHTML = origHtml;
+      this.openLocationModal();
+    }
+  }
+
+  onboardingEnableNotifications() {
+    this.setOngoingNotifSetting(true);
+    if (window.AndroidBridge && window.AndroidBridge.requestNotificationPermission) {
+      window.AndroidBridge.requestNotificationPermission();
+    } else if (window.Notification && Notification.requestPermission) {
+      Notification.requestPermission();
+    }
+    this.showToast("Bildirimler etkinleştirildi.", "🔔");
+    this.goToOnboardingStep(4);
+  }
+
+  completeOnboarding() {
+    const kerahatToggle = document.getElementById("onboardingKerahatToggle");
+    if (kerahatToggle) {
+      localStorage.setItem("tamvakti_kerahat_alert", kerahatToggle.checked ? "true" : "false");
+    }
+
+    this.closeOnboarding(true);
+    this.showToast("Tam Vakti\x27ne Hoş Geldiniz! Hayırlı ibadetler dileriz.", "🕌", 3500);
   }
 
   playAlertTone() {
