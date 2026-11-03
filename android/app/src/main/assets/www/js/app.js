@@ -110,7 +110,9 @@ class TamVaktiApp {
     this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
 
     // Otomatik Güncelleme Sistemi (GitHub Releases)
-    this.currentVersion = "v1.10";
+    this.currentVersion = "v2.0";
+    this.versionCodename = "Hilal";
+    this.versionDisplay = "v2.0 • Hilal";
     this.onboardingStep = 1;
     this.monthlyYear = null;
     this.monthlyMonth = null;
