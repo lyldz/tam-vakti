@@ -998,6 +998,19 @@ html.dark #monthlySourceBadge {
 }
 
 /* =========================================================
+   ŞEHİR SEÇİM MODALI - TAM EKRAN
+   ========================================================= */
+
+#locationModal {
+  z-index: 100001 !important;
+}
+
+#locationModal #citySearchInput:focus {
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+}
+
+/* =========================================================
    BAŞLANGIÇ & KURULUM SİHİRBAZI (ONBOARDING WIZARD)
    ========================================================= */
 

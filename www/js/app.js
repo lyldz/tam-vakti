@@ -110,7 +110,7 @@ class TamVaktiApp {
     this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
 
     // Otomatik Güncelleme Sistemi (GitHub Releases)
-    this.currentVersion = "v1.09";
+    this.currentVersion = "v1.10";
     this.onboardingStep = 1;
     this.monthlyYear = null;
     this.monthlyMonth = null;
@@ -170,7 +170,7 @@ class TamVaktiApp {
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
-    return { name: "Ilgın", lat: 38.2797, lon: 31.9142 };
+    return { name: "Konum Seçiniz", lat: 39.9334, lon: 32.8597, isPlaceholder: true };
   }
 
   saveLocation(loc) {
@@ -234,9 +234,10 @@ class TamVaktiApp {
       this.updateOnboardingLocationDisplay();
     }
 
-    // Başlangıç Kurulum Sihirbazı (İlk açılışta veya kullanıcı istediğinde açılır)
+    // Başlangıç Kurulum Sihirbazı (İlk açılışta veya henüz konum seçilmemişse açılır)
     const onboardingDone = localStorage.getItem("tamvakti_onboarding_completed") === "true";
-    if (!onboardingDone) {
+    const hasSavedLocation = !!localStorage.getItem("tamvakti_active_location");
+    if (!onboardingDone || !hasSavedLocation) {
       this.openOnboarding(1);
     }
 
@@ -248,7 +249,10 @@ class TamVaktiApp {
     const now = new Date();
     
     // Şehir Rozeti
-    const displayName = this.currentLocation.name.includes(",") 
+    const isPlaceholder = !this.currentLocation || this.currentLocation.isPlaceholder || this.currentLocation.name === "Konum Seçiniz";
+    const displayName = isPlaceholder
+      ? "Konum Seçiniz"
+      : this.currentLocation.name.includes(",") 
       ? this.currentLocation.name.split(",")[1].trim() 
       : this.currentLocation.name.includes("/")
       ? this.currentLocation.name.split("/")[1].trim()
@@ -734,7 +738,7 @@ class TamVaktiApp {
     const tableBody = document.getElementById("monthlyTableBody");
     const sourceEl = document.getElementById("monthlySourceBadge");
 
-    if (cityEl) cityEl.textContent = this.currentLocation.name || "Ilgın";
+    if (cityEl) cityEl.textContent = (this.currentLocation && !this.currentLocation.isPlaceholder) ? this.currentLocation.name : "Konum Seçiniz";
 
     const trMonths = [
       '', 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
@@ -907,41 +911,126 @@ class TamVaktiApp {
   renderCitySelector() {
     const listEl = document.getElementById("cityListContainer");
     if (!listEl) return;
+    this._renderCityList(listEl, TURKEY_CITIES, "");
+  }
 
-    listEl.innerHTML = TURKEY_CITIES.map(c => {
-      let subOptions = "";
-      if (c.districts && c.districts.length > 0) {
-        subOptions = `
-          <div class="flex flex-wrap gap-1 mt-1 pl-2">
-            ${c.districts.map(d => `
-              <button onclick="app.selectLocation('${d.name}', ${d.lat}, ${d.lon})"
-                      class="text-[11px] px-2.5 py-1 rounded-xl bg-emerald-50 text-emerald-900 hover:bg-emerald-700 hover:text-white font-semibold transition-colors">
-                ${d.name}
-              </button>
-            `).join("")}
-          </div>
-        `;
+  _renderCityList(listEl, cities, query) {
+    const q = this._normalizeForSearch(query);
+    let html = "";
+    let matchCount = 0;
+
+    cities.forEach(c => {
+      const cityNorm = this._normalizeForSearch(c.name);
+      const cityMatch = !q || cityNorm.includes(q);
+      
+      // District matches
+      let matchingDistricts = [];
+      let allDistricts = c.districts || [];
+      
+      if (q && !cityMatch) {
+        matchingDistricts = allDistricts.filter(d => 
+          this._normalizeForSearch(d.name).includes(q)
+        );
+        if (matchingDistricts.length === 0) return;
+      } else if (q && cityMatch) {
+        matchingDistricts = allDistricts;
+      } else {
+        matchingDistricts = allDistricts;
       }
 
-      return `
-        <div class="border-b border-slate-100 py-2.5">
+      matchCount++;
+      const hasDistricts = allDistricts.length > 0;
+      const showDistricts = q ? true : false;
+      
+      html += `
+        <div class="border-b border-slate-100 dark:border-emerald-900/15 py-2">
           <div class="flex items-center justify-between">
-            <button onclick="app.selectLocation('${c.name}', ${c.lat}, ${c.lon})" 
-                    class="font-extrabold text-sm text-[#0f3e2e] hover:text-emerald-700 text-left">
+            <button onclick="app.selectLocation('${c.name.replace(/'/g, "\\'")}', ${c.lat}, ${c.lon})" 
+                    class="font-extrabold text-sm text-[#0f3e2e] dark:text-emerald-100 hover:text-emerald-700 dark:hover:text-emerald-400 text-left flex-1 cursor-pointer">
               ${c.name}
             </button>
-            <span class="text-[10px] text-slate-400 font-medium">${c.lat.toFixed(1)}°K, ${c.lon.toFixed(1)}°D</span>
+            ${hasDistricts ? `
+              <button onclick="app.toggleCityDistricts(${c.id})" 
+                      id="cityExpandBtn-${c.id}"
+                      class="text-[10px] px-2 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors cursor-pointer flex items-center gap-1">
+                <span>${allDistricts.length} ilçe</span>
+                <svg class="w-3 h-3 transition-transform ${showDistricts ? 'rotate-180' : ''}" id="cityExpandIcon-${c.id}" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+            ` : `
+              <span class="text-[10px] text-slate-400 dark:text-emerald-700 font-medium">${c.lat.toFixed(2)}°K</span>
+            `}
           </div>
-          ${subOptions}
+          ${hasDistricts ? `
+            <div id="cityDistricts-${c.id}" class="mt-1.5 pl-1 ${showDistricts ? '' : 'hidden'}">
+              <div class="flex flex-wrap gap-1">
+                ${(q && !cityMatch ? matchingDistricts : allDistricts).map(d => `
+                  <button onclick="app.selectLocation('${c.name.replace(/'/g, "\\'")}/${d.name.replace(/'/g, "\\'")}', ${d.lat}, ${d.lon})"
+                          class="text-[11px] px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-900 dark:text-emerald-200 hover:bg-emerald-700 hover:text-white font-semibold transition-colors cursor-pointer border border-emerald-100 dark:border-emerald-800/30">
+                    ${d.name}
+                  </button>
+                `).join("")}
+              </div>
+            </div>
+          ` : ''}
         </div>
       `;
-    }).join("");
+    });
+
+    listEl.innerHTML = html || `
+      <div class="text-center py-8">
+        <div class="text-3xl mb-2">🔍</div>
+        <div class="text-sm font-bold text-slate-400 dark:text-emerald-600">Sonuç bulunamadı</div>
+        <div class="text-[11px] text-slate-300 dark:text-emerald-700 mt-1">Farklı bir arama deneyin</div>
+      </div>
+    `;
+
+    const countEl = document.getElementById("cityResultCount");
+    if (countEl) {
+      countEl.textContent = q ? `${matchCount} il bulundu` : `${cities.length} il listelendi`;
+    }
+  }
+
+  _normalizeForSearch(str) {
+    return str
+      .toLowerCase()
+      .replace(/ı/g, "i")
+      .replace(/ö/g, "o")
+      .replace(/ü/g, "u")
+      .replace(/ş/g, "s")
+      .replace(/ç/g, "c")
+      .replace(/ğ/g, "g")
+      .replace(/â/g, "a")
+      .replace(/î/g, "i")
+      .replace(/û/g, "u")
+      .trim();
+  }
+
+  filterCities(query) {
+    const listEl = document.getElementById("cityListContainer");
+    if (!listEl) return;
+    this._renderCityList(listEl, TURKEY_CITIES, query);
+  }
+
+  toggleCityDistricts(cityId) {
+    const el = document.getElementById(`cityDistricts-${cityId}`);
+    const icon = document.getElementById(`cityExpandIcon-${cityId}`);
+    if (el) {
+      el.classList.toggle("hidden");
+      if (icon) icon.classList.toggle("rotate-180");
+    }
   }
 
   selectLocation(name, lat, lon) {
     this.saveLocation({ name, lat, lon });
     this.closeLocationModal();
     this.updatePrayers();
+
+    // Eğer onboarding aktifse konum bilgisini güncelle ve otomatik adım 3'e geç
+    const onboardingModal = document.getElementById("onboardingModal");
+    if (onboardingModal && !onboardingModal.classList.contains("hidden")) {
+      this.updateOnboardingLocationDisplay();
+      setTimeout(() => this.goToOnboardingStep(3), 400);
+    }
 
     const monthlyModal = document.getElementById("monthlyModal");
     if (monthlyModal && !monthlyModal.classList.contains("hidden")) {
@@ -974,7 +1063,17 @@ class TamVaktiApp {
   }
 
   openLocationModal() {
-    document.getElementById("locationModal").classList.remove("hidden");
+    const modal = document.getElementById("locationModal");
+    if (modal) {
+      modal.classList.remove("hidden");
+      // Arama kutusunu temizle ve tam listeyi göster
+      const searchInput = document.getElementById("citySearchInput");
+      if (searchInput) {
+        searchInput.value = "";
+        setTimeout(() => searchInput.focus(), 300);
+      }
+      this.renderCitySelector();
+    }
   }
 
   closeLocationModal() {
@@ -989,7 +1088,9 @@ class TamVaktiApp {
     if (modal) modal.classList.remove("hidden");
     const locDesc = document.getElementById("settingsLocationDesc");
     if (locDesc) {
-      locDesc.textContent = `${this.currentLocation.name || "Ilgın"} • Otomatik`;
+      locDesc.textContent = (this.currentLocation && !this.currentLocation.isPlaceholder)
+        ? `${this.currentLocation.name} • Otomatik`
+        : "Konum Seçiniz";
     }
     const toneEl = document.getElementById("settingsAthanTone");
     if (toneEl) {
@@ -1047,7 +1148,7 @@ class TamVaktiApp {
     if (window.AndroidBridge && window.AndroidBridge.showOngoingPrayerNotification) {
       const nextTarget = Date.now() + 15 * 60 * 1000;
       window.AndroidBridge.showOngoingPrayerNotification(
-        this.currentLocation.name || "Ilgın",
+        (this.currentLocation && !this.currentLocation.isPlaceholder) ? this.currentLocation.name : "Tam Vakti",
         "Akşam (Test)",
         "18:26",
         nextTarget
@@ -1517,15 +1618,25 @@ class TamVaktiApp {
   }
 
   updateOnboardingLocationDisplay() {
-    if (!this.currentLocation) return;
+    const hasChosen = !!localStorage.getItem("tamvakti_active_location");
+    const cEl = document.getElementById("onboardingCurrentCity");
+    const nEl = document.getElementById("onboardingNotifCity");
+    const badge = document.getElementById("onboardingLocationBadge");
+
+    if (!hasChosen || !this.currentLocation || this.currentLocation.isPlaceholder) {
+      if (cEl) cEl.textContent = "Henüz seçilmedi";
+      if (nEl) nEl.textContent = "Vakit Bildirimi";
+      if (badge) badge.classList.add("opacity-50");
+      return;
+    }
+
+    if (badge) badge.classList.remove("opacity-50");
     const cityName = this.currentLocation.name.includes(",")
       ? this.currentLocation.name.split(",")[1].trim()
       : this.currentLocation.name.includes("/")
       ? this.currentLocation.name.split("/")[1].trim()
       : this.currentLocation.name;
-    const cEl = document.getElementById("onboardingCurrentCity");
     if (cEl) cEl.textContent = cityName;
-    const nEl = document.getElementById("onboardingNotifCity");
     if (nEl) nEl.textContent = cityName;
   }
 
@@ -1549,6 +1660,16 @@ class TamVaktiApp {
         } else {
           btnGroup.classList.add("hidden");
         }
+      }
+    }
+
+    // Adım 2 İlerleme Butonu
+    if (this.onboardingStep === 2) {
+      const contBtn = document.getElementById("onboardingStep2ContinueBtn");
+      const hasLoc = !!localStorage.getItem("tamvakti_active_location");
+      if (contBtn) {
+        if (hasLoc) contBtn.classList.remove("hidden");
+        else contBtn.classList.add("hidden");
       }
     }
 

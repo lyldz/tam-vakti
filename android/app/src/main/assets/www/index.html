@@ -38,7 +38,7 @@
         <svg class="w-3.5 h-3.5 text-emerald-700" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
         </svg>
-        <span id="headerCityName">Ilgın</span>
+        <span id="headerCityName">Konum Seçiniz</span>
       </button>
 
       <!-- Sağ: Tarih & Takvim Kartı (Takvim İkonu + Günler + Geçiş Oku) -->
@@ -110,7 +110,7 @@
         <div class="flex items-center justify-between px-1">
           <button onclick="app.openLocationModal()" class="location-pill cursor-pointer" title="Konum Değiştir">
             <span class="text-emerald-700">📍</span>
-            <span id="qiblaHeaderCity">Ilgın</span>
+            <span id="qiblaHeaderCity">Konum Seçiniz</span>
           </button>
           <div id="qiblaSensorBadge" class="bg-white/90 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-full shadow-2xs border border-white flex items-center gap-1.5">
             <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -298,7 +298,7 @@
       <div class="flex items-center gap-2">
         <button onclick="app.openLocationModal()" class="location-pill text-[11px] py-1 px-2.5 shadow-none" title="Konum Değiştir">
           <span class="text-emerald-700">📍</span>
-          <span id="monthlyCityName">Ilgın</span>
+          <span id="monthlyCityName">Konum Seçiniz</span>
         </button>
         <button onclick="app.closeMonthlyModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold px-1 leading-none cursor-pointer">&times;</button>
       </div>
@@ -383,7 +383,7 @@
         </svg>
         <span>Ayarlar</span>
       </button>
-      <span class="text-xs font-mono font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full">v1.09</span>
+      <span class="text-xs font-mono font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full">v1.10</span>
     </div>
 
     <div class="max-w-md mx-auto px-4 py-3 space-y-4 pb-28">
@@ -428,7 +428,7 @@
               </svg>
               <div>
                 <div class="text-xs font-bold text-[#0f3e2e]">Konum</div>
-                <div class="text-[10px] text-slate-400 font-medium" id="settingsLocationDesc">Ilgın • Otomatik</div>
+                <div class="text-[10px] text-slate-400 font-medium" id="settingsLocationDesc">Konum Seçiniz • Otomatik</div>
               </div>
             </div>
             <div class="text-xs font-bold text-emerald-700 flex items-center gap-1">
@@ -577,7 +577,7 @@
               <span class="text-xs font-bold text-[#0f3e2e]">Hakkında & Geri Bildirim</span>
             </div>
             <div class="text-xs font-semibold text-slate-500 flex items-center gap-1">
-              <span>v1.09 • GitHub</span>
+              <span>v1.10 • GitHub</span>
               <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
           </div>
@@ -596,42 +596,41 @@
   </div>
 
   <!-- MODAL: Şehir ve İlçe Seçimi -->
-  <div id="locationModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 modal-overlay">
-    <div class="bg-white rounded-3xl w-full max-w-sm max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-      <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-        <h3 class="font-extrabold text-sm text-[#0f3e2e]">Şehir ve İlçe Seçimi</h3>
-        <button onclick="app.closeLocationModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold">&times;</button>
-      </div>
+  <div id="locationModal" class="hidden fixed inset-0 z-[100001] flex flex-col bg-white dark:bg-[#0a1f15] select-none">
+    <!-- Başlık -->
+    <div class="px-4 pt-5 pb-3 flex items-center justify-between shrink-0 border-b border-slate-100 dark:border-emerald-900/30">
+      <h3 class="font-extrabold text-base text-[#0f3e2e] dark:text-emerald-100">Şehir ve İlçe Seçimi</h3>
+      <button onclick="app.closeLocationModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-emerald-950/60 flex items-center justify-center text-slate-500 dark:text-emerald-300 hover:bg-slate-200 transition-colors cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
 
-      <div class="p-3 bg-emerald-50/50 border-b border-slate-100">
-        <button id="gpsLocateBtn" onclick="app.locateWithGPS()" class="w-full py-2.5 px-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors">
-          <span>📡</span>
-          <span>GPS ile Otomatik Bul</span>
-        </button>
+    <!-- Arama Kutusu -->
+    <div class="px-4 py-3 bg-slate-50/80 dark:bg-emerald-950/30 border-b border-slate-100 dark:border-emerald-900/20 shrink-0">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input id="citySearchInput" type="text" placeholder="İl veya ilçe ara..." 
+          oninput="app.filterCities(this.value)"
+          class="w-full pl-10 pr-4 py-3 bg-white dark:bg-emerald-950/50 border border-slate-200 dark:border-emerald-700/30 rounded-2xl text-sm font-semibold text-[#0f3e2e] dark:text-emerald-100 placeholder-slate-400 dark:placeholder-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all">
       </div>
+    </div>
 
-      <!-- Sabit Bildirim Çubuğu Ayarı -->
-      <div class="p-3 bg-white border-b border-slate-100 flex items-center justify-between">
-        <div class="pr-2">
-          <div class="text-xs font-bold text-[#0f3e2e] flex items-center gap-1.5">
-            <span>⏱️</span>
-            <span>Bildirim Çubuğunda Sayaç</span>
-          </div>
-          <div class="text-[10px] text-slate-500 font-medium">Sıradaki vakti ve canlı sayacı göster</div>
-        </div>
-        <label class="relative inline-flex items-center cursor-pointer">
-          <input type="checkbox" id="ongoingNotifToggle" onchange="app.toggleOngoingNotification(this.checked)" class="sr-only peer">
-          <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
-        </label>
-      </div>
+    <!-- GPS Butonu -->
+    <div class="px-4 py-2 bg-white dark:bg-[#0a1f15] border-b border-slate-100 dark:border-emerald-900/20 shrink-0">
+      <button id="gpsLocateBtn" onclick="app.locateWithGPS()" class="w-full py-2.5 px-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer">
+        <span>📡</span>
+        <span>GPS ile Otomatik Bul</span>
+      </button>
+    </div>
 
-      <!-- Sürüm Bilgisi -->
-      <div class="px-3 py-2 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-semibold">
-        <span>Tam Vakti</span>
-        <span class="font-mono bg-slate-200/60 px-2 py-0.5 rounded-full text-slate-600">v1.09</span>
-      </div>
+    <!-- Şehir Listesi -->
+    <div class="flex-1 overflow-y-auto overscroll-contain px-4 py-2" id="cityListContainer"></div>
 
-      <div class="p-3 overflow-y-auto flex-1 space-y-1" id="cityListContainer"></div>
+    <!-- Sonuç Sayısı -->
+    <div class="px-4 py-2 border-t border-slate-100 dark:border-emerald-900/20 bg-slate-50 dark:bg-emerald-950/30 shrink-0">
+      <span id="cityResultCount" class="text-[10px] font-semibold text-slate-400 dark:text-emerald-600"></span>
     </div>
   </div>
 
@@ -645,7 +644,7 @@
           <img src="assets/icons/logo.svg" alt="Tam Vakti Logo" class="w-8 h-9 object-contain drop-shadow-xs">
           <div class="text-left">
             <h3 class="font-extrabold text-base text-[#0f3e2e]">Tam Vakti</h3>
-            <span class="inline-block text-[11px] font-mono font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">v1.09</span>
+            <span class="inline-block text-[11px] font-mono font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">v1.10</span>
           </div>
         </div>
         <button onclick="app.closeAboutModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold leading-none">&times;</button>
@@ -668,7 +667,7 @@
             <span class="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
             Yeni Güncelleme!
           </span>
-          <span id="updateNewVersionTag" class="text-[10px] font-mono font-bold bg-emerald-200/80 text-emerald-900 px-2 py-0.5 rounded-full">v1.09</span>
+          <span id="updateNewVersionTag" class="text-[10px] font-mono font-bold bg-emerald-200/80 text-emerald-900 px-2 py-0.5 rounded-full">v1.10</span>
         </div>
         <p id="updateReleaseNotes" class="text-[11px] text-slate-600 leading-snug line-clamp-3">
           Yeni sürüm hazır.
@@ -736,8 +735,8 @@
           <div>
             <h3 class="font-extrabold text-base text-[#0f3e2e] leading-tight">Yeni Güncelleme Mevcut!</h3>
             <div class="flex items-center gap-2 mt-1">
-              <span id="updateModalNewTag" class="text-[11px] font-mono font-bold bg-emerald-700 text-white px-2.5 py-0.5 rounded-full">v1.09</span>
-              <span class="text-[10px] font-semibold text-slate-400">Mevcut: v1.09</span>
+              <span id="updateModalNewTag" class="text-[11px] font-mono font-bold bg-emerald-700 text-white px-2.5 py-0.5 rounded-full">v1.10</span>
+              <span class="text-[10px] font-semibold text-slate-400">Mevcut: v1.10</span>
             </div>
           </div>
         </div>
@@ -787,7 +786,7 @@
         </svg>
       </button>
       <div class="flex items-center gap-2">
-        <span class="text-[11px] font-mono font-bold bg-emerald-100/90 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 px-2.5 py-0.5 rounded-full">v1.09</span>
+        <span class="text-[11px] font-mono font-bold bg-emerald-100/90 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 px-2.5 py-0.5 rounded-full">v1.10</span>
         <button id="onboardingSkipBtn" onclick="app.closeOnboarding(true)" class="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-emerald-300 px-2 py-1 transition-colors cursor-pointer">
           Atla
         </button>
@@ -857,10 +856,10 @@
         </div>
 
         <!-- Seçili Konum Hapı -->
-        <div class="flex items-center gap-1.5 bg-white/90 dark:bg-emerald-950/60 border border-emerald-900/10 dark:border-emerald-500/20 text-[#0f3e2e] dark:text-emerald-200 px-3.5 py-1.5 rounded-full text-xs font-bold shadow-2xs">
+        <div id="onboardingLocationBadge" class="flex items-center gap-1.5 bg-white/90 dark:bg-emerald-950/60 border border-emerald-900/10 dark:border-emerald-500/20 text-[#0f3e2e] dark:text-emerald-200 px-3.5 py-1.5 rounded-full text-xs font-bold shadow-2xs opacity-75">
           <span class="text-emerald-600">📍</span>
           <span>Seçili:</span>
-          <span id="onboardingCurrentCity" class="text-emerald-700 dark:text-emerald-400 font-extrabold">Ilgın</span>
+          <span id="onboardingCurrentCity" class="text-emerald-700 dark:text-emerald-400 font-extrabold">Henüz seçilmedi</span>
         </div>
       </div>
 
@@ -881,7 +880,7 @@
                 <span>🕌</span>
               </div>
               <div class="text-xs font-bold text-[#0f3e2e] dark:text-emerald-100">
-                Öğle • <span id="onboardingNotifCity">Ilgın</span>
+                Öğle • <span id="onboardingNotifCity">Vakit Bildirimi</span>
               </div>
             </div>
             <span class="text-[10px] font-semibold text-slate-400">Şimdi</span>
@@ -1017,8 +1016,12 @@
             <span>📍</span>
             <span>Konumumu Otomatik Bul</span>
           </button>
-          <button onclick="app.openLocationModal()" class="w-full py-2.5 text-xs font-bold text-slate-600 dark:text-emerald-300 hover:text-emerald-700 transition-colors cursor-pointer">
-            Şehri Elle Seç
+          <button onclick="app.openLocationModal()" class="w-full py-3 rounded-2xl bg-white/80 dark:bg-emerald-950/60 border border-emerald-900/10 dark:border-emerald-500/20 text-[#0f3e2e] dark:text-emerald-100 font-extrabold text-xs shadow-2xs hover:bg-white active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <span>🔍</span>
+            <span>Şehri ve İlçeyi Elle Seç</span>
+          </button>
+          <button id="onboardingStep2ContinueBtn" onclick="app.goToOnboardingStep(3)" class="hidden w-full py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline cursor-pointer">
+            Seçili Konum ile İlerle →
           </button>
         </div>
 

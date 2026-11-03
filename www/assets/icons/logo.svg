@@ -1,31 +1,123 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="200" height="240" viewBox="0 0 200 240">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
-    <linearGradient id="tvBg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#2D6A4F"/>
-      <stop offset="100%" stop-color="#1B4332"/>
+    <!-- Zemin Gradyanı: Zümrüt & Gece -->
+    <radialGradient id="bgGlow" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#144d37"/>
+      <stop offset="55%" stop-color="#0a2a1e"/>
+      <stop offset="100%" stop-color="#04140e"/>
+    </radialGradient>
+
+    <!-- Lüks Altın Gradyanı -->
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF2B2"/>
+      <stop offset="25%" stop-color="#FCD34D"/>
+      <stop offset="50%" stop-color="#D97706"/>
+      <stop offset="75%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#FBBF24"/>
     </linearGradient>
-    <linearGradient id="tvMoonGrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#74C69D"/>
-      <stop offset="100%" stop-color="#52B788"/>
+
+    <!-- İkincil Parlak Altın -->
+    <linearGradient id="goldLight" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#D97706"/>
+      <stop offset="50%" stop-color="#FDE68A"/>
+      <stop offset="100%" stop-color="#FFFBEB"/>
     </linearGradient>
+
+    <!-- Yumuşak Parıltı / Glow Filtresi -->
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="subtleShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
   </defs>
 
-  <!-- Mihrap / Kubbe Ana Formu -->
-  <path d="M20 220 V110 C20 65.8 55.8 30 100 30 C144.2 30 180 65.8 180 110 V220 A12 12 0 0 1 168 232 H32 A12 12 0 0 1 20 220 Z" fill="url(#tvBg)"/>
+  <!-- Arka Plan Squircle (Modern App İkonu Şekli) -->
+  <rect x="16" y="16" width="480" height="480" rx="110" ry="110" fill="url(#bgGlow)"/>
   
-  <!-- Dış İnce Kemer Çerçevesi -->
-  <path d="M28 218 V110 C28 70.2 60.2 38 100 38 C139.8 38 172 70.2 172 110 V218" fill="none" stroke="#D8F3DC" stroke-width="2.5" stroke-opacity="0.3"/>
+  <!-- Altın Çerçeve Kenarlığı -->
+  <rect x="20" y="20" width="472" height="472" rx="106" ry="106" fill="none" stroke="url(#goldGradient)" stroke-width="4" stroke-opacity="0.55"/>
+  <rect x="30" y="30" width="452" height="452" rx="96" ry="96" fill="none" stroke="#34D399" stroke-width="1.5" stroke-opacity="0.2"/>
 
-  <!-- Kubbe Alem Tepe Yıldızı -->
-  <circle cx="100" cy="18" r="4.5" fill="#D8F3DC"/>
-  <line x1="100" y1="22.5" x2="100" y2="30" stroke="#D8F3DC" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Arka Planda İnce Geometrik Desen / Kubbe Işınları -->
+  <g opacity="0.12" stroke="url(#goldGradient)" stroke-width="1.5">
+    <circle cx="256" cy="256" r="190" fill="none"/>
+    <circle cx="256" cy="256" r="145" fill="none" stroke-dasharray="4 6"/>
+    <circle cx="256" cy="256" r="100" fill="none"/>
+    <line x1="256" y1="56" x2="256" y2="456"/>
+    <line x1="56" y1="256" x2="456" y2="256"/>
+    <line x1="115" y1="115" x2="397" y2="397"/>
+    <line x1="115" y1="397" x2="397" y2="115"/>
+  </g>
 
-  <!-- İç Hilal (Crescent Moon) -->
-  <path d="M96 86 C82 86 71 97 71 111 C71 125 82 136 96 136 C103.5 136 110.5 132.5 114.8 127 C105 127 97 119 97 109 C97 101 102.3 94 109.5 91.5 C105.5 88 101 86 96 86 Z" fill="url(#tvMoonGrad)"/>
+  <!-- Parıldayan Arka Plan Işık Halkası -->
+  <circle cx="240" cy="250" r="115" fill="#10B981" opacity="0.08" filter="url(#goldGlow)"/>
 
-  <!-- 8 Köşeli Selçuklu Yıldızı -->
-  <path d="M123 96 L125.5 101.5 L131 103 L126.8 107 L128 112.5 L123 109.8 L118 112.5 L119.2 107 L115 103 L120.5 101.5 Z" fill="#D8F3DC"/>
+  <!-- İkon Grubu (Hilal + 8 Köşeli Selçuklu Yıldızı) -->
+  <g filter="url(#subtleShadow)">
+    
+    <!-- Büyük ve Belirgin Hilal (Crescent Moon) -->
+    <path d="M 276 132 
+             C 202 132 142 192 142 266 
+             C 142 340 202 400 276 400 
+             C 314 400 348 384 372 358 
+             C 328 368 280 354 246 320 
+             C 212 286 198 238 208 194 
+             C 226 156 250 142 276 132 Z" 
+          fill="url(#goldGradient)"/>
 
-  <!-- İnce Alt Taban Dekoru -->
-  <line x1="45" y1="195" x2="155" y2="195" stroke="#74C69D" stroke-width="2" stroke-linecap="round" stroke-opacity="0.4"/>
+    <!-- Hilal İç Kenar Işıltısı -->
+    <path d="M 270 144 
+             C 208 148 158 198 158 266 
+             C 158 334 208 384 270 388 
+             C 240 376 216 350 204 316 
+             C 190 278 194 234 216 198 
+             C 230 174 248 158 270 144 Z" 
+          fill="url(#goldLight)" opacity="0.45"/>
+
+    <!-- Hilal Üzerinde İnce Geometrik İşlemeler (Desenler) -->
+    <g opacity="0.4" stroke="#78350F" stroke-width="1.5" fill="none">
+      <circle cx="218" cy="266" r="48" stroke-dasharray="2 4"/>
+      <circle cx="218" cy="266" r="62" stroke-dasharray="3 5"/>
+    </g>
+
+    <!-- 8 Köşeli Selçuklu Yıldızı (Görkemli ve Parlak) -->
+    <!-- Kare 1 -->
+    <g transform="translate(322, 238)" filter="url(#goldGlow)">
+      <!-- Arka Işıltı -->
+      <circle cx="0" cy="0" r="46" fill="#FBBF24" opacity="0.25"/>
+
+      <!-- Birinci Kare -->
+      <rect x="-32" y="-32" width="64" height="64" rx="4" ry="4" 
+            fill="url(#goldGradient)" transform="rotate(0)"/>
+      <!-- İkinci Kare (45 derece döndürülmüş = 8 köşeli yıldız) -->
+      <rect x="-32" y="-32" width="64" height="64" rx="4" ry="4" 
+            fill="url(#goldLight)" transform="rotate(45)"/>
+
+      <!-- Yıldız İçi Geometrik Detay Çerçevesi -->
+      <rect x="-24" y="-24" width="48" height="48" rx="2" ry="2" 
+            fill="none" stroke="#78350F" stroke-width="1.8" transform="rotate(22.5)"/>
+
+      <!-- Yıldızın Merkez Çekirdeği -->
+      <circle cx="0" cy="0" r="14" fill="url(#goldGradient)"/>
+      <circle cx="0" cy="0" r="7" fill="#FFFBEB"/>
+    </g>
+
+    <!-- Küçük Eşlik Eden Yıldız Parıltıları -->
+    <g fill="url(#goldLight)" opacity="0.9">
+      <!-- Üst Minik Yıldız -->
+      <polygon points="378,142 381,152 391,155 381,158 378,168 375,158 365,155 375,152"/>
+      <!-- Alt Minik Yıldız -->
+      <polygon points="352,328 354,335 361,337 354,339 352,346 350,339 343,337 350,335"/>
+      <!-- Sol Minik Işık Noktası -->
+      <circle cx="156" cy="184" r="3" fill="#FDE68A" opacity="0.75"/>
+      <circle cx="178" cy="358" r="2.5" fill="#FDE68A" opacity="0.6"/>
+    </g>
+
+  </g>
 </svg>
