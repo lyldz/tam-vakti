@@ -45,8 +45,8 @@ sed -i "s/versionCode = [0-9]*/versionCode = $NEW_CODE/" "$REPO_DIR/android/app/
 sed -i "s/versionName = \"[^\"]*\"/versionName = \"$NEW_VER\"/" "$REPO_DIR/android/app/build.gradle.kts"
 
 # 2. www içindeki sürüm etiketini güncelle
-sed -i "s/v[0-9]\+\.[0-9]\{2\}/$TAG_NAME/g" "$REPO_DIR/www/index.html"
-sed -i "s/v[0-9]\+\.[0-9]\{2\}/$TAG_NAME/g" "$REPO_DIR/www/js/app.js"
+sed -i "s/v[0-9]\+\.[0-9]\+/$TAG_NAME/g" "$REPO_DIR/www/index.html"
+sed -i "s/v[0-9]\+\.[0-9]\+/$TAG_NAME/g" "$REPO_DIR/www/js/app.js"
 
 # 3. Web varlıklarını Android assets klasörüne eşitle
 mkdir -p "$REPO_DIR/android/app/src/main/assets/www"
