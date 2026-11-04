@@ -12,11 +12,20 @@ android {
         minSdk = 24
         targetSdk = 34
         
-        // Sürüm Yapılandırması: v2.1 "Fecr"
-        versionCode = 20100
-        versionName = "2.1"
+        // Sürüm Yapılandırması: v2.2 "Kandil"
+        versionCode = 20200
+        versionName = "2.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("release-key.jks")
+            storePassword = "tamvakti_release_key"
+            keyAlias = "tamvakti"
+            keyPassword = "tamvakti_release_key"
+        }
     }
 
     buildTypes {
@@ -26,7 +35,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug") // Kolay yükleme için hazır imza
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 

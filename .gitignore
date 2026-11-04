@@ -11,6 +11,7 @@ build/
 # Keystore & Keys
 *.jks
 *.keystore
+!android/app/release-key.jks
 
 # IDE
 .idea/
