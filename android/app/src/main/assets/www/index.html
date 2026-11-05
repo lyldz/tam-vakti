@@ -64,10 +64,10 @@
 <body class="select-none bg-[#090e1a] text-slate-100 min-h-screen antialiased">
 
   <!-- Ana Minimalist Kapsayıcı (Nocturnal Arctic 2B) -->
-  <div class="minimal-app w-full max-w-[420px] mx-auto min-h-screen relative overflow-hidden flex flex-col justify-between pb-24 arctic-radial-glow">
+  <div class="minimal-app w-full max-w-[420px] mx-auto min-h-screen relative overflow-hidden flex flex-col pb-24 arctic-radial-glow">
 
     <!-- 1. ÜST BAŞLIK ALANI (NOCTURNAL ARCTIC 2B) -->
-    <header class="top-header flex items-center justify-between gap-2 mb-3">
+    <header class="top-header flex items-center justify-between gap-2 mb-2 shrink-0">
       
       <!-- Sol: Şehir Rozeti -->
       <button onclick="app.openLocationModal()" class="flex items-center gap-1.5 py-1.5 px-3 rounded-full bg-slate-900/80 border border-sky-400/30 text-sky-400 backdrop-blur-md active:scale-95 transition-transform duration-150 cursor-pointer shadow-sm" title="Konum Değiştir">
@@ -94,16 +94,16 @@
 
     </header>
 
-    <!-- 2. ANA İÇERİK ALANI -->
-    <main class="flex-1">
+    <!-- 2. ANA İÇERİK ALANI (DİKEY ORTALANMIŞ) -->
+    <main class="flex-1 flex flex-col justify-center my-auto w-full">
 
       <!-- GÖRÜNÜM 1: SAPSADE HORIZON KERAHAT (NOCTURNAL ARCTIC) -->
-      <section id="viewPrayer" class="flex flex-col justify-center gap-6 pt-4 pb-24">
+      <section id="viewPrayer" class="flex-1 flex flex-col justify-center gap-5 my-auto w-full py-2">
         
         <!-- HERO PRESENT MOMENT MODULE -->
-        <div class="flex flex-col items-center text-center pt-2">
+        <div class="flex flex-col items-center text-center">
           <!-- Tag Pill: Şu Anki Vakit -->
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/90 border border-sky-400/30 backdrop-blur-md shadow-[0_0_12px_-2px_rgba(56,189,248,0.25)] mb-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/90 border border-sky-400/30 backdrop-blur-md shadow-[0_0_12px_-2px_rgba(56,189,248,0.25)] mb-2">
             <span class="w-1.5 h-1.5 rounded-full bg-sky-400 shadow-[0_0_8px_#38bdf8]"></span>
             <span id="currentPrayerBadge" class="text-xs tracking-widest text-sky-400 font-bold">ŞU AN: İKİNDİ</span>
           </div>
@@ -113,15 +113,15 @@
             Akşam Vaktine Kalan
           </p>
 
-          <!-- Giant Monospace Countdown Timer -->
-          <div class="py-1">
-            <h1 id="mainCountdown" class="text-6xl font-mono tracking-tight text-white font-light drop-shadow-[0_0_24px_rgba(56,189,248,0.35)] leading-tight">
+          <!-- Giant Monospace Countdown Timer (Büyütülmüş Sayılar) -->
+          <div class="py-1 my-0.5">
+            <h1 id="mainCountdown" class="text-[3.6rem] min-[380px]:text-[4.2rem] font-mono tracking-tight text-white font-light drop-shadow-[0_0_28px_rgba(56,189,248,0.4)] leading-none">
               <span class="cd-main">00:42:</span><span class="cd-sec">15</span>
             </h1>
           </div>
 
           <!-- Sub-times Interval Reference -->
-          <div id="subTimesLabel" class="flex items-center gap-2 text-xs text-slate-400 font-medium mt-1">
+          <div id="subTimesLabel" class="flex items-center gap-2 text-xs text-slate-400 font-medium">
             <span>İkindi 15:31</span>
             <span class="opacity-40">•</span>
             <span>Akşam 17:56</span>
@@ -172,6 +172,11 @@
               Kerahate 13 dk
             </div>
           </div>
+        </div>
+
+        <!-- GÜNÜN VAKİTLERİ YATAY AKIŞ ŞERİDİ (SAPSADE 6 VAKİT HAPLARI) -->
+        <div id="dayTimesRibbon" class="w-full rounded-2xl p-1.5 bg-slate-900/70 backdrop-blur-xl border border-sky-400/15 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center justify-between text-center gap-1">
+          <!-- 6 vakit dinamik doldurulur -->
         </div>
 
         <!-- Arka Plan DOM Elemanları (JS referans uyumluluğu için gizli tutulur) -->

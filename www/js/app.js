@@ -428,6 +428,49 @@ class TamVaktiApp {
         </div>
       `;
     }).join("");
+
+    this.renderDayRibbon();
+  }
+
+  renderDayRibbon() {
+    const ribbon = document.getElementById("dayTimesRibbon");
+    if (!ribbon || !this.currentTimes) return;
+
+    const orderKeys = ["imsak", "gunes", "ogle", "ikindi", "aksam", "yatsi"];
+    const currentIdx = orderKeys.indexOf(this.activePrayerKey);
+    const nextIdx = currentIdx >= 0 ? (currentIdx + 1) % 6 : -1;
+
+    ribbon.innerHTML = PRAYER_LIST.map((item, idx) => {
+      const timeVal = this.currentTimes[item.key] || "--:--";
+      const isCurrent = (item.key === this.activePrayerKey);
+      const isNext = (idx === nextIdx);
+
+      let itemStyle = "flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all";
+      let nameColor = "text-slate-400";
+      let timeColor = "text-slate-200";
+
+      if (isCurrent) {
+        itemStyle += " bg-sky-500/20 border border-sky-400/50 shadow-[0_0_12px_rgba(56,189,248,0.25)]";
+        nameColor = "text-sky-300 font-bold";
+        timeColor = "text-white font-bold";
+      } else if (isNext) {
+        itemStyle += " bg-slate-800/40 border border-slate-700/60";
+        nameColor = "text-sky-200/80 font-medium";
+        timeColor = "text-sky-100 font-semibold";
+      } else {
+        nameColor = "text-slate-400 opacity-75";
+        timeColor = "text-slate-300";
+      }
+
+      const displayName = (item.key === "ogle" && this.isFriday) ? "Cuma" : item.name;
+
+      return `
+        <div onclick="app.showPrayerDetail('${item.key}')" class="${itemStyle} cursor-pointer active:scale-95" title="${displayName}: ${timeVal}">
+          <span class="text-[10px] tracking-tight ${nameColor}">${displayName}</span>
+          <span class="text-xs font-mono font-medium tracking-tight mt-0.5 ${timeColor}">${timeVal}</span>
+        </div>
+      `;
+    }).join("");
   }
 
   showPrayerDetail(key) {

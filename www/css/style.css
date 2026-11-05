@@ -1189,3 +1189,17 @@ html.dark .onboarding-dot.active {
     transform: translateY(0);
   }
 }
+
+/* Nocturnal Arctic 2B - Tam Dikey Merkezleme ve Tipografi */
+#viewPrayer {
+  margin-top: auto;
+  margin-bottom: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#mainCountdown .cd-sec {
+  color: #7dd3fc;
+  opacity: 0.85;
+}
