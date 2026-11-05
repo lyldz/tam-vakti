@@ -1,21 +1,50 @@
 /* Tam Vakti - Minimalist Adaçayı Yeşili & Sade Mihrap Tasarımı (Stitch Nocturne Emerald) */
-@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Noto+Serif:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Serif:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 
 :root {
-  --bg-sage: #ebf4ee;
-  --text-dark: #0f3e2e;
-  --text-muted: #52796f;
-  --card-bg: #ffffff;
-  --accent-green: #2d6a4f;
-  --active-blue: #3b82f6;
-  --border-subtle: rgba(15, 62, 46, 0.08);
+  --bg-sage: #090e1a;
+  --text-dark: #f8fafc;
+  --text-muted: #94a3b8;
+  --card-bg: #0d1527;
+  --accent-green: #38bdf8;
+  --active-blue: #38bdf8;
+  --border-subtle: rgba(56, 189, 248, 0.12);
 
-  /* Stitch Nocturne Emerald Tokens */
-  --stitch-surface: #03170e;
-  --stitch-surface-low: #0a1f15;
-  --stitch-surface-container: #0f2419;
-  --stitch-primary: #68dba9;
-  --stitch-gold: #fbbf24;
+  /* Stitch Nocturne Arctic 2B Tokens */
+  --arctic-void: #090e1a;
+  --arctic-surface: #0d1527;
+  --arctic-card: #111a30;
+  --arctic-cyan: #38bdf8;
+  --arctic-amber: #fb923c;
+  --arctic-border: rgba(56, 189, 248, 0.18);
+  --stitch-surface: #090e1a;
+  --stitch-surface-low: #0d1527;
+  --stitch-surface-container: #111a30;
+  --stitch-primary: #38bdf8;
+  --stitch-gold: #fb923c;
+}
+
+.kerahat-stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(251, 146, 60, 0.45) 0px,
+    rgba(251, 146, 60, 0.45) 5px,
+    rgba(217, 119, 34, 0.18) 5px,
+    rgba(217, 119, 34, 0.18) 10px
+  );
+}
+
+.arctic-radial-glow {
+  background: radial-gradient(circle at 50% 12%, rgba(56, 189, 248, 0.12) 0%, rgba(9, 14, 26, 0) 65%);
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.92); }
+}
+
+.pulse-amber {
+  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 * {
