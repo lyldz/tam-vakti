@@ -448,21 +448,6 @@ class TamVaktiApp {
 
     const orderKeys = ["imsak", "gunes", "ogle", "ikindi", "aksam", "yatsi"];
     const currentIdx = Math.max(0, orderKeys.indexOf(this.activePrayerKey));
-    const activeCoord = coords[currentIdx] || coords[0];
-
-    // Aktif vaktin etrafına yayılan dinamik ışık halesi
-    const auraHalo = document.getElementById("activeAuraHalo");
-    if (auraHalo) {
-      auraHalo.setAttribute("cx", activeCoord.x);
-      auraHalo.setAttribute("cy", activeCoord.y);
-    }
-
-    // Atmosferik parlama (aktif vakte göre ışık yayılımı)
-    const transitBox = document.getElementById("solarTransitContainer");
-    if (transitBox) {
-      const pctX = Math.round((activeCoord.x / 340) * 100);
-      transitBox.style.background = `radial-gradient(circle 120px at ${pctX}% 50%, rgba(56, 189, 248, 0.16) 0%, rgba(56, 189, 248, 0.03) 55%, transparent 100%)`;
-    }
 
     // Canlı İlerleme Dalgası (Aktif vakte kadar turuncu akış)
     const pathEl = document.getElementById("solarPassedWave");
@@ -486,62 +471,32 @@ class TamVaktiApp {
     coords.forEach((c, idx) => {
       const isPast = (idx < currentIdx);
       const isActive = (idx === currentIdx);
-      const dist = Math.abs(idx - currentIdx);
       const labelY = (c.y < 20) ? (c.y - 7) : (c.y + 11);
       const displayName = (c.key === "ogle" && this.isFriday) ? "Cuma" : c.name;
 
       if (isActive) {
-        // En yüksek parlaklık - Işık kaynağı
         nodesHtml += `
           <g onclick="app.showPrayerDetail('${c.key}')" class="cursor-pointer" title="${displayName}: ${this.currentTimes[c.key]} (Şu An)">
             <circle cx="${c.x}" cy="${c.y}" r="6.5" fill="none" stroke="#38bdf8" stroke-width="1.5">
-              <animate attributeName="r" values="5.5;9;5.5" dur="2.4s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.85;0.2;0.85" dur="2.4s" repeatCount="indefinite" />
+              <animate attributeName="r" values="5.5;8.5;5.5" dur="2.4s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.85;0.25;0.85" dur="2.4s" repeatCount="indefinite" />
             </circle>
-            <circle cx="${c.x}" cy="${c.y}" r="5.2" fill="#ffffff" stroke="#38bdf8" stroke-width="1.5" filter="url(#solarGlow)"/>
-            <text x="${c.x}" y="${labelY}" text-anchor="middle" fill="#7dd3fc" font-size="8" font-weight="800">${displayName}</text>
+            <circle cx="${c.x}" cy="${c.y}" r="5" fill="#38bdf8" filter="url(#solarGlow)"/>
+            <text x="${c.x}" y="${labelY}" text-anchor="middle" fill="#38bdf8" font-size="7.5" font-weight="800">${displayName}</text>
           </g>
         `;
       } else if (isPast) {
-        // Geçen vakitler: Aktif vakte yaklaştıkça daha parlak, uzaklaştıkça daha karanlık/gölgeli
-        let dotColor = "#fb923c";
-        let dotOpacity = 0.9;
-        let shadowPower = 6;
-        let textSize = "7";
-
-        if (dist === 1) {
-          dotColor = "#fb923c"; // Çok parlak sıcak kehribar
-          dotOpacity = 0.95;
-          shadowPower = 6;
-        } else if (dist === 2) {
-          dotColor = "#f59e0b"; // Orta parlak kehribar
-          dotOpacity = 0.70;
-          shadowPower = 4;
-        } else if (dist === 3) {
-          dotColor = "#d97706"; // Loş bronz kehribar
-          dotOpacity = 0.48;
-          shadowPower = 2;
-        } else {
-          // dist >= 4 (En uzak noktalar: karanlık ve gölgeli tonlar)
-          dotColor = "#92400e"; // Koyu gölgeli ton
-          dotOpacity = 0.30;
-          shadowPower = 0;
-          textSize = "6.5";
-        }
-
         nodesHtml += `
           <g onclick="app.showPrayerDetail('${c.key}')" class="cursor-pointer" title="${displayName}: ${this.currentTimes[c.key]} (Geçti)">
-            <circle cx="${c.x}" cy="${c.y}" r="4" fill="${dotColor}" opacity="${dotOpacity}" ${shadowPower > 0 ? `filter="drop-shadow(0 0 ${shadowPower}px ${dotColor})"` : ''}/>
-            <text x="${c.x}" y="${labelY}" text-anchor="middle" fill="${dotColor}" opacity="${dotOpacity}" font-size="${textSize}" font-weight="600">${displayName}</text>
+            <circle cx="${c.x}" cy="${c.y}" r="4" fill="#fb923c" filter="drop-shadow(0 0 4px rgba(251,146,60,0.8))"/>
+            <text x="${c.x}" y="${labelY}" text-anchor="middle" fill="#fb923c" font-size="7" font-weight="600" opacity="0.9">${displayName}</text>
           </g>
         `;
       } else {
-        // Gelecek vakitler: Aktif vakte göre loşlaşma
-        let futureOpacity = (dist === 1) ? 0.65 : 0.35;
         nodesHtml += `
           <g onclick="app.showPrayerDetail('${c.key}')" class="cursor-pointer" title="${displayName}: ${this.currentTimes[c.key]}">
-            <circle cx="${c.x}" cy="${c.y}" r="3" fill="#334155" opacity="${futureOpacity}"/>
-            <text x="${c.x}" y="${labelY}" text-anchor="middle" fill="#64748b" opacity="${futureOpacity}" font-size="6.5">${displayName}</text>
+            <circle cx="${c.x}" cy="${c.y}" r="3" fill="#334155"/>
+            <text x="${c.x}" y="${labelY}" text-anchor="middle" fill="#64748b" font-size="6.5">${displayName}</text>
           </g>
         `;
       }
@@ -562,31 +517,22 @@ class TamVaktiApp {
       const timeVal = this.currentTimes[item.key] || "--:--";
       const isCurrent = (item.key === this.activePrayerKey);
       const isNext = (idx === nextIdx);
-      const dist = Math.abs(idx - currentIdx);
 
       let itemStyle = "flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all";
       let nameColor = "text-slate-400";
       let timeColor = "text-slate-200";
 
       if (isCurrent) {
-        itemStyle += " bg-sky-500/25 border border-sky-400/60 shadow-[0_0_16px_rgba(56,189,248,0.35)] scale-105 z-10";
-        nameColor = "text-sky-200 font-bold";
-        timeColor = "text-white font-black";
-      } else if (dist === 1) {
-        // En yakın komşu vakit: aydınlık
-        itemStyle += " bg-slate-800/45 border border-slate-700/60";
-        nameColor = "text-slate-300 font-semibold";
-        timeColor = "text-slate-100 font-bold";
-      } else if (dist === 2) {
-        // 2 adım uzaklık: orta loş
-        itemStyle += " border border-transparent";
-        nameColor = "text-slate-400 opacity-75";
-        timeColor = "text-slate-300 opacity-75";
+        itemStyle += " bg-sky-500/20 border border-sky-400/50 shadow-[0_0_12px_rgba(56,189,248,0.25)]";
+        nameColor = "text-sky-300 font-bold";
+        timeColor = "text-white font-bold";
+      } else if (isNext) {
+        itemStyle += " bg-slate-800/40 border border-slate-700/60";
+        nameColor = "text-sky-200/80 font-medium";
+        timeColor = "text-sky-100 font-semibold";
       } else {
-        // 3+ adım uzaklık: en karanlık ve gölgeli tonlar
-        itemStyle += " border border-transparent";
-        nameColor = "text-slate-500 opacity-40";
-        timeColor = "text-slate-400 opacity-40";
+        nameColor = "text-slate-400 opacity-75";
+        timeColor = "text-slate-300";
       }
 
       const displayName = (item.key === "ogle" && this.isFriday) ? "Cuma" : item.name;
