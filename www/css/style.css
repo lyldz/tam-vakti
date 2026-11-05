@@ -1191,12 +1191,16 @@ html.dark .onboarding-dot.active {
 }
 
 /* Nocturnal Arctic 2B - Tam Dikey Merkezleme ve Tipografi */
-#viewPrayer {
+#viewPrayer:not(.hidden) {
   margin-top: auto;
   margin-bottom: auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+#viewPrayer.hidden, #viewQibla.hidden {
+  display: none !important;
 }
 
 #mainCountdown .cd-sec {
