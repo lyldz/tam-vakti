@@ -170,7 +170,19 @@ class TamVaktiApp {
   loadSavedLocation() {
     const saved = localStorage.getItem("tamvakti_active_location");
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && (parsed.name === "Konumum" || parsed.name === "Konum") && parsed.lat && parsed.lon) {
+          const nearest = this.findNearestLocation(parsed.lat, parsed.lon);
+          if (nearest) {
+            parsed.name = (nearest.districtName && nearest.districtName !== "Merkez" && nearest.districtName !== nearest.cityName)
+              ? `${nearest.cityName}/${nearest.districtName}`
+              : nearest.cityName;
+            localStorage.setItem("tamvakti_active_location", JSON.stringify(parsed));
+          }
+        }
+        return parsed;
+      } catch (e) {}
     }
     return { name: "Konum Seçiniz", lat: 39.9334, lon: 32.8597, isPlaceholder: true };
   }
@@ -205,6 +217,17 @@ class TamVaktiApp {
   async init() {
     this.renderCitySelector();
     this.compass = new QiblaCompass(this.engine);
+
+    // Eski kayıtlı 'Konumum' varsa otomatik ilçe/ile yükselt
+    if (this.currentLocation && (this.currentLocation.name === "Konumum" || this.currentLocation.name === "Konum") && this.currentLocation.lat && this.currentLocation.lon) {
+      const nearest = this.findNearestLocation(this.currentLocation.lat, this.currentLocation.lon);
+      if (nearest) {
+        this.currentLocation.name = (nearest.districtName && nearest.districtName !== "Merkez" && nearest.districtName !== nearest.cityName)
+          ? `${nearest.cityName}/${nearest.districtName}`
+          : nearest.cityName;
+        this.saveLocation(this.currentLocation);
+      }
+    }
 
     // Modal açıldığında toggle durumunu senkronize et
     const notifCheckbox = document.getElementById("ongoingNotifToggle");
