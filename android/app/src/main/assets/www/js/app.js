@@ -477,7 +477,10 @@ class TamVaktiApp {
       if (isActive) {
         nodesHtml += `
           <g onclick="app.showPrayerDetail('${c.key}')" class="cursor-pointer" title="${displayName}: ${this.currentTimes[c.key]} (Şu An)">
-            <circle cx="${c.x}" cy="${c.y}" r="8" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity="0.6" class="animate-ping"/>
+            <circle cx="${c.x}" cy="${c.y}" r="6.5" fill="none" stroke="#38bdf8" stroke-width="1.5">
+              <animate attributeName="r" values="5.5;9;5.5" dur="2.4s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.8;0.15;0.8" dur="2.4s" repeatCount="indefinite" />
+            </circle>
             <circle cx="${c.x}" cy="${c.y}" r="5" fill="#38bdf8" filter="url(#solarGlow)"/>
             <text x="${c.x}" y="${labelY}" text-anchor="middle" fill="#38bdf8" font-size="7.5" font-weight="800">${displayName}</text>
           </g>
