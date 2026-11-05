@@ -4,13 +4,49 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Tam Vakti - Namaz Vakitleri & İmsakiye</title>
+  <!-- Google Fonts: Noto Serif, Plus Jakarta Sans, Amiri (Nocturne Emerald) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Noto+Serif:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="lib/leaflet/leaflet.css">
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <script>
     if (typeof tailwind !== 'undefined') {
       tailwind.config = {
-        darkMode: 'class'
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              surface: '#03170e',
+              'surface-container-lowest': '#001209',
+              'surface-container-low': '#0a1f15',
+              'surface-container': '#0f2419',
+              'surface-container-high': '#192e23',
+              'surface-container-highest': '#24392e',
+              'surface-bright': '#293e32',
+              'surface-dim': '#03170e',
+              'on-surface': '#d0e8d8',
+              'on-surface-variant': '#bccac0',
+              primary: '#68dba9',
+              'primary-container': '#25a475',
+              'on-primary': '#003825',
+              'on-primary-container': '#00311f',
+              secondary: '#ffb77d',
+              'secondary-container': '#d97707',
+              'on-secondary': '#4d2600',
+              tertiary: '#4edea3',
+              'tertiary-container': '#00a572',
+              outline: '#87948b',
+              'outline-variant': '#3d4a42'
+            },
+            fontFamily: {
+              serif: ['"Noto Serif"', 'serif'],
+              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+              arabic: ['"Amiri"', 'serif']
+            }
+          }
+        }
       };
     }
     // Açılışta tema yanıp sönmesini (white flash) önleyen erken tema kontrolü
@@ -68,10 +104,18 @@
     <main class="flex-1">
 
       <!-- GÖRÜNÜM 1: NAMAZ VAKİTLERİ (MİHRAP KUBBESİ) -->
-      <section id="viewPrayer" class="mihrab-frame">
+      <section id="viewPrayer" class="mihrab-frame relative overflow-hidden">
         
+        <!-- Sacred Geometry & Watermark Refraction Effect (Stitch Nocturne Emerald) -->
+        <div class="absolute -right-8 -top-8 w-44 h-44 rounded-full bg-emerald-500/5 blur-2xl pointer-events-none"></div>
+        <div class="absolute -left-6 -bottom-6 w-36 h-36 rounded-full bg-amber-500/10 blur-xl pointer-events-none"></div>
+        <svg class="absolute right-3 top-3 w-32 h-32 text-emerald-500/[0.04] dark:text-emerald-400/[0.05] pointer-events-none select-none" fill="currentColor" viewBox="0 0 100 100">
+          <polygon points="50,0 65,35 100,50 65,65 50,100 35,65 0,50 35,35"></polygon>
+          <polygon fill="none" points="50,8 60,38 92,50 60,62 50,92 40,62 8,50 40,38" stroke="currentColor" stroke-width="1"></polygon>
+        </svg>
+
         <!-- Sıradaki Vakit ve Geri Sayım -->
-        <div class="countdown-header-area">
+        <div class="countdown-header-area relative z-10">
           <div id="nextPrayerInfo" class="next-vakit-label">
             Öğle'ye kalan • 12:43
           </div>
@@ -97,8 +141,23 @@
         </div>
 
         <!-- 6 Vakit Kartı -->
-        <div id="prayerCardsList">
+        <div id="prayerCardsList" class="relative z-10">
           <!-- JS ile doldurulacak -->
+        </div>
+
+        <!-- Manevi Hadis Kartı (Stitch Nocturne Bento Card) -->
+        <div class="hadith-card mt-3 rounded-2xl bg-white/70 dark:bg-[#0a1f15]/80 backdrop-blur-md border border-emerald-900/10 dark:border-emerald-500/20 p-3.5 relative overflow-hidden z-10 transition-all">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-xl bg-amber-500/15 dark:bg-amber-400/20 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0 mt-0.5 text-base font-serif font-black select-none">
+              ❝
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs text-[#0f3e2e] dark:text-[#d0e8d8] leading-relaxed italic font-serif">
+                "Namaz dinin direğidir; onu dosdoğru kılan dinini ihya etmiş olur."
+              </p>
+              <p class="text-[10px] font-bold text-slate-400 dark:text-emerald-400/70 tracking-wider uppercase">Hadis-i Şerif • Beyhaki</p>
+            </div>
+          </div>
         </div>
 
       </section>

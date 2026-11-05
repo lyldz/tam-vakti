@@ -4,12 +4,12 @@
  */
 
 const PRAYER_LIST = [
-  { key: "imsak", name: "İmsak", iconSvg: "assets/icons/imsak.svg" },
-  { key: "gunes", name: "Güneş", iconSvg: "assets/icons/gunes.svg" },
-  { key: "ogle", name: "Öğle", iconSvg: "assets/icons/ogle.svg" },
-  { key: "ikindi", name: "İkindi", iconSvg: "assets/icons/ikindi.svg" },
-  { key: "aksam", name: "Akşam", iconSvg: "assets/icons/aksam.svg" },
-  { key: "yatsi", name: "Yatsı", iconSvg: "assets/icons/yatsi.svg" }
+  { key: "imsak", name: "İmsak", arabic: "الفجر", iconSvg: "assets/icons/imsak.svg" },
+  { key: "gunes", name: "Güneş", arabic: "الشروق", iconSvg: "assets/icons/gunes.svg" },
+  { key: "ogle", name: "Öğle", arabic: "الظهر", iconSvg: "assets/icons/ogle.svg" },
+  { key: "ikindi", name: "İkindi", arabic: "العصر", iconSvg: "assets/icons/ikindi.svg" },
+  { key: "aksam", name: "Akşam", arabic: "المغرب", iconSvg: "assets/icons/aksam.svg" },
+  { key: "yatsi", name: "Yatsı", arabic: "العشاء", iconSvg: "assets/icons/yatsi.svg" }
 ];
 
 const PRAYER_DETAILS = {
@@ -377,20 +377,23 @@ class TamVaktiApp {
       return `
         <div onclick="app.showPrayerDetail('${item.key}')" class="${cardClass}">
           
-          <!-- Sol Kısım: Vektör İkon + Vakit Adı + Sıradaki Rozeti -->
+          <!-- Sol Kısım: Vektör İkon + Vakit Adı + Arapça Hat + Sıradaki Rozeti -->
           <div class="card-left-part">
             <div class="card-icon-box">
               <img src="${item.iconSvg}" alt="${displayName}" class="drop-shadow-xs">
             </div>
             <div class="card-title-group">
-              <span class="card-row-name">${displayName}</span>
-              ${isNext ? `<span class="next-pill">Sıradaki</span>` : ''}
+              <div class="flex items-center gap-2">
+                <span class="card-row-name">${displayName}</span>
+                <span class="card-arabic-sub font-serif text-[11px] opacity-60">${item.arabic || ''}</span>
+              </div>
+              ${isNext ? `<span class="next-pill flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-white inline-block animate-ping"></span>Sıradaki</span>` : ''}
             </div>
           </div>
 
           <!-- Sağ Kısım: Tabular Saat + Erken Hatırlatma (-15dk) + Net Ses Butonu -->
           <div class="card-right-part flex items-center gap-2">
-            <span class="card-row-time">${timeVal}</span>
+            <span class="card-row-time font-serif">${timeVal}</span>
             ${(isNext && isSoundOn) ? `<span class="early-reminder-pill">-15dk</span>` : ''}
             <button onclick="app.toggleSound('${item.key}', event)" 
                     class="card-sound-btn"
