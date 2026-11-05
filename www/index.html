@@ -64,7 +64,7 @@
 <body class="select-none bg-[#090e1a] text-slate-100 min-h-screen antialiased">
 
   <!-- Ana Minimalist Kapsayıcı (Nocturnal Arctic 2B) -->
-  <div class="minimal-app w-full max-w-[420px] mx-auto min-h-screen relative overflow-hidden flex flex-col pb-24 arctic-radial-glow">
+  <div class="minimal-app w-full max-w-[420px] mx-auto min-h-screen relative overflow-hidden flex flex-col pb-4 arctic-radial-glow">
 
     <!-- 1. ÜST BAŞLIK ALANI (NOCTURNAL ARCTIC 2B) -->
     <header class="top-header flex items-center justify-between gap-2 mb-2 shrink-0">
@@ -84,13 +84,24 @@
         </span>
       </button>
 
-      <!-- Sağ: Ayarlar / Bildirim Butonu -->
-      <button onclick="app.openSettingsModal()" aria-label="Ayarlar" class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-900/70 border border-slate-700/60 text-slate-300 hover:text-sky-400 hover:border-sky-400/40 active:scale-95 transition-all cursor-pointer">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-        </svg>
-      </button>
+      <!-- Sağ: Kıble & Ayarlar İkonları (Sağ Üstte Yan Yana) -->
+      <div class="flex items-center gap-1.5">
+        <!-- Kıble Butonu -->
+        <button onclick="app.toggleQiblaTab()" id="headerQiblaBtn" aria-label="Kıble" class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-900/70 border border-slate-700/60 text-slate-300 hover:text-sky-400 hover:border-sky-400/40 active:scale-95 transition-all cursor-pointer" title="Kıble Pusulası">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+          </svg>
+        </button>
+
+        <!-- Ayarlar Butonu -->
+        <button onclick="app.openSettingsModal()" aria-label="Ayarlar" class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-900/70 border border-slate-700/60 text-slate-300 hover:text-sky-400 hover:border-sky-400/40 active:scale-95 transition-all cursor-pointer" title="Ayarlar">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </button>
+      </div>
 
     </header>
 
@@ -98,8 +109,33 @@
     <main class="flex-1 flex flex-col justify-center my-auto w-full">
 
       <!-- GÖRÜNÜM 1: SAPSADE HORIZON KERAHAT (NOCTURNAL ARCTIC) -->
-      <section id="viewPrayer" class="flex-1 flex flex-col justify-center gap-5 my-auto w-full py-2">
+      <section id="viewPrayer" class="flex-1 flex flex-col justify-center gap-4 my-auto w-full py-1">
         
+        <!-- SOLAR TRANSIT CURVE (GÜNEŞ & VAKİT DÖNGÜSÜ DALGASI) -->
+        <div id="solarTransitContainer" class="w-full max-w-[340px] mx-auto px-2 pt-0.5 flex flex-col items-center">
+          <svg viewBox="0 0 340 54" class="w-full h-auto overflow-visible">
+            <defs>
+              <linearGradient id="solarAmberGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ea580c"/>
+                <stop offset="50%" stop-color="#fb923c"/>
+                <stop offset="100%" stop-color="#fcd34d"/>
+              </linearGradient>
+              <filter id="solarGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+              </filter>
+            </defs>
+            <!-- Arka Plan Nötr Dalga (Gece - Gündüz - Gece) -->
+            <path d="M 25 38 C 55 38, 75 10, 130 10 C 185 10, 215 44, 250 44 C 275 44, 295 38, 310 34" fill="none" stroke="rgba(56, 189, 248, 0.15)" stroke-width="2" stroke-dasharray="3 3"/>
+            
+            <!-- Canlı Turuncu İlerleme Dalgası -->
+            <path id="solarPassedWave" d="M 25 38" fill="none" stroke="url(#solarAmberGrad)" stroke-width="2.8" stroke-linecap="round" filter="url(#solarGlow)"/>
+
+            <!-- 6 Vakit Düğümü (İmsak, Güneş, Öğle, İkindi, Akşam, Yatsı) -->
+            <g id="solarTransitNodes"></g>
+          </svg>
+        </div>
+
         <!-- HERO PRESENT MOMENT MODULE -->
         <div class="flex flex-col items-center text-center">
           <!-- Tag Pill: Şu Anki Vakit -->
@@ -192,18 +228,18 @@
       </section>
 
       <!-- GÖRÜNÜM 2: KIBLE BULUCU (CANLI PUSULA & HARİTA İLE SOKAK YÖNÜ) -->
-      <section id="viewQibla" class="hidden space-y-3 pb-24">
+      <section id="viewQibla" class="hidden space-y-3 pb-8 pt-1">
         
-        <!-- Üst Başlıklar: Sol Şehir, Sağ Sensör Rozeti -->
+        <!-- Üst Başlıklar: Vakitlere Dön, Sağ Sensör Rozeti -->
         <div class="flex items-center justify-between px-1">
-          <button onclick="app.openLocationModal()" class="location-pill cursor-pointer" title="Konum Değiştir">
-            <span class="text-emerald-700">📍</span>
-            <span id="qiblaHeaderCity">Konum Seçiniz</span>
+          <button onclick="app.switchTab('prayer')" class="flex items-center gap-1.5 py-1.5 px-3 rounded-full bg-slate-900/80 border border-sky-400/30 text-sky-400 text-xs font-bold active:scale-95 transition-all cursor-pointer shadow-sm" title="Vakitler Ekranına Dön">
+            <span>←</span> <span>Vakitler</span>
           </button>
-          <div id="qiblaSensorBadge" class="bg-white/90 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-full shadow-2xs border border-white flex items-center gap-1.5">
-            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <div id="qiblaSensorBadge" class="bg-slate-900/80 text-sky-300 text-xs font-bold px-3 py-1.5 rounded-full border border-sky-400/30 flex items-center gap-1.5">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             <span>Canlı Sensör</span>
           </div>
+          <span id="qiblaHeaderCity" class="hidden"></span>
         </div>
 
         <!-- Mod Seçici: Pusula vs Harita -->
@@ -335,36 +371,12 @@
 
     </main>
 
-    <!-- 3. BÜTÜNLEŞİK ALT DOCK (SAPSADE NOCTURNAL ARCTIC) -->
-    <div id="mainBottomDock" class="fixed bottom-4 left-6 right-6 z-50 flex justify-center max-w-[360px] mx-auto pointer-events-auto">
-      <div class="flex items-center justify-around w-full py-2.5 px-4 bg-slate-900/90 backdrop-blur-xl rounded-full border border-sky-400/25 shadow-[0_0_24px_-4px_rgba(56,189,248,0.3)]">
-        <!-- Vakit -->
-        <button onclick="app.switchTab('prayer')" id="tabBtn-prayer" class="flex items-center gap-2 py-1 px-4 rounded-full text-sky-400 font-bold active:scale-95 transition-all cursor-pointer relative" title="Namaz Vakitleri">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
-          </svg>
-          <span class="text-xs">Vakitler</span>
-        </button>
-        <!-- Kıble -->
-        <button onclick="app.switchTab('qibla')" id="tabBtn-qibla" class="flex items-center gap-2 py-1 px-4 rounded-full text-slate-400 hover:text-sky-400 active:scale-95 transition-all cursor-pointer" title="Kıble Pusulası">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"/>
-            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
-          </svg>
-          <span class="text-xs">Kıble</span>
-        </button>
-        <!-- Ayarlar -->
-        <button onclick="app.openSettingsModal()" id="tabBtn-settings" class="flex items-center gap-2 py-1 px-3 rounded-full text-slate-400 hover:text-sky-400 active:scale-95 transition-all cursor-pointer" title="Ayarlar">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
-          <span class="text-xs">Ayarlar</span>
-        </button>
-        <!-- Aylık (Askıya alındı - DOM referansı için gizli) -->
-        <button id="tabBtn-monthly" class="hidden"></button>
-      </div>
+    <!-- 3. ALT DOCK (Üst Başlığa Taşındığı İçin Gizlendi) -->
+    <div id="mainBottomDock" class="hidden">
+      <button onclick="app.switchTab('prayer')" id="tabBtn-prayer"></button>
+      <button onclick="app.switchTab('qibla')" id="tabBtn-qibla"></button>
+      <button onclick="app.openSettingsModal()" id="tabBtn-settings"></button>
+      <button id="tabBtn-monthly" class="hidden"></button>
     </div>
 
   </div>

@@ -430,6 +430,76 @@ class TamVaktiApp {
     }).join("");
 
     this.renderDayRibbon();
+    this.updateSolarTransitCurve();
+  }
+
+  updateSolarTransitCurve() {
+    const container = document.getElementById("solarTransitNodes");
+    if (!container || !this.currentTimes) return;
+
+    const coords = [
+      { key: "imsak", name: "İmsak", x: 25, y: 38 },
+      { key: "gunes", name: "Güneş", x: 75, y: 22 },
+      { key: "ogle", name: "Öğle", x: 130, y: 10 },
+      { key: "ikindi", name: "İkindi", x: 190, y: 24 },
+      { key: "aksam", name: "Akşam", x: 250, y: 44 },
+      { key: "yatsi", name: "Yatsı", x: 310, y: 34 }
+    ];
+
+    const orderKeys = ["imsak", "gunes", "ogle", "ikindi", "aksam", "yatsi"];
+    const currentIdx = orderKeys.indexOf(this.activePrayerKey);
+
+    // Canlı İlerleme Dalgası (Aktif vakte kadar turuncu akış)
+    const pathEl = document.getElementById("solarPassedWave");
+    if (pathEl) {
+      if (currentIdx <= 0) {
+        pathEl.setAttribute("d", "M 25 38");
+      } else if (currentIdx === 1) {
+        pathEl.setAttribute("d", "M 25 38 C 45 38, 60 28, 75 22");
+      } else if (currentIdx === 2) {
+        pathEl.setAttribute("d", "M 25 38 C 55 38, 75 10, 130 10");
+      } else if (currentIdx === 3) {
+        pathEl.setAttribute("d", "M 25 38 C 55 38, 75 10, 130 10 C 160 10, 175 18, 190 24");
+      } else if (currentIdx === 4) {
+        pathEl.setAttribute("d", "M 25 38 C 55 38, 75 10, 130 10 C 185 10, 215 44, 250 44");
+      } else {
+        pathEl.setAttribute("d", "M 25 38 C 55 38, 75 10, 130 10 C 185 10, 215 44, 250 44 C 275 44, 295 38, 310 34");
+      }
+    }
+
+    let nodesHtml = "";
+    coords.forEach((c, idx) => {
+      const isPast = (idx < currentIdx);
+      const isActive = (idx === currentIdx);
+      const labelY = (c.y < 20) ? (c.y - 7) : (c.y + 11);
+      const displayName = (c.key === "ogle" && this.isFriday) ? "Cuma" : c.name;
+
+      if (isActive) {
+        nodesHtml += `
+          <g onclick="app.showPrayerDetail('${c.key}')" class="cursor-pointer" title="${displayName}: ${this.currentTimes[c.key]} (Şu An)">
+            <circle cx="${c.x}" cy="${c.y}" r="8" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity="0.6" class="animate-ping"/>
+            <circle cx="${c.x}" cy="${c.y}" r="5" fill="#38bdf8" filter="url(#solarGlow)"/>
+            <text x="${c.x}" y="${labelY}" text-anchor="middle" fill="#38bdf8" font-size="7.5" font-weight="800">${displayName}</text>
+          </g>
+        `;
+      } else if (isPast) {
+        nodesHtml += `
+          <g onclick="app.showPrayerDetail('${c.key}')" class="cursor-pointer" title="${displayName}: ${this.currentTimes[c.key]} (Geçti)">
+            <circle cx="${c.x}" cy="${c.y}" r="4" fill="#fb923c" filter="drop-shadow(0 0 5px rgba(251,146,60,0.85))"/>
+            <text x="${c.x}" y="${labelY}" text-anchor="middle" fill="#fb923c" font-size="7" font-weight="600" opacity="0.9">${displayName}</text>
+          </g>
+        `;
+      } else {
+        nodesHtml += `
+          <g onclick="app.showPrayerDetail('${c.key}')" class="cursor-pointer" title="${displayName}: ${this.currentTimes[c.key]}">
+            <circle cx="${c.x}" cy="${c.y}" r="3" fill="#334155"/>
+            <text x="${c.x}" y="${labelY}" text-anchor="middle" fill="#64748b" font-size="6.5">${displayName}</text>
+          </g>
+        `;
+      }
+    });
+
+    container.innerHTML = nodesHtml;
   }
 
   renderDayRibbon() {
@@ -831,6 +901,16 @@ class TamVaktiApp {
   }
 
   // Sekme Değiştirici: Vakitler / Kıble / Aylık Vakitler / Ayarlar
+  toggleQiblaTab() {
+    const viewQibla = document.getElementById("viewQibla");
+    const isQiblaVisible = viewQibla && !viewQibla.classList.contains("hidden");
+    if (isQiblaVisible) {
+      this.switchTab("prayer");
+    } else {
+      this.switchTab("qibla");
+    }
+  }
+
   switchTab(tab) {
     const viewPrayer = document.getElementById("viewPrayer");
     const viewQibla = document.getElementById("viewQibla");
@@ -838,6 +918,7 @@ class TamVaktiApp {
     const btnQibla = document.getElementById("tabBtn-qibla");
     const btnMonthly = document.getElementById("tabBtn-monthly");
     const btnSettings = document.getElementById("tabBtn-settings");
+    const headerQiblaBtn = document.getElementById("headerQiblaBtn");
 
     if (tab === "prayer") {
       this.closeMonthlyModal();
@@ -851,6 +932,10 @@ class TamVaktiApp {
       if (btnQibla) {
         btnQibla.classList.add("text-slate-400");
         btnQibla.classList.remove("text-sky-400", "font-bold");
+      }
+      if (headerQiblaBtn) {
+        headerQiblaBtn.classList.remove("text-sky-400", "border-sky-400/80", "bg-sky-500/25");
+        headerQiblaBtn.classList.add("text-slate-300");
       }
       if (this.compass) {
         this.compass.stopCompass();
@@ -867,6 +952,10 @@ class TamVaktiApp {
       if (btnQibla) {
         btnQibla.classList.add("text-sky-400", "font-bold");
         btnQibla.classList.remove("text-slate-400");
+      }
+      if (headerQiblaBtn) {
+        headerQiblaBtn.classList.add("text-sky-400", "border-sky-400/80", "bg-sky-500/25");
+        headerQiblaBtn.classList.remove("text-slate-300");
       }
 
       if (this.compass) {
