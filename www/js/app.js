@@ -1043,16 +1043,105 @@ class TamVaktiApp {
     }
   }
 
+  findNearestLocation(lat, lon) {
+    if (typeof TURKEY_CITIES === "undefined" || !Array.isArray(TURKEY_CITIES) || !TURKEY_CITIES.length) {
+      return null;
+    }
+
+    let closest = null;
+    let minDistanceSq = Infinity;
+    const radLat = (lat * Math.PI) / 180;
+    const cosLat = Math.cos(radLat);
+
+    for (const city of TURKEY_CITIES) {
+      // İl merkezi kontrolü
+      const dLatCity = city.lat - lat;
+      const dLonCity = (city.lon - lon) * cosLat;
+      const distCitySq = dLatCity * dLatCity + dLonCity * dLonCity;
+
+      if (distCitySq < minDistanceSq) {
+        minDistanceSq = distCitySq;
+        closest = {
+          cityName: city.name,
+          districtName: city.name,
+          lat: city.lat,
+          lon: city.lon
+        };
+      }
+
+      // Tüm ilçeleri kontrol et
+      if (city.districts && city.districts.length) {
+        for (const district of city.districts) {
+          const dLat = district.lat - lat;
+          const dLon = (district.lon - lon) * cosLat;
+          const distSq = dLat * dLat + dLon * dLon;
+
+          if (distSq < minDistanceSq) {
+            minDistanceSq = distSq;
+            closest = {
+              cityName: city.name,
+              districtName: district.name,
+              lat: district.lat,
+              lon: district.lon
+            };
+          }
+        }
+      }
+    }
+
+    return closest;
+  }
+
+  async resolveLocationName(lat, lon) {
+    // 1. Çevrimdışı ve anlık en yakın ilçe tespiti (TURKEY_CITIES veritabanından)
+    const nearest = this.findNearestLocation(lat, lon);
+    let fallbackName = "Konum";
+    if (nearest) {
+      if (nearest.districtName && nearest.districtName !== "Merkez" && nearest.districtName !== nearest.cityName) {
+        fallbackName = `${nearest.cityName}/${nearest.districtName}`;
+      } else {
+        fallbackName = nearest.cityName;
+      }
+    }
+
+    // 2. İnternet bağlantısı varsa daha detaylı ilçe tespiti için hızlı ters coğrafi kodlama dene
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=tr`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        const district = data.locality || data.district || "";
+        const city = data.principalSubdivision || data.city || "";
+        if (city && district && district.toLowerCase() !== city.toLowerCase()) {
+          return `${city}/${district}`;
+        } else if (district) {
+          return district;
+        } else if (city) {
+          return city;
+        }
+      }
+    } catch (e) {
+      // Çevrimdışı veya ağ hatasında yerleşik veritabanı (fallbackName) kullanılır
+    }
+
+    return fallbackName;
+  }
+
   locateWithGPS() {
     const btn = document.getElementById("gpsLocateBtn");
-    if (btn) btn.textContent = "Konum alınıyor...";
+    if (btn) btn.textContent = "İlçe ve konum tespit ediliyor...";
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
+        async (pos) => {
           const lat = pos.coords.latitude;
           const lon = pos.coords.longitude;
-          this.selectLocation("Konumum", lat, lon);
+          const locName = await this.resolveLocationName(lat, lon);
+          this.selectLocation(locName, lat, lon);
+          const districtDisplay = locName.includes("/") ? locName.split("/")[1] : locName;
+          this.showToast(`Konumunuz tespit edildi: ${districtDisplay}`, "📍");
           if (btn) btn.textContent = "GPS ile Otomatik Bul";
         },
         (err) => {
@@ -1717,12 +1806,14 @@ class TamVaktiApp {
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
+        async (pos) => {
           const lat = pos.coords.latitude;
           const lon = pos.coords.longitude;
-          this.selectLocation("Konumum", lat, lon);
+          const locName = await this.resolveLocationName(lat, lon);
+          this.selectLocation(locName, lat, lon);
           this.updateOnboardingLocationDisplay();
-          this.showToast("Konumunuz başarıyla tespit edildi.", "✓");
+          const districtDisplay = locName.includes("/") ? locName.split("/")[1] : locName;
+          this.showToast(`Konum tespit edildi: ${districtDisplay}`, "📍");
           if (btn) btn.innerHTML = origHtml;
           setTimeout(() => this.goToOnboardingStep(3), 600);
         },
