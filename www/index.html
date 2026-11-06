@@ -383,22 +383,22 @@
   </div>
 
   
-  <!-- MODAL: AYLIK NAMAZ VAKİTLERİ (İMSAKİYE) EKRANI -->
-  <div id="monthlyModal" class="hidden fixed inset-0 z-50 bg-[#ebf4ee] overflow-y-auto">
+  <!-- MODAL: AYLIK NAMAZ VAKİTLERİ (İMSAKİYE) EKRANI (NOCTURNAL ARCTIC) -->
+  <div id="monthlyModal" class="hidden fixed inset-0 z-50 bg-[#060a14] text-slate-100 overflow-y-auto">
     <!-- Üst Yapışkan Bar: Geri Dön & Şehir Rozeti -->
-    <div class="sticky top-0 z-20 bg-[#ebf4ee]/95 backdrop-blur-md px-4 py-3 border-b border-emerald-900/10 flex items-center justify-between">
-      <button onclick="app.closeMonthlyModal()" class="flex items-center gap-2 text-[#0f3e2e] font-extrabold text-sm hover:text-emerald-800 cursor-pointer">
+    <div class="sticky top-0 z-30 bg-[#060a14]/95 backdrop-blur-md px-4 py-3 border-b border-sky-400/20 flex items-center justify-between">
+      <button onclick="app.closeMonthlyModal()" class="flex items-center gap-2 text-sky-400 font-extrabold text-sm hover:text-sky-300 active:scale-95 transition-all cursor-pointer">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
         </svg>
         <span>Vakitler</span>
       </button>
       <div class="flex items-center gap-2">
-        <button onclick="app.openLocationModal()" class="location-pill text-[11px] py-1 px-2.5 shadow-none" title="Konum Değiştir">
-          <span class="text-emerald-700">📍</span>
-          <span id="monthlyCityName">Konum Seçiniz</span>
+        <button onclick="app.openLocationModal()" class="flex items-center gap-1.5 py-1 px-3 rounded-full bg-slate-900 border border-sky-400/30 text-sky-400 text-xs font-bold active:scale-95 transition-all cursor-pointer" title="Konum Değiştir">
+          <span>📍</span>
+          <span id="monthlyCityName" class="text-slate-200">Konum Seçiniz</span>
         </button>
-        <button onclick="app.closeMonthlyModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold px-1 leading-none cursor-pointer">&times;</button>
+        <button onclick="app.closeMonthlyModal()" class="w-7 h-7 rounded-full bg-slate-900 border border-slate-700/80 text-slate-400 hover:text-white flex items-center justify-center font-bold active:scale-95 transition-all cursor-pointer">&times;</button>
       </div>
     </div>
 
@@ -406,10 +406,10 @@
     <div class="max-w-md mx-auto p-3 space-y-3 pb-24">
       
       <!-- Ay Değiştirici ve Bilgi Başlığı Kartı -->
-      <div class="bg-white rounded-3xl p-3.5 shadow-xs border border-emerald-950/5 space-y-3">
+      <div class="bg-slate-900/90 rounded-3xl p-3.5 border border-sky-400/15 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] space-y-3">
         <div class="flex items-center justify-between">
           <!-- Önceki Ay Butonu -->
-          <button onclick="app.changeMonthlyMonth(-1)" class="w-9 h-9 rounded-2xl bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-emerald-900 flex items-center justify-center font-black transition-all cursor-pointer" title="Önceki Ay">
+          <button onclick="app.changeMonthlyMonth(-1)" class="w-9 h-9 rounded-2xl bg-slate-800 border border-slate-700/70 hover:border-sky-400/40 text-slate-200 hover:text-sky-400 flex items-center justify-center font-black active:scale-95 transition-all cursor-pointer" title="Önceki Ay">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
             </svg>
@@ -417,12 +417,12 @@
           
           <!-- Ay & Yıl Başlığı -->
           <div class="text-center">
-            <h2 id="monthlyTitleText" class="text-base font-extrabold text-[#0f3e2e] tracking-tight">Ekim 2026</h2>
-            <p id="monthlyHijriText" class="text-[11px] font-semibold text-emerald-700/80 mt-0.5">Hicri Yıl</p>
+            <h2 id="monthlyTitleText" class="text-base font-extrabold text-white tracking-tight">Ekim 2026</h2>
+            <p id="monthlyHijriText" class="text-xs font-medium text-sky-400/90 mt-0.5">Hicri Yıl</p>
           </div>
           
           <!-- Sonraki Ay Butonu -->
-          <button onclick="app.changeMonthlyMonth(1)" class="w-9 h-9 rounded-2xl bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-emerald-900 flex items-center justify-center font-black transition-all cursor-pointer" title="Sonraki Ay">
+          <button onclick="app.changeMonthlyMonth(1)" class="w-9 h-9 rounded-2xl bg-slate-800 border border-slate-700/70 hover:border-sky-400/40 text-slate-200 hover:text-sky-400 flex items-center justify-center font-black active:scale-95 transition-all cursor-pointer" title="Sonraki Ay">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
             </svg>
@@ -430,23 +430,23 @@
         </div>
 
         <!-- Ara Butonlar: Bugüne Git & Bilgi Rozeti -->
-        <div class="flex items-center justify-between pt-1 border-t border-slate-100">
-          <button onclick="app.scrollMonthlyToToday()" class="flex items-center gap-1.5 px-3 py-1 bg-emerald-100 hover:bg-emerald-200 active:scale-95 text-[#0f3e2e] text-[11px] font-bold rounded-full transition-all cursor-pointer">
+        <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+          <button onclick="app.scrollMonthlyToToday()" class="flex items-center gap-1.5 px-3 py-1 bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 active:scale-95 text-sky-300 text-xs font-bold rounded-full transition-all cursor-pointer">
             <span>📍</span>
             <span>Bugüne Git</span>
           </button>
-          <span id="monthlySourceBadge" class="text-[10px] font-semibold text-slate-500 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200/60">
+          <span id="monthlySourceBadge" class="text-[11px] font-semibold text-slate-400 bg-slate-800/80 px-2.5 py-0.5 rounded-full border border-slate-700/60">
             Diyanet Uyumlu
           </span>
         </div>
       </div>
 
       <!-- İmsakiye Tablosu Kartı -->
-      <div class="bg-white rounded-3xl shadow-xs border border-emerald-950/5 overflow-hidden">
+      <div class="bg-slate-900/90 rounded-3xl border border-sky-400/15 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.6)] overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-center border-collapse text-xs">
             <thead>
-              <tr class="bg-emerald-900/5 text-[#0f3e2e] font-extrabold text-[11px] border-b border-emerald-950/10">
+              <tr class="bg-slate-800/80 text-sky-400 font-extrabold text-[11px] tracking-wider border-b border-slate-700/80 uppercase">
                 <th class="py-2.5 px-1.5 text-left pl-3" style="width: 22%;">Gün</th>
                 <th class="py-2.5 px-1" style="width: 13%;">İmsak</th>
                 <th class="py-2.5 px-1" style="width: 13%;">Güneş</th>
@@ -456,7 +456,7 @@
                 <th class="py-2.5 px-1 pr-3" style="width: 13%;">Yatsı</th>
               </tr>
             </thead>
-            <tbody id="monthlyTableBody" class="divide-y divide-emerald-950/5 font-mono text-[11.5px]">
+            <tbody id="monthlyTableBody" class="divide-y divide-slate-800/60 font-mono text-[11.5px] text-slate-200">
               <!-- JS ile dinamik doldurulacak -->
             </tbody>
           </table>
@@ -464,8 +464,8 @@
       </div>
 
       <!-- Açıklama Notu -->
-      <div class="text-[11px] text-slate-500 text-center leading-relaxed px-2">
-        Vakitler Diyanet İşleri Başkanlığı takvim ve astronomik kriterlerine tam uyumludur. Yeşil zeminli satır bugünü simgeler.
+      <div class="text-[11px] text-slate-400 text-center leading-relaxed px-2">
+        Vakitler Diyanet İşleri Başkanlığı takvim ve astronomik kriterlerine tam uyumludur. Parlayan satır bugünü simgeler.
       </div>
 
     </div>

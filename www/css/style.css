@@ -967,52 +967,52 @@ html, body, .minimal-app, .mihrab-frame, .prayer-card-item, .unified-dock-capsul
 
 /* =========================================================
    AYLIK NAMAZ VAKİTLERİ (İMSAKİYE) TABLOSU VE STİLLERİ
+   (Nocturnal Arctic Paleti)
    ========================================================= */
 
-.monthly-row-today {
-  background-color: #d1fae5 !important;
+#monthlyModal, html.dark #monthlyModal {
+  background-color: #060a14 !important;
+  color: #f1f5f9 !important;
+}
+
+#monthlyModal > div:first-child, html.dark #monthlyModal > div:first-child {
+  background-color: rgba(6, 10, 20, 0.95) !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
+}
+
+#monthlyModal table thead tr, html.dark #monthlyModal table thead tr {
+  background-color: #111e38 !important;
+  color: #38bdf8 !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
+}
+
+#monthlyModal table tbody tr, html.dark #monthlyModal table tbody tr {
+  border-color: rgba(56, 189, 248, 0.08) !important;
+  color: #e2e8f0 !important;
+}
+
+#monthlyModal table tbody tr:nth-child(even):not(.monthly-row-today), 
+html.dark #monthlyModal table tbody tr:nth-child(even):not(.monthly-row-today) {
+  background-color: rgba(15, 23, 42, 0.55) !important;
+}
+
+#monthlyTableBody tr:not(.monthly-row-today) td {
+  color: #e2e8f0 !important;
+}
+
+.monthly-row-today, html.dark .monthly-row-today {
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.28), rgba(15, 23, 42, 0.85)) !important;
+  color: #ffffff !important;
   font-weight: 800 !important;
-  color: #064e3b !important;
-  border-top: 1.5px solid #059669 !important;
-  border-bottom: 1.5px solid #059669 !important;
+  border-top: 1.5px solid #38bdf8 !important;
+  border-bottom: 1.5px solid #38bdf8 !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.35) !important;
 }
 
-.monthly-today-badge {
+.monthly-today-badge, html.dark .monthly-today-badge {
   font-size: 9px;
-  background-color: #059669;
-  color: #ffffff;
-  padding: 1px 4px;
-  border-radius: 9999px;
-  font-weight: 800;
-  margin-left: 3px;
-  display: inline-block;
-  vertical-align: middle;
-}
-
-.monthly-row-friday {
-  color: #047857;
-  font-weight: 700;
-}
-
-/* Koyu Mod: Aylık Vakitler Ekranı (#monthlyModal) */
-html.dark #monthlyModal {
-  background-color: #03170e !important;
-  color: #d0e8d8 !important;
-}
-
-html.dark .monthly-row-today {
-  background: linear-gradient(90deg, rgba(5, 150, 105, 0.35), rgba(10, 31, 21, 0.7)) !important;
-  font-weight: 800 !important;
-  color: #85f8c4 !important;
-  border-top: 1.5px solid #fbbf24 !important;
-  border-bottom: 1.5px solid #fbbf24 !important;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.3) !important;
-}
-
-html.dark .monthly-today-badge {
-  font-size: 9px;
-  background: linear-gradient(90deg, #d97707, #fbbf24) !important;
-  color: #03170e !important;
+  background: linear-gradient(90deg, #0284c7, #38bdf8) !important;
+  color: #030a16 !important;
   padding: 1.5px 6px;
   border-radius: 9999px;
   font-weight: 900;
@@ -1020,71 +1020,10 @@ html.dark .monthly-today-badge {
   display: inline-block;
   vertical-align: middle;
 }
-}
 
-html.dark #monthlyModal > div:first-child {
-  background-color: rgba(11, 20, 17, 0.95) !important;
-  border-color: rgba(52, 211, 153, 0.15) !important;
-}
-
-html.dark #monthlyModal .bg-white {
-  background-color: #14241d !important;
-  border-color: rgba(52, 211, 153, 0.15) !important;
-}
-
-html.dark #monthlyModal table thead tr {
-  background-color: rgba(20, 36, 29, 0.9) !important;
-  color: #a7f3d0 !important;
-  border-color: rgba(52, 211, 153, 0.2) !important;
-}
-
-html.dark #monthlyModal table tbody tr {
-  border-color: rgba(52, 211, 153, 0.1) !important;
-  color: #e2ebe5 !important;
-}
-
-html.dark #monthlyModal table tbody tr:nth-child(even) {
-  background-color: rgba(16, 30, 24, 0.4) !important;
-}
-
-html.dark .monthly-row-today {
-  background-color: #1a4231 !important;
-  color: #ffffff !important;
-  border-top: 1.5px solid #10b981 !important;
-  border-bottom: 1.5px solid #10b981 !important;
-}
-
-html.dark .monthly-today-badge {
-  background-color: #10b981 !important;
-  color: #042f1a !important;
-}
-
-html.dark .monthly-row-friday {
-  color: #34d399 !important;
-}
-
-html.dark #monthlyTitleText {
-  color: #ffffff !important;
-}
-
-html.dark #monthlyHijriText {
-  color: #6ee7b7 !important;
-}
-
-html.dark #monthlyModal button.bg-emerald-50 {
-  background-color: #1e3a2c !important;
-  color: #ecfdf5 !important;
-}
-
-html.dark #monthlyModal button.bg-emerald-100 {
-  background-color: #1e4635 !important;
-  color: #6ee7b7 !important;
-}
-
-html.dark #monthlySourceBadge {
-  background-color: #0e1c15 !important;
-  border-color: rgba(52, 211, 153, 0.2) !important;
-  color: #8faea0 !important;
+.monthly-row-friday, html.dark .monthly-row-friday {
+  color: #fb923c !important;
+  font-weight: 700 !important;
 }
 
 /* =========================================================

@@ -1102,7 +1102,7 @@ class TamVaktiApp {
         const friDot = d.isFriday && !d.isToday ? ' •' : '';
 
         return `
-          <tr ${rowId} class="${rowClass} hover:bg-emerald-50/40 transition-colors">
+          <tr ${rowId} class="${rowClass} hover:bg-slate-800/60 transition-colors">
             <td class="py-2.5 px-1.5 text-left pl-3 font-sans">
               <span class="font-extrabold">${d.day}</span>
               <span class="text-[10px] opacity-75 font-semibold ml-0.5">${d.dayOfWeekShort}${friDot}</span>
