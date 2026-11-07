@@ -1,9 +1,8 @@
 package com.tamvakti.app
 
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import androidx.core.content.ContextCompat
-import android.content.BroadcastReceiver
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -12,35 +11,18 @@ class AlarmReceiver : BroadcastReceiver() {
             intent.getStringExtra("type") ?: return,
             intent.getStringExtra("title") ?: "Tam Vakti",
             intent.getStringExtra("body") ?: "",
-            intent.getStringExtra("tone") ?: "",
-            intent.getStringExtra("mode") ?: "ezan",
+            intent.getStringExtra("mode") ?: "bip",
             intent.getIntExtra("id", 1)
         )
     }
 
     companion object {
-        fun handle(ctx: Context, type: String, title: String, body: String, tone: String, mode: String, id: Int) {
+        /** mode: "bip" = telefonun bildirim sesi, "sessiz" = sessiz bildirim. */
+        fun handle(ctx: Context, type: String, title: String, body: String, mode: String, id: Int) {
             val app = ctx.applicationContext
             when (type) {
-                "reminder" -> Notifs.postAlert(app, id, title, body, quiet = mode == "sessiz")
+                "reminder", "vakit" -> Notifs.postAlert(app, id, title, body, quiet = mode == "sessiz")
                 "kerahat" -> Notifs.postAlert(app, id, title, body, quiet = true)
-                "athan" -> when (mode) {
-                    "ezan" -> {
-                        try {
-                            val svc = Intent(app, AthanService::class.java).apply {
-                                putExtra("title", title)
-                                putExtra("body", body)
-                                putExtra("tone", tone)
-                            }
-                            ContextCompat.startForegroundService(app, svc)
-                        } catch (e: Exception) {
-                            // Arka planda servis başlatılamazsa sesli bildirime düş
-                            Notifs.postAlert(app, id, title, body, quiet = false)
-                        }
-                    }
-                    "bip" -> Notifs.postAlert(app, id, title, body, quiet = false)
-                    else -> Notifs.postAlert(app, id, title, body, quiet = true)
-                }
                 "silent_start" -> Silencer.start(app)
                 "silent_end" -> Silencer.end(app)
                 else -> {}

@@ -19,9 +19,7 @@ object Notifs {
     const val CH_ONGOING = "tamvakti_ongoing"
     const val CH_ALERT = "tamvakti_alert"
     const val CH_QUIET = "tamvakti_quiet"
-    const val CH_ATHAN = "tamvakti_athan"
     const val ID_ONGOING = 2026
-    const val ID_ATHAN = 2027
 
     fun createChannels(ctx: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
@@ -34,8 +32,8 @@ object Notifs {
             }
         )
         nm.createNotificationChannel(
-            NotificationChannel(CH_ALERT, "Vakit Uyarıları (sesli)", NotificationManager.IMPORTANCE_HIGH).apply {
-                description = "Vakit girişi ve vakit öncesi hatırlatmalar"
+            NotificationChannel(CH_ALERT, "Vakit bildirimleri", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "Vakit girişi ve vakit öncesi hatırlatmalar (sesi telefon ayarlarından değiştirebilirsiniz)"
                 setSound(
                     RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION),
                     AudioAttributes.Builder()
@@ -51,13 +49,6 @@ object Notifs {
                 description = "Sessiz vakit ve kerahat bildirimleri"
                 setSound(null, null)
                 enableVibration(false)
-            }
-        )
-        nm.createNotificationChannel(
-            NotificationChannel(CH_ATHAN, "Ezan", NotificationManager.IMPORTANCE_LOW).apply {
-                description = "Ezan çalarken gösterilir"
-                setSound(null, null)
-                setShowBadge(false)
             }
         )
     }

@@ -9,12 +9,9 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
-    <!-- Vakit alarmları, ezan servisi, sessize alma ve yeniden başlatma sonrası kurulum -->
+    <!-- Vakit alarmları, sessize alma ve yeniden başlatma sonrası kurulum -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
 
     <application
@@ -47,11 +44,6 @@
             </intent-filter>
         </receiver>
 
-        <!-- Ezan çalan ön plan servisi -->
-        <service
-            android:name=".AthanService"
-            android:exported="false"
-            android:foregroundServiceType="mediaPlayback" />
 
         <!-- Ana ekran widget'ı -->
         <receiver android:name=".PrayerWidget" android:exported="true">

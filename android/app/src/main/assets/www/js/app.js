@@ -78,14 +78,6 @@ const PRAYER_DETAILS = {
   }
 };
 
-// Ezan kayıtları (Wikimedia Commons; lisanslar Hakkında ekranında). Dosyalar assets/audio/ altında.
-const ATHAN_LIST = [
-  { id: "aaqib",   name: "Aaqib Azeez",     desc: "1 dk 26 sn", file: "assets/audio/ezan_aaqib.mp3" },
-  { id: "sakin",   name: "Sakin",           desc: "2 dk 34 sn", file: "assets/audio/ezan_sakin.mp3" },
-  { id: "hassan2", name: "Hassan II Camii", desc: "2 dk 55 sn • cami ortamından kayıt", file: "assets/audio/ezan_hassan2.mp3" },
-  { id: "uzun",    name: "Uzun Okuyuş",     desc: "3 dk 3 sn", file: "assets/audio/ezan_uzun.mp3" }
-];
-
 class TamVaktiApp {
   constructor() {
     window.app = this;
@@ -116,15 +108,12 @@ class TamVaktiApp {
     this.updateInfo = null;
     this.isDownloadingUpdate = false;
 
-    // Ezan Makamı & Ses Önizleme
-    const savedTone = localStorage.getItem("tamvakti_athan_tone");
-    this.currentAthanTone = ATHAN_LIST.some(a => a.id === savedTone) ? savedTone : ATHAN_LIST[0].id;
-    this.athanAudio = null;
     this.autoSilent = localStorage.getItem("tamvakti_auto_silent") !== "false";
 
     // Bildirim tercihleri
     this.reminderMin = parseInt(localStorage.getItem("tamvakti_reminder_min"), 10) || 15;
-    this.notifMode = localStorage.getItem("tamvakti_notif_mode") || "ezan"; // ezan | bip | sessiz
+    // bip = telefonun kendi bildirim sesi, sessiz = yalnızca yazı (eski "ezan" ayarı bip'e taşınır)
+    this.notifMode = localStorage.getItem("tamvakti_notif_mode") === "sessiz" ? "sessiz" : "bip";
     this.kerahatAlert = localStorage.getItem("tamvakti_kerahat_alert") !== "false";
     // İhtiyat: tüm vakitlere eklenen dakika (Diyanet ± ayarı)
     this.timeOffsetMin = parseInt(localStorage.getItem("tamvakti_time_offset"), 10) || 0;
@@ -377,76 +366,97 @@ class TamVaktiApp {
     }
   }
 
+  // Günün güneş yolu: x = günün saati (00:00-24:00), y = o andaki gerçek güneş yüksekliği.
+  // Vakit noktaları gerçek saatlerine oturur; şu anki yerde güneş (geceleyin hilal) parlar.
   updateSolarTransitCurve() {
-    const container = document.getElementById("solarTransitNodes");
-    if (!container || !this.currentTimes) return;
+    const nodesEl = document.getElementById("solarArcNodes");
+    const sunEl = document.getElementById("solarArcSun");
+    const baseEl = document.getElementById("arcBase");
+    const passedEl = document.getElementById("arcPassed");
+    if (!nodesEl || !sunEl || !baseEl || !passedEl || !this.currentTimes || !this.currentLocation) return;
 
-    const coords = [
-      { key: "imsak", name: "İmsak", x: 25, y: 38 },
-      { key: "gunes", name: "Güneş", x: 75, y: 22 },
-      { key: "ogle", name: "Öğle", x: 130, y: 10 },
-      { key: "ikindi", name: "İkindi", x: 190, y: 24 },
-      { key: "aksam", name: "Akşam", x: 250, y: 44 },
-      { key: "yatsi", name: "Yatsı", x: 310, y: 34 }
-    ];
+    const W = 340, PAD = 16, Y0 = 150, K = 1.9;
+    const { lat, lon } = this.currentLocation;
+    const now = new Date();
+    const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const xOf = (min) => PAD + (min / 1440) * (W - 2 * PAD);
+    const altAt = (min) => {
+      const d = new Date(dayStart.getTime() + min * 60000);
+      return this.engine.getSunPositionNow(d, lat, lon).altitude;
+    };
+    // Ufkun üstü tam ölçek, altı sıkıştırılmış (eğri kırpılmadan sığsın)
+    const yOf = (alt) => alt >= 0 ? Y0 - Math.min(alt, 80) * K : Y0 - Math.max(alt, -75) * 0.7;
+    const nowMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
 
-    const orderKeys = ["imsak", "gunes", "ogle", "ikindi", "aksam", "yatsi"];
-    const currentIdx = Math.max(0, orderKeys.indexOf(this.activePrayerKey));
-
-    // Canlı İlerleme Dalgası (Aktif vakte kadar turuncu akış)
-    const pathEl = document.getElementById("solarPassedWave");
-    if (pathEl) {
-      if (currentIdx <= 0) {
-        pathEl.setAttribute("d", "M 25 38");
-      } else if (currentIdx === 1) {
-        pathEl.setAttribute("d", "M 25 38 C 45 38, 60 28, 75 22");
-      } else if (currentIdx === 2) {
-        pathEl.setAttribute("d", "M 25 38 C 55 38, 75 10, 130 10");
-      } else if (currentIdx === 3) {
-        pathEl.setAttribute("d", "M 25 38 C 55 38, 75 10, 130 10 C 160 10, 175 18, 190 24");
-      } else if (currentIdx === 4) {
-        pathEl.setAttribute("d", "M 25 38 C 55 38, 75 10, 130 10 C 185 10, 215 44, 250 44");
-      } else {
-        pathEl.setAttribute("d", "M 25 38 C 55 38, 75 10, 130 10 C 185 10, 215 44, 250 44 C 275 44, 295 38, 310 34");
-      }
+    // Eğri: 10 dakikalık adımlarla
+    let dBase = "", dPassed = "";
+    for (let m = 0; m <= 1440; m += 10) {
+      const pt = `${xOf(m).toFixed(1)} ${yOf(altAt(m)).toFixed(1)}`;
+      dBase += (m === 0 ? "M " : " L ") + pt;
+      if (m <= nowMin) dPassed += (dPassed ? " L " : "M ") + pt;
     }
+    dPassed += ` L ${xOf(nowMin).toFixed(1)} ${yOf(altAt(nowMin)).toFixed(1)}`;
+    baseEl.setAttribute("d", dBase);
+    passedEl.setAttribute("d", dPassed);
 
-    let nodesHtml = "";
-    coords.forEach((c, idx) => {
-      const isPast = (idx < currentIdx);
-      const isActive = (idx === currentIdx);
-      const labelY = (c.y < 20) ? (c.y - 7) : (c.y + 11);
-      const displayName = (c.key === "ogle" && this.isFriday) ? "Cuma" : c.name;
-
-      if (isActive) {
-        nodesHtml += `
-          <g onclick="app.showPrayerDetail('${c.key}')" class="cursor-pointer" title="${displayName}: ${this.currentTimes[c.key]} (Şu An)">
-            <circle cx="${c.x}" cy="${c.y}" r="6.5" fill="none" stroke="#38bdf8" stroke-width="1.5">
-              <animate attributeName="r" values="5.5;8.5;5.5" dur="2.4s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.85;0.25;0.85" dur="2.4s" repeatCount="indefinite" />
-            </circle>
-            <circle cx="${c.x}" cy="${c.y}" r="5" fill="#38bdf8" filter="url(#solarGlow)"/>
-            <text x="${c.x}" y="${labelY}" text-anchor="middle" fill="#38bdf8" font-size="7.5" font-weight="800">${displayName}</text>
-          </g>
-        `;
-      } else if (isPast) {
-        nodesHtml += `
-          <g onclick="app.showPrayerDetail('${c.key}')" class="cursor-pointer" title="${displayName}: ${this.currentTimes[c.key]} (Geçti)">
-            <circle cx="${c.x}" cy="${c.y}" r="4" fill="#fb923c" filter="drop-shadow(0 0 4px rgba(251,146,60,0.8))"/>
-            <text x="${c.x}" y="${labelY}" text-anchor="middle" fill="#fb923c" font-size="7" font-weight="600" opacity="0.9">${displayName}</text>
-          </g>
-        `;
-      } else {
-        nodesHtml += `
-          <g onclick="app.showPrayerDetail('${c.key}')" class="cursor-pointer" title="${displayName}: ${this.currentTimes[c.key]}">
-            <circle cx="${c.x}" cy="${c.y}" r="3" fill="#334155"/>
-            <text x="${c.x}" y="${labelY}" text-anchor="middle" fill="#64748b" font-size="6.5">${displayName}</text>
-          </g>
-        `;
-      }
+    // Vakit işaretleri (isim + saat)
+    const keys = ["imsak", "gunes", "ogle", "ikindi", "aksam", "yatsi"];
+    const names = { imsak: "İmsak", gunes: "Güneş", ogle: this.isFriday ? "Cuma" : "Öğle", ikindi: "İkindi", aksam: "Akşam", yatsi: "Yatsı" };
+    // Etiketler eğrinin çizgisine binmesin: yükselen tarafta sola/aşağı-sağa, alçalan tarafta sağa/aşağı-sola
+    // anchor: yazının hizası, dx: yatay kayma, dy: isim satırının y farkı
+    const place = {
+      imsak:  { anchor: "start",  dx: 9,  dy: 17 },
+      gunes:  { anchor: "end",    dx: -9, dy: -19 },
+      ogle:   { anchor: "middle", dx: 0,  dy: -25 },
+      ikindi: { anchor: "start",  dx: 9,  dy: -19 },
+      aksam:  { anchor: "end",    dx: -9, dy: 17 },
+      yatsi:  { anchor: "start",  dx: 9,  dy: -19 }
+    };
+    const curIdx = keys.indexOf(this.activePrayerKey);
+    let html = "";
+    keys.forEach((k, idx) => {
+      const str = this.currentTimes[k];
+      if (!/^\d{1,2}:\d{2}$/.test(str || "")) return;
+      const [h, mi] = str.split(":").map(Number);
+      const min = h * 60 + mi;
+      const x = xOf(min), y = yOf(altAt(min));
+      const past = idx < curIdx, active = idx === curIdx;
+      const fill = active ? "#38bdf8" : past ? "#fb923c" : "#475569";
+      const nameCol = active ? "#7dd3fc" : past ? "#fdba74" : "#94a3b8";
+      const pl = place[k];
+      const tx = x + pl.dx, ty = y + pl.dy;
+      html += `
+        <g onclick="app.showPrayerDetail('${k}')" class="cursor-pointer">
+          <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${active ? 5.5 : 4.2}" fill="${fill}" stroke="#090e1a" stroke-width="1.5"/>
+          <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="16" fill="transparent"/>
+          <text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="${pl.anchor}" fill="${nameCol}" font-size="11" font-weight="${active ? 800 : 600}">${names[k]}</text>
+          <text x="${tx.toFixed(1)}" y="${(ty + 11.5).toFixed(1)}" text-anchor="${pl.anchor}" fill="${active ? "#e0f2fe" : "#94a3b8"}" font-size="9.5" font-family="'JetBrains Mono', monospace">${str}</text>
+        </g>`;
     });
+    nodesEl.innerHTML = html;
 
-    container.innerHTML = nodesHtml;
+    // Şu anki yer: gündüz güneş, gece hilal
+    const altNow = altAt(nowMin);
+    const sx = xOf(nowMin), sy = yOf(altNow);
+    if (altNow > -0.833) {
+      let rays = "";
+      for (let a = 0; a < 8; a++) {
+        const r = (a * 45) * Math.PI / 180;
+        rays += `<line x1="${(Math.cos(r) * 12.5).toFixed(1)}" y1="${(Math.sin(r) * 12.5).toFixed(1)}" x2="${(Math.cos(r) * 17.5).toFixed(1)}" y2="${(Math.sin(r) * 17.5).toFixed(1)}" stroke="#fcd34d" stroke-width="2" stroke-linecap="round"/>`;
+      }
+      sunEl.innerHTML = `
+        <g transform="translate(${sx.toFixed(1)} ${sy.toFixed(1)})" pointer-events="none">
+          <circle r="30" fill="url(#sunHalo)"/>
+          <g>${rays}<animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="40s" repeatCount="indefinite"/></g>
+          <circle r="9.5" fill="url(#sunCore)"/>
+        </g>`;
+    } else {
+      sunEl.innerHTML = `
+        <g transform="translate(${sx.toFixed(1)} ${sy.toFixed(1)})" pointer-events="none">
+          <circle r="28" fill="url(#moonHalo)"/>
+          <path d="M 4 -9.5 A 10 10 0 1 0 4 9.5 A 8 8 0 1 1 4 -9.5 Z" fill="#bae6fd"/>
+        </g>`;
+    }
   }
 
   renderDayRibbon() {
@@ -518,7 +528,7 @@ class TamVaktiApp {
   updateDetailNotifHint() {
     const el = document.getElementById("detailNotifHint");
     if (!el) return;
-    const modes = { ezan: "ezan okunur", bip: "bildirim sesi çalar", sessiz: "sessiz bildirim" };
+    const modes = { bip: "telefonun bildirim sesi çalar", sessiz: "sessiz bildirim gelir" };
     const rem = this.reminderMin > 0 ? `${this.reminderMin} dk önce hatırlatılır, ` : "";
     el.textContent = `${rem}vakit girince ${modes[this.notifMode] || ""}`;
   }
@@ -538,6 +548,11 @@ class TamVaktiApp {
   }
 
   tick() {
+    const _n = new Date();
+    if (this.currentTimes && this._arcMin !== _n.getMinutes()) {
+      this._arcMin = _n.getMinutes();
+      this.updateSolarTransitCurve();
+    }
     // Gece yarısı geçildiyse tarihi ve vakitleri yeniden yükle
     const t = new Date();
     const todayKey = `${t.getFullYear()}-${t.getMonth()}-${t.getDate()}`;
@@ -1366,21 +1381,17 @@ class TamVaktiApp {
   }
 
   updateSettingsLabels() {
-    const modeNames = { ezan: "Ezan", bip: "Bildirim sesi", sessiz: "Sessiz" };
+    const modeNames = { bip: "Telefon sesi", sessiz: "Sessiz" };
     const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
     set("settingsReminderTime", this.reminderMin === 0 ? "Kapalı" : `${this.reminderMin} dk önce`);
-    set("settingsNotifMode", modeNames[this.notifMode] || "Ezan");
+    set("settingsNotifMode", modeNames[this.notifMode] || "Telefon sesi");
     set("settingsCalcMethod", this.timeOffsetMin === 0 ? "Yok" : this.offsetLabel());
-    const tone = ATHAN_LIST.find(a => a.id === this.currentAthanTone) || ATHAN_LIST[0];
-    set("settingsAthanTone", tone.name);
-    set("settingsAthanDesc", this.notifMode === "ezan" ? "Vakit girince çalar" : "Yalnızca “Ezan” bildirim türünde çalar");
     const k = document.getElementById("kerahatToggle");
     if (k) k.checked = this.kerahatAlert;
     this.refreshPermissionStatus();
   }
 
   closeSettingsModal() {
-    this.stopAthanPreview();
     const modal = document.getElementById("settingsModal");
     if (modal) modal.classList.add("hidden");
 
@@ -1410,21 +1421,28 @@ class TamVaktiApp {
   }
 
   sendTestNotification() {
-    const tone = this.athanFile();
     if (window.AndroidBridge && window.AndroidBridge.testAlert) {
       window.AndroidBridge.testAlert(
-        "athan",
-        "Test: Vakit girdi",
+        "vakit",
+        "Test: vakit girdi",
         (this.currentLocation && !this.currentLocation.isPlaceholder) ? this.currentLocation.name : "Tam Vakti",
-        tone,
         this.notifMode
       );
-      this.showToast(this.notifMode === "ezan" ? "Test: ezan çalıyor (bildirimden durdurabilirsiniz)" : "Test bildirimi gönderildi", "🔔", 3000);
+      this.showToast("Test bildirimi gönderildi", "🔔", 2500);
       return;
     }
     this.playAlertTone();
     if (navigator.vibrate) navigator.vibrate(200);
     this.showToast("Test sesi çalındı (bildirimler yalnızca Android uygulamasında çalışır).", "🔔");
+  }
+
+  // Bildirim sesi: telefonun kendi kanal ayarı açılır, istediğiniz sesi seçersiniz
+  openSoundSettings() {
+    if (window.AndroidBridge && window.AndroidBridge.openSoundSettings) {
+      window.AndroidBridge.openSoundSettings();
+    } else {
+      this.showToast("Bu ayar yalnızca Android uygulamasında vardır.", "ℹ️");
+    }
   }
 
   // ==========================================
@@ -1504,7 +1522,6 @@ class TamVaktiApp {
     const monthCache = {};
     const prayers = [];
     const events = [];
-    const toneFile = this.athanFile();
     const mode = this.notifMode;
     const rem = this.reminderMin;
     const MIN = 60000;
@@ -1553,12 +1570,10 @@ class TamVaktiApp {
             });
           }
           events.push({
-            t, type: "athan",
+            t, type: "vakit",
             title: `${name} vakti girdi`,
             body: `${city} • ${x.str}`,
-            tone: toneFile,
-            // Güneş doğuşunda ezan okunmaz; yalnızca bildirim
-            mode: (p.key === "gunes" && mode === "ezan") ? "bip" : mode
+            mode: mode
           });
         }
 
@@ -1597,7 +1612,7 @@ class TamVaktiApp {
     }
   }
 
-  // Vakit bildirimi türü: Ezan sesi → Bip (bildirim sesi) → Sessiz (sadece yazı)
+  // Vakit bildirimi türü: telefonun bildirim sesi veya sessiz (sadece yazı)
   // ==========================================
   // SEÇİM PENCERESİ (alttan açılır, ayarlar için ortak)
   // ==========================================
@@ -1620,7 +1635,6 @@ class TamVaktiApp {
               ${o.desc ? `<span class="block text-[12px] text-slate-400">${o.desc}</span>` : ""}
             </span>
           </button>
-          ${o.preview ? `<button data-preview="${o.value}" onclick="app.previewAthan('${o.value}', event)" aria-label="Dinle" class="w-11 h-11 rounded-full bg-sky-400/15 text-sky-200 text-sm shrink-0">▶</button>` : ""}
         </div>`;
     }).join("");
     const sheet = document.getElementById("choiceSheet");
@@ -1635,15 +1649,13 @@ class TamVaktiApp {
   }
 
   closeChoice() {
-    this.stopAthanPreview();
     const sheet = document.getElementById("choiceSheet");
     if (sheet) sheet.classList.add("hidden");
   }
 
   openPrayerModesModal() {
     this.openChoice("Vakit bildirimi", "Vakit girince ne olsun?", [
-      { value: "ezan", label: "Ezan", desc: "Seçtiğiniz ezan okunur" },
-      { value: "bip", label: "Bildirim sesi", desc: "Kısa bir bildirim sesi çalar" },
+      { value: "bip", label: "Telefonun bildirim sesi", desc: "Sesi Bildirim sesi satırından değiştirebilirsiniz" },
       { value: "sessiz", label: "Sessiz", desc: "Yalnızca bildirim yazısı gösterilir" }
     ], this.notifMode, (v) => {
       this.notifMode = v;
@@ -1676,60 +1688,6 @@ class TamVaktiApp {
       this.updatePrayers();
       const monthly = document.getElementById("monthlyModal");
       if (monthly && !monthly.classList.contains("hidden")) this.loadMonthlyData(false);
-    });
-  }
-
-  openAthanSheet() {
-    const opts = ATHAN_LIST.map(a => ({ value: a.id, label: a.name, desc: a.desc, preview: true }));
-    this.openChoice("Ezan sesi", "▶ ile dinleyin, satıra dokunarak seçin.", opts, this.currentAthanTone, (v) => {
-      this.currentAthanTone = v;
-      localStorage.setItem("tamvakti_athan_tone", v);
-      this.updateSettingsLabels();
-      this.scheduleSync();
-    });
-  }
-
-  athanFile() {
-    const a = ATHAN_LIST.find(x => x.id === this.currentAthanTone) || ATHAN_LIST[0];
-    return a.file.split("/").pop();
-  }
-
-  previewAthan(id, ev) {
-    if (ev) ev.stopPropagation();
-    if (this._previewId === id && this.athanAudio && !this.athanAudio.paused) {
-      this.stopAthanPreview();
-      return;
-    }
-    this.stopAthanPreview();
-    const a = ATHAN_LIST.find(x => x.id === id);
-    if (!a) return;
-    try {
-      this.athanAudio = new Audio(a.file);
-      this._previewId = id;
-      this.athanAudio.onended = () => this.stopAthanPreview();
-      this.athanAudio.onerror = () => {
-        this.stopAthanPreview();
-        this.showToast("Ezan sesi yüklenemedi", "⚠️");
-      };
-      this.athanAudio.play().catch(() => this.stopAthanPreview());
-    } catch (e) {
-      this.stopAthanPreview();
-    }
-    this.updatePreviewButtons();
-  }
-
-  stopAthanPreview() {
-    if (this.athanAudio) {
-      try { this.athanAudio.pause(); this.athanAudio.currentTime = 0; } catch (e) {}
-      this.athanAudio = null;
-    }
-    this._previewId = null;
-    this.updatePreviewButtons();
-  }
-
-  updatePreviewButtons() {
-    document.querySelectorAll("[data-preview]").forEach(b => {
-      b.textContent = (b.dataset.preview === this._previewId) ? "■" : "▶";
     });
   }
 

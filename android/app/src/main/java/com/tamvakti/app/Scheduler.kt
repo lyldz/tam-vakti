@@ -52,7 +52,7 @@ object Scheduler {
             for (i in 0 until events.length()) {
                 val e = events.optJSONObject(i) ?: continue
                 val type = e.optString("type")
-                if (type != "athan" && type != "reminder" && type != "kerahat") continue
+                if (type != "vakit" && type != "reminder" && type != "kerahat") continue
                 val t = e.optLong("t", 0L)
                 if (t > now && t < bestT) {
                     bestT = t
@@ -95,7 +95,6 @@ object Scheduler {
                     putExtra("type", type)
                     putExtra("title", e.optString("title"))
                     putExtra("body", e.optString("body"))
-                    putExtra("tone", e.optString("tone"))
                     putExtra("mode", e.optString("mode"))
                     putExtra("id", BASE_CODE + n)
                 }

@@ -455,17 +455,32 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
 
         @JavascriptInterface
-        fun testAlert(type: String, title: String, body: String, tone: String, mode: String) {
+        fun testAlert(type: String, title: String, body: String, mode: String) {
             val app = activity.applicationContext
             activity.runOnUiThread {
-                AlarmReceiver.handle(app, type, title, body, tone, mode, 4999)
+                AlarmReceiver.handle(app, type, title, body, mode, 4999)
             }
         }
 
+        /** Vakit bildirimi kanalının ayar ekranını açar; kullanıcı telefondaki istediği sesi seçer. */
         @JavascriptInterface
-        fun stopAthan() {
-            val app = activity.applicationContext
-            app.stopService(Intent(app, AthanService::class.java))
+        fun openSoundSettings() {
+            activity.runOnUiThread {
+                try {
+                    val intent = Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS).apply {
+                        putExtra(Settings.EXTRA_APP_PACKAGE, activity.packageName)
+                        putExtra(Settings.EXTRA_CHANNEL_ID, Notifs.CH_ALERT)
+                    }
+                    activity.startActivity(intent)
+                } catch (e: Exception) {
+                    try {
+                        activity.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                            putExtra(Settings.EXTRA_APP_PACKAGE, activity.packageName)
+                        })
+                    } catch (e2: Exception) {
+                    }
+                }
+            }
         }
 
         @JavascriptInterface

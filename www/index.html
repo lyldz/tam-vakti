@@ -99,29 +99,39 @@
       <section id="viewPrayer" class="flex-1 flex flex-col justify-center gap-4 my-auto w-full py-1">
         
         <!-- SOLAR TRANSIT CURVE (GÜNEŞ & VAKİT DÖNGÜSÜ DALGASI) -->
-        <div id="solarTransitContainer" class="w-full max-w-[340px] mx-auto px-2 pt-0.5 flex flex-col items-center">
-          <svg viewBox="0 0 340 54" class="w-full h-auto overflow-visible">
-            <defs>
-              <linearGradient id="solarAmberGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#ea580c"/>
-                <stop offset="50%" stop-color="#fb923c"/>
-                <stop offset="100%" stop-color="#fcd34d"/>
-              </linearGradient>
-              <filter id="solarGlow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="2.5" result="blur"/>
-                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-              </filter>
-            </defs>
-
-            <!-- Arka Plan Nötr Dalga (Gece - Gündüz - Gece) -->
-            <path d="M 25 38 C 55 38, 75 10, 130 10 C 185 10, 215 44, 250 44 C 275 44, 295 38, 310 34" fill="none" stroke="rgba(56, 189, 248, 0.15)" stroke-width="2" stroke-dasharray="3 3"/>
-            
-            <!-- Canlı Turuncu İlerleme Dalgası -->
-            <path id="solarPassedWave" d="M 25 38" fill="none" stroke="url(#solarAmberGrad)" stroke-width="2.8" stroke-linecap="round" filter="url(#solarGlow)"/>
-
-            <!-- 6 Vakit Düğümü (İmsak, Güneş, Öğle, İkindi, Akşam, Yatsı) -->
-            <g id="solarTransitNodes"></g>
-          </svg>
+        <div id="solarTransitContainer" class="w-full max-w-[380px] mx-auto px-1 flex flex-col items-center">
+           <svg id="solarArc" viewBox="0 0 340 262" class="w-full h-auto overflow-visible" role="img" aria-label="Gün boyunca güneşin yolu ve namaz vakitleri">
+             <defs>
+               <linearGradient id="arcPassedGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                 <stop offset="0%" stop-color="#ea580c"/>
+                 <stop offset="55%" stop-color="#fb923c"/>
+                 <stop offset="100%" stop-color="#fcd34d"/>
+               </linearGradient>
+               <radialGradient id="sunCore" cx="50%" cy="50%" r="50%">
+                 <stop offset="0%" stop-color="#fff7d6"/>
+                 <stop offset="55%" stop-color="#fcd34d"/>
+                 <stop offset="100%" stop-color="#fb923c"/>
+               </radialGradient>
+               <radialGradient id="sunHalo" cx="50%" cy="50%" r="50%">
+                 <stop offset="0%" stop-color="#fcd34d" stop-opacity="0.55"/>
+                 <stop offset="100%" stop-color="#fb923c" stop-opacity="0"/>
+               </radialGradient>
+               <radialGradient id="moonHalo" cx="50%" cy="50%" r="50%">
+                 <stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.45"/>
+                 <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+               </radialGradient>
+               <linearGradient id="nightFade" x1="0" y1="0" x2="0" y2="1">
+                 <stop offset="0%" stop-color="#020617" stop-opacity="0.35"/>
+                 <stop offset="100%" stop-color="#020617" stop-opacity="0"/>
+               </linearGradient>
+             </defs>
+             <rect id="arcNight" x="10" y="150" width="320" height="108" rx="16" fill="url(#nightFade)"/>
+             <line id="arcHorizon" x1="6" y1="150" x2="334" y2="150" stroke="rgba(148,163,184,0.28)" stroke-width="1" stroke-dasharray="2 4"/>
+             <path id="arcBase" d="" fill="none" stroke="rgba(125,211,252,0.28)" stroke-width="2" stroke-linecap="round"/>
+             <path id="arcPassed" d="" fill="none" stroke="url(#arcPassedGrad)" stroke-width="3.2" stroke-linecap="round"/>
+             <g id="solarArcSun"></g>
+             <g id="solarArcNodes"></g>
+           </svg>
         </div>
 
         <!-- HERO PRESENT MOMENT MODULE -->
@@ -456,7 +466,7 @@
 
       <!-- Pil uyarısı (yalnızca Android uygulamasında görünür) -->
       <div id="batteryBanner" class="hidden bg-amber-400/10 border border-amber-400/30 rounded-2xl p-3 flex items-center justify-between gap-3">
-        <span class="text-[13px] font-semibold text-amber-200">Pil tasarrufu ezanı geciktirebilir</span>
+        <span class="text-[13px] font-semibold text-amber-200">Pil tasarrufu bildirimleri geciktirebilir</span>
         <button onclick="app.openBatterySettings()" class="px-4 py-1.5 rounded-full bg-amber-400 text-slate-950 text-xs font-extrabold shrink-0">Düzelt</button>
       </div>
 
@@ -502,19 +512,19 @@
               </span>
             </span>
             <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
-              <span id="settingsNotifMode">Ezan</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              <span id="settingsNotifMode">Telefon sesi</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </span>
           </button>
-          <button onclick="app.openAthanSheet()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
+          <button onclick="app.openSoundSettings()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
             <span class="flex items-center gap-3 min-w-0">
               <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z"/></svg>
               <span class="min-w-0">
-                <span class="block text-[14px] font-semibold text-slate-100">Ezan sesi</span>
-                <span id="settingsAthanDesc" class="block text-[12px] text-slate-400 truncate">Ezan seçiliyken çalar</span>
+                <span class="block text-[14px] font-semibold text-slate-100">Bildirim sesi</span>
+                <span id="settingsSoundDesc" class="block text-[12px] text-slate-400 truncate">Telefondaki istediğiniz sesi seçin</span>
               </span>
             </span>
             <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
-              <span id="settingsAthanTone">Aaqib Azeez</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              <span id="settingsSoundAction">Değiştir</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </span>
           </button>
           <button onclick="app.cycleReminderMinutes()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
@@ -719,7 +729,6 @@
       <details class="text-left text-[11px] text-slate-400 leading-relaxed">
         <summary class="cursor-pointer font-semibold text-slate-300 text-xs">Lisanslar ve teşekkürler</summary>
         <div class="pt-2 space-y-1.5">
-          <p><span class="font-semibold text-slate-300">Ezan kayıtları</span> (Wikimedia Commons): Aaqib Azeez (CC BY-SA 4.0), Sakin — Adam-synagda (CC0), Hassan II Camii — Fraguando (CC BY-SA 4.0), Uzun Okuyuş — Andrewler (CC BY-SA 4.0). Kayıtlar ses seviyesi eşitlenip başı/sonu yumuşatılarak kullanılmıştır; değiştirilmiş kopyalar aynı lisansla (CC BY-SA 4.0) paylaşılır.</p>
           <p><span class="font-semibold text-slate-300">Yazı tipleri:</span> Plus Jakarta Sans, JetBrains Mono, Amiri (SIL OFL). <span class="font-semibold text-slate-300">Harita:</span> Leaflet, © OpenStreetMap katkıcıları. <span class="font-semibold text-slate-300">Vakitler:</span> Aladhan API.</p>
         </div>
       </details>
