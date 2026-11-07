@@ -1,16 +1,52 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Tam Vakti - Namaz Vakitleri & İmsakiye</title>
+  <!-- Google Fonts: Inter, JetBrains Mono, Plus Jakarta Sans (Nocturnal Arctic 2B) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="lib/leaflet/leaflet.css">
   <script src="lib/tailwind/tailwindcss.min.js"></script>
   <script>
     if (typeof tailwind !== 'undefined') {
       tailwind.config = {
-        darkMode: 'class'
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              surface: '#090e1a',
+              'surface-container-lowest': '#060a14',
+              'surface-container-low': '#0d1527',
+              'surface-container': '#131e36',
+              'surface-container-high': '#1a2745',
+              'surface-container-highest': '#233256',
+              'surface-bright': '#2b3d67',
+              'surface-dim': '#090e1a',
+              'on-surface': '#f8fafc',
+              'on-surface-variant': '#cbd5e1',
+              primary: '#38bdf8',
+              'primary-container': '#0284c7',
+              'on-primary': '#031a29',
+              'on-primary-container': '#082f49',
+              secondary: '#fb923c',
+              'secondary-container': '#ea580c',
+              'on-secondary': '#431407',
+              tertiary: '#818cf8',
+              'tertiary-container': '#4f46e5',
+              outline: '#94a3b8',
+              'outline-variant': '#334155'
+            },
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', '"Inter"', 'sans-serif'],
+              mono: ['"JetBrains Mono"', 'monospace'],
+              arabic: ['"Amiri"', 'serif']
+            }
+          }
+        }
       };
     }
     // Açılışta tema yanıp sönmesini (white flash) önleyen erken tema kontrolü
@@ -25,97 +61,186 @@
     })();
   </script>
 </head>
-<body class="select-none">
+<body class="select-none bg-[#050811] text-slate-100 min-h-screen antialiased">
 
-  <!-- Ana Minimalist Kapsayıcı -->
-  <div class="minimal-app">
+  <!-- Ana Minimalist Kapsayıcı (Nocturnal Arctic 2B) -->
+  <div class="minimal-app w-full max-w-[420px] mx-auto min-h-screen relative overflow-hidden flex flex-col pb-4 arctic-radial-glow">
 
-    <!-- 1. ÜST BAŞLIK ALANI (SADELEŞTİRİLMİŞ & FERAH) -->
-    <header class="top-header flex items-center justify-between">
+    <!-- 1. ÜST BAŞLIK ALANI (NOCTURNAL ARCTIC 2B) -->
+    <header class="top-header flex items-center justify-between gap-2 mb-2 shrink-0">
       
       <!-- Sol: Şehir Rozeti -->
-      <button onclick="app.openLocationModal()" class="location-pill cursor-pointer" title="Konum Değiştir">
-        <svg class="w-3.5 h-3.5 text-emerald-700" fill="currentColor" viewBox="0 0 24 24">
+      <button onclick="app.openLocationModal()" class="flex items-center gap-1.5 py-1.5 px-3 rounded-full bg-slate-900/80 border border-sky-400/30 text-sky-400 backdrop-blur-md active:scale-95 transition-transform duration-150 cursor-pointer shadow-sm" title="Konum Değiştir">
+        <svg class="w-3.5 h-3.5 text-sky-400" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
         </svg>
-        <span id="headerCityName">Konum Seçiniz</span>
+        <span id="headerCityName" class="text-xs font-bold text-slate-100 tracking-tight">Konum Seçiniz</span>
       </button>
 
-      <!-- Sağ: Tarih & Takvim Kartı (Takvim İkonu + Günler + Geçiş Oku) -->
-      <button onclick="app.openMonthlyModal()" class="date-header-card flex items-center gap-2.5 px-3 py-1.5 bg-white/80 backdrop-blur-md rounded-2xl border border-white/90 shadow-2xs hover:bg-white active:scale-95 transition-all cursor-pointer relative" title="Aylık Namaz Vakitleri & İmsakiye">
-        <span id="updateBadgeDot" class="update-badge-dot hidden" title="Yeni güncelleme mevcut!"></span>
-        <!-- Takvim İkonu -->
-        <svg class="w-4 h-4 text-emerald-700 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/>
-          <line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
-        <!-- Tarih Metni -->
-        <div class="text-right">
-          <div id="miladiDateMain" class="text-xs font-black text-[#0f3e2e] leading-tight">16 Ekim 2026</div>
-          <div id="hicriDateSub" class="text-[10px] font-semibold text-slate-500 leading-tight mt-0.5">Cuma • 4 Cemaziyelevvel</div>
-        </div>
-        <!-- Geçiş / Detay Oku (>) -->
-        <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-        </svg>
+      <!-- Orta: Tarih Kartı (Miladi & Hicri) -->
+      <button onclick="app.openMonthlyModal()" class="text-center px-2.5 py-1 rounded-full bg-slate-900/60 border border-slate-700/50 backdrop-blur-md hover:border-sky-400/30 transition-colors cursor-pointer" title="Aylık İmsakiye">
+        <span class="text-[11px] font-medium text-slate-300 tracking-wide block">
+          <span id="miladiDateMain">5 Kasım</span> • <span id="hicriDateSub" class="text-slate-400">24 Cemaziyelevvel</span>
+        </span>
       </button>
+
+      <!-- Sağ: Kıble & Ayarlar İkonları (Sağ Üstte Yan Yana) -->
+      <div class="flex items-center gap-1.5">
+        <!-- Kıble Butonu -->
+        <button onclick="app.toggleQiblaTab()" id="headerQiblaBtn" aria-label="Kıble" class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-900/70 border border-slate-700/60 text-slate-300 hover:text-sky-400 hover:border-sky-400/40 active:scale-95 transition-all cursor-pointer" title="Kıble Pusulası">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+          </svg>
+        </button>
+
+        <!-- Ayarlar Butonu -->
+        <button onclick="app.openSettingsModal()" aria-label="Ayarlar" class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-900/70 border border-slate-700/60 text-slate-300 hover:text-sky-400 hover:border-sky-400/40 active:scale-95 transition-all cursor-pointer" title="Ayarlar">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </button>
+      </div>
 
     </header>
 
-    <!-- 2. ANA İÇERİK ALANI -->
-    <main class="flex-1">
+    <!-- 2. ANA İÇERİK ALANI (DİKEY ORTALANMIŞ) -->
+    <main class="flex-1 flex flex-col justify-center my-auto w-full">
 
-      <!-- GÖRÜNÜM 1: NAMAZ VAKİTLERİ (MİHRAP KUBBESİ) -->
-      <section id="viewPrayer" class="mihrab-frame">
+      <!-- GÖRÜNÜM 1: SAPSADE HORIZON KERAHAT (NOCTURNAL ARCTIC) -->
+      <section id="viewPrayer" class="flex-1 flex flex-col justify-center gap-4 my-auto w-full py-1">
         
-        <!-- Sıradaki Vakit ve Geri Sayım -->
-        <div class="countdown-header-area">
-          <div id="nextPrayerInfo" class="next-vakit-label">
-            Öğle'ye kalan • 12:43
-          </div>
-          <div id="mainCountdown" class="big-countdown">
-            <span class="cd-main">03:38:</span><span class="cd-sec">22</span>
+        <!-- SOLAR TRANSIT CURVE (GÜNEŞ & VAKİT DÖNGÜSÜ DALGASI) -->
+        <div id="solarTransitContainer" class="w-full max-w-[340px] mx-auto px-2 pt-0.5 flex flex-col items-center">
+          <svg viewBox="0 0 340 54" class="w-full h-auto overflow-visible">
+            <defs>
+              <linearGradient id="solarAmberGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ea580c"/>
+                <stop offset="50%" stop-color="#fb923c"/>
+                <stop offset="100%" stop-color="#fcd34d"/>
+              </linearGradient>
+              <filter id="solarGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+              </filter>
+            </defs>
+
+            <!-- Arka Plan Nötr Dalga (Gece - Gündüz - Gece) -->
+            <path d="M 25 38 C 55 38, 75 10, 130 10 C 185 10, 215 44, 250 44 C 275 44, 295 38, 310 34" fill="none" stroke="rgba(56, 189, 248, 0.15)" stroke-width="2" stroke-dasharray="3 3"/>
+            
+            <!-- Canlı Turuncu İlerleme Dalgası -->
+            <path id="solarPassedWave" d="M 25 38" fill="none" stroke="url(#solarAmberGrad)" stroke-width="2.8" stroke-linecap="round" filter="url(#solarGlow)"/>
+
+            <!-- 6 Vakit Düğümü (İmsak, Güneş, Öğle, İkindi, Akşam, Yatsı) -->
+            <g id="solarTransitNodes"></g>
+          </svg>
+        </div>
+
+        <!-- HERO PRESENT MOMENT MODULE -->
+        <div class="flex flex-col items-center text-center">
+          <!-- Tag Pill: Şu Anki Vakit -->
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/90 border border-sky-400/30 backdrop-blur-md shadow-[0_0_12px_-2px_rgba(56,189,248,0.25)] mb-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-sky-400 shadow-[0_0_8px_#38bdf8]"></span>
+            <span id="currentPrayerBadge" class="text-xs tracking-widest text-sky-400 font-bold">ŞU AN: İKİNDİ</span>
           </div>
 
-          <!-- İlerleme Çubuğu & Kerahat Göstergesi -->
-          <div class="prayer-progress-wrapper">
-            <div class="prayer-progress-track relative overflow-hidden">
-              <!-- Başlangıç Kerahat Dilimi (Güneş sonrası kehribar) -->
-              <div id="kerahatStartZone" class="kerahat-zone-start hidden"></div>
-              <!-- İlerleme Dolgusu -->
-              <div id="prayerProgressBar" class="prayer-progress-fill" style="width: 50%;"></div>
-              <!-- Bitiş Kerahat Dilimi (Öğle / Akşam öncesi kehribar) -->
-              <div id="kerahatEndZone" class="kerahat-zone-end"></div>
+          <!-- Clean Subtitle Heading -->
+          <p id="nextPrayerInfo" class="text-xs text-slate-400 font-medium tracking-wide">
+            Akşam Vaktine Kalan
+          </p>
+
+          <!-- Giant Monospace Countdown Timer (Büyütülmüş Sayılar) -->
+          <div class="py-1 my-0.5">
+            <h1 id="mainCountdown" class="text-[3.6rem] min-[380px]:text-[4.2rem] font-mono tracking-tight text-white font-light drop-shadow-[0_0_28px_rgba(56,189,248,0.4)] leading-none">
+              <span class="cd-main">00:42:</span><span class="cd-sec">15</span>
+            </h1>
+          </div>
+
+          <!-- Sub-times Interval Reference -->
+          <div id="subTimesLabel" class="flex items-center gap-2 text-xs text-slate-400 font-medium">
+            <span>İkindi 15:31</span>
+            <span class="opacity-40">•</span>
+            <span>Akşam 17:56</span>
+          </div>
+        </div>
+
+        <!-- HORIZONTAL HORIZON TIMELINE BAR (TEK MERKEZİ KART) -->
+        <div class="rounded-2xl p-4 bg-slate-900/80 backdrop-blur-xl border border-sky-400/20 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.6)] flex flex-col gap-3">
+          <!-- Header Row -->
+          <div class="flex items-center justify-between text-xs">
+            <div class="flex items-center gap-1.5">
+              <span id="horizonStartName" class="font-bold text-sky-400">İKİNDİ</span>
+              <span id="horizonStartTime" class="text-slate-400 font-mono">15:31</span>
             </div>
-            <div class="prayer-progress-labels">
-              <span id="progressStartLabel">Güneş 06:55</span>
-              <span id="progressEndLabel" class="flex items-center gap-1">Kerahat: 11:58</span>
+            <!-- Kerahat Alert Badge -->
+            <div id="horizonKerahatBadge" class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 font-semibold shadow-[0_0_12px_rgba(251,146,60,0.25)]">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 pulse-amber"></span>
+              <span>⚠️ Kerahat 17:11</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span id="horizonEndName" class="font-bold text-slate-200">AKŞAM</span>
+              <span id="horizonEndTime" class="text-slate-400 font-mono">17:56</span>
+            </div>
+          </div>
+
+          <!-- Sleek Horizontal Progress Bar with Kerahat Zone -->
+          <div class="relative w-full h-3.5 rounded-full bg-slate-800/80 overflow-hidden flex p-[1px] border border-slate-700/50">
+            <!-- Passed Time Segment -->
+            <div id="horizonPassedSegment" class="h-full bg-sky-400 rounded-l-full relative shadow-[0_0_12px_#38bdf8] transition-all duration-300" style="width: 63%;">
+              <!-- Glowing Indicator Head / Pulse Tip -->
+              <div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-2.5 h-2.5 rounded-full bg-white border border-sky-400 shadow-[0_0_8px_#ffffff] z-20"></div>
+            </div>
+            <!-- Safe Window Unelapsed (Muted track) -->
+            <div class="h-full flex-1 bg-transparent"></div>
+            <!-- Kerahat Danger Window Segment (Diagonal stripes) -->
+            <div id="horizonKerahatZone" class="h-full kerahat-stripes border-l border-amber-400/60 rounded-r-full relative" style="width: 29%;" title="Kerahat Vakti: Mekruh Zaman">
+              <div class="absolute inset-0 bg-amber-500/15"></div>
+            </div>
+          </div>
+
+          <!-- Footer Row Metrics -->
+          <div class="flex items-center justify-between text-xs pt-0.5">
+            <div class="flex items-center gap-1 text-slate-400">
+              <span class="w-1 h-1 rounded-full bg-slate-400"></span>
+              <span>Geçen Süre: <span id="horizonElapsedText" class="text-slate-200 font-medium">1s 27dk</span></span>
+            </div>
+            <div id="horizonKerahatRemainText" class="font-semibold text-amber-300">
+              Kerahate 13 dk
             </div>
           </div>
         </div>
 
-        <!-- 6 Vakit Kartı -->
-        <div id="prayerCardsList">
-          <!-- JS ile doldurulacak -->
+        <!-- GÜNÜN VAKİTLERİ YATAY AKIŞ ŞERİDİ (SAPSADE 6 VAKİT HAPLARI) -->
+        <div id="dayTimesRibbon" class="w-full rounded-2xl p-1.5 bg-slate-900/70 backdrop-blur-xl border border-sky-400/15 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center justify-between text-center gap-1">
+          <!-- 6 vakit dinamik doldurulur -->
+        </div>
+
+        <!-- Arka Plan DOM Elemanları (JS referans uyumluluğu için gizli tutulur) -->
+        <div class="hidden">
+          <div id="statusTitleText"></div>
+          <div id="statusSubtitleText"></div>
+          <button id="prayerLogBtn"></button>
+          <div id="sunsetStat"></div>
+          <div id="prayerCardsList"></div>
+          <div id="allPrayersContainer"></div>
         </div>
 
       </section>
 
       <!-- GÖRÜNÜM 2: KIBLE BULUCU (CANLI PUSULA & HARİTA İLE SOKAK YÖNÜ) -->
-      <section id="viewQibla" class="hidden space-y-3 pb-24">
+      <section id="viewQibla" class="hidden space-y-3 pb-8 pt-1">
         
-        <!-- Üst Başlıklar: Sol Şehir, Sağ Sensör Rozeti -->
+        <!-- Üst Başlıklar: Vakitlere Dön, Sağ Sensör Rozeti -->
         <div class="flex items-center justify-between px-1">
-          <button onclick="app.openLocationModal()" class="location-pill cursor-pointer" title="Konum Değiştir">
-            <span class="text-emerald-700">📍</span>
-            <span id="qiblaHeaderCity">Konum Seçiniz</span>
+          <button onclick="app.switchTab('prayer')" class="flex items-center gap-1.5 py-1.5 px-3 rounded-full bg-slate-900/80 border border-sky-400/30 text-sky-400 text-xs font-bold active:scale-95 transition-all cursor-pointer shadow-sm" title="Vakitler Ekranına Dön">
+            <span>←</span> <span>Vakitler</span>
           </button>
-          <div id="qiblaSensorBadge" class="bg-white/90 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-full shadow-2xs border border-white flex items-center gap-1.5">
-            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <div id="qiblaSensorBadge" class="bg-slate-900/80 text-sky-300 text-xs font-bold px-3 py-1.5 rounded-full border border-sky-400/30 flex items-center gap-1.5">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             <span>Canlı Sensör</span>
           </div>
+          <span id="qiblaHeaderCity" class="hidden"></span>
         </div>
 
         <!-- Mod Seçici: Pusula vs Harita -->
@@ -247,60 +372,33 @@
 
     </main>
 
-    <!-- 3. BÜTÜNLEŞİK ALT DOCK (VAKİTLER | KIBLE | AYLIK | AYARLAR ⚙️) -->
-    <div id="mainBottomDock" class="minimal-dock flex justify-center">
-      <div class="segment-container unified-dock-capsule">
-        <button onclick="app.switchTab('prayer')" id="tabBtn-prayer" class="segment-btn active flex items-center gap-1.5" title="Namaz Vakitleri">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M7.05 16.95l-1.414 1.414m12.728 0l-1.414-1.414M7.05 7.05L5.636 5.636"/>
-          </svg>
-          <span>Vakitler</span>
-        </button>
-        <button onclick="app.switchTab('qibla')" id="tabBtn-qibla" class="segment-btn flex items-center gap-1.5" title="Kıble Pusulası">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"/>
-            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
-          </svg>
-          <span>Kıble</span>
-        </button>
-        <button onclick="app.openMonthlyModal()" id="tabBtn-monthly" class="segment-btn flex items-center gap-1.5" title="Aylık İmsakiye">
-          <svg class="w-3.5 h-3.5 opacity-80" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-          <span>Aylık</span>
-        </button>
-        <button onclick="app.openSettingsModal()" id="tabBtn-settings" class="segment-btn flex items-center gap-1.5" title="Ayarlar">
-          <svg class="w-3.5 h-3.5 opacity-80" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
-          <span>Ayarlar</span>
-        </button>
-      </div>
+    <!-- 3. ALT DOCK (Üst Başlığa Taşındığı İçin Gizlendi) -->
+    <div id="mainBottomDock" class="hidden">
+      <button onclick="app.switchTab('prayer')" id="tabBtn-prayer"></button>
+      <button onclick="app.switchTab('qibla')" id="tabBtn-qibla"></button>
+      <button onclick="app.openSettingsModal()" id="tabBtn-settings"></button>
+      <button id="tabBtn-monthly" class="hidden"></button>
     </div>
 
   </div>
 
   
-  <!-- MODAL: AYLIK NAMAZ VAKİTLERİ (İMSAKİYE) EKRANI -->
-  <div id="monthlyModal" class="hidden fixed inset-0 z-50 bg-[#ebf4ee] overflow-y-auto">
+  <!-- MODAL: AYLIK NAMAZ VAKİTLERİ (İMSAKİYE) EKRANI (NOCTURNAL ARCTIC) -->
+  <div id="monthlyModal" class="hidden fixed inset-0 z-50 bg-[#060a14] text-slate-100 overflow-y-auto">
     <!-- Üst Yapışkan Bar: Geri Dön & Şehir Rozeti -->
-    <div class="sticky top-0 z-20 bg-[#ebf4ee]/95 backdrop-blur-md px-4 py-3 border-b border-emerald-900/10 flex items-center justify-between">
-      <button onclick="app.closeMonthlyModal()" class="flex items-center gap-2 text-[#0f3e2e] font-extrabold text-sm hover:text-emerald-800 cursor-pointer">
+    <div class="sticky top-0 z-30 bg-[#060a14]/95 backdrop-blur-md px-4 py-3 border-b border-sky-400/20 flex items-center justify-between">
+      <button onclick="app.closeMonthlyModal()" class="flex items-center gap-2 text-sky-400 font-extrabold text-sm hover:text-sky-300 active:scale-95 transition-all cursor-pointer">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
         </svg>
         <span>Vakitler</span>
       </button>
       <div class="flex items-center gap-2">
-        <button onclick="app.openLocationModal()" class="location-pill text-[11px] py-1 px-2.5 shadow-none" title="Konum Değiştir">
-          <span class="text-emerald-700">📍</span>
-          <span id="monthlyCityName">Konum Seçiniz</span>
+        <button onclick="app.openLocationModal()" class="flex items-center gap-1.5 py-1 px-3 rounded-full bg-slate-900 border border-sky-400/30 text-sky-400 text-xs font-bold active:scale-95 transition-all cursor-pointer" title="Konum Değiştir">
+          <span>📍</span>
+          <span id="monthlyCityName" class="text-slate-200">Konum Seçiniz</span>
         </button>
-        <button onclick="app.closeMonthlyModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold px-1 leading-none cursor-pointer">&times;</button>
+        <button onclick="app.closeMonthlyModal()" class="w-7 h-7 rounded-full bg-slate-900 border border-slate-700/80 text-slate-400 hover:text-white flex items-center justify-center font-bold active:scale-95 transition-all cursor-pointer">&times;</button>
       </div>
     </div>
 
@@ -308,10 +406,10 @@
     <div class="max-w-md mx-auto p-3 space-y-3 pb-24">
       
       <!-- Ay Değiştirici ve Bilgi Başlığı Kartı -->
-      <div class="bg-white rounded-3xl p-3.5 shadow-xs border border-emerald-950/5 space-y-3">
+      <div class="bg-slate-900/90 rounded-3xl p-3.5 border border-sky-400/15 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] space-y-3">
         <div class="flex items-center justify-between">
           <!-- Önceki Ay Butonu -->
-          <button onclick="app.changeMonthlyMonth(-1)" class="w-9 h-9 rounded-2xl bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-emerald-900 flex items-center justify-center font-black transition-all cursor-pointer" title="Önceki Ay">
+          <button onclick="app.changeMonthlyMonth(-1)" class="w-9 h-9 rounded-2xl bg-slate-800 border border-slate-700/70 hover:border-sky-400/40 text-slate-200 hover:text-sky-400 flex items-center justify-center font-black active:scale-95 transition-all cursor-pointer" title="Önceki Ay">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
             </svg>
@@ -319,12 +417,12 @@
           
           <!-- Ay & Yıl Başlığı -->
           <div class="text-center">
-            <h2 id="monthlyTitleText" class="text-base font-extrabold text-[#0f3e2e] tracking-tight">Ekim 2026</h2>
-            <p id="monthlyHijriText" class="text-[11px] font-semibold text-emerald-700/80 mt-0.5">Hicri Yıl</p>
+            <h2 id="monthlyTitleText" class="text-base font-extrabold text-white tracking-tight">Ekim 2026</h2>
+            <p id="monthlyHijriText" class="text-xs font-medium text-sky-400/90 mt-0.5">Hicri Yıl</p>
           </div>
           
           <!-- Sonraki Ay Butonu -->
-          <button onclick="app.changeMonthlyMonth(1)" class="w-9 h-9 rounded-2xl bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-emerald-900 flex items-center justify-center font-black transition-all cursor-pointer" title="Sonraki Ay">
+          <button onclick="app.changeMonthlyMonth(1)" class="w-9 h-9 rounded-2xl bg-slate-800 border border-slate-700/70 hover:border-sky-400/40 text-slate-200 hover:text-sky-400 flex items-center justify-center font-black active:scale-95 transition-all cursor-pointer" title="Sonraki Ay">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
             </svg>
@@ -332,23 +430,23 @@
         </div>
 
         <!-- Ara Butonlar: Bugüne Git & Bilgi Rozeti -->
-        <div class="flex items-center justify-between pt-1 border-t border-slate-100">
-          <button onclick="app.scrollMonthlyToToday()" class="flex items-center gap-1.5 px-3 py-1 bg-emerald-100 hover:bg-emerald-200 active:scale-95 text-[#0f3e2e] text-[11px] font-bold rounded-full transition-all cursor-pointer">
+        <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+          <button onclick="app.scrollMonthlyToToday()" class="flex items-center gap-1.5 px-3 py-1 bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 active:scale-95 text-sky-300 text-xs font-bold rounded-full transition-all cursor-pointer">
             <span>📍</span>
             <span>Bugüne Git</span>
           </button>
-          <span id="monthlySourceBadge" class="text-[10px] font-semibold text-slate-500 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200/60">
+          <span id="monthlySourceBadge" class="text-[11px] font-semibold text-slate-400 bg-slate-800/80 px-2.5 py-0.5 rounded-full border border-slate-700/60">
             Diyanet Uyumlu
           </span>
         </div>
       </div>
 
       <!-- İmsakiye Tablosu Kartı -->
-      <div class="bg-white rounded-3xl shadow-xs border border-emerald-950/5 overflow-hidden">
+      <div class="bg-slate-900/90 rounded-3xl border border-sky-400/15 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.6)] overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-center border-collapse text-xs">
             <thead>
-              <tr class="bg-emerald-900/5 text-[#0f3e2e] font-extrabold text-[11px] border-b border-emerald-950/10">
+              <tr class="bg-slate-800/80 text-sky-400 font-extrabold text-[11px] tracking-wider border-b border-slate-700/80 uppercase">
                 <th class="py-2.5 px-1.5 text-left pl-3" style="width: 22%;">Gün</th>
                 <th class="py-2.5 px-1" style="width: 13%;">İmsak</th>
                 <th class="py-2.5 px-1" style="width: 13%;">Güneş</th>
@@ -358,7 +456,7 @@
                 <th class="py-2.5 px-1 pr-3" style="width: 13%;">Yatsı</th>
               </tr>
             </thead>
-            <tbody id="monthlyTableBody" class="divide-y divide-emerald-950/5 font-mono text-[11.5px]">
+            <tbody id="monthlyTableBody" class="divide-y divide-slate-800/60 font-mono text-[11.5px] text-slate-200">
               <!-- JS ile dinamik doldurulacak -->
             </tbody>
           </table>
@@ -366,8 +464,8 @@
       </div>
 
       <!-- Açıklama Notu -->
-      <div class="text-[11px] text-slate-500 text-center leading-relaxed px-2">
-        Vakitler Diyanet İşleri Başkanlığı takvim ve astronomik kriterlerine tam uyumludur. Yeşil zeminli satır bugünü simgeler.
+      <div class="text-[11px] text-slate-400 text-center leading-relaxed px-2">
+        Vakitler Diyanet İşleri Başkanlığı takvim ve astronomik kriterlerine tam uyumludur. Parlayan satır bugünü simgeler.
       </div>
 
     </div>
@@ -629,7 +727,7 @@
         <!-- Güvenlik / Gizlilik Notu -->
         <div class="flex items-center justify-center gap-1.5 text-[11px] font-medium text-slate-400 pt-2 text-center">
           <span>🔒</span>
-          <span>Konumun cihazında saklanır. Vakit sorgusu için yalnızca koordinatlar Aladhan API'ye gönderilir; çevrimdışıyken hiçbir şey gönderilmez.</span>
+          <span>Konumun cihazında saklanır. İnternet varken vakit için Aladhan'a, ilçe adı için BigDataCloud'a yalnızca koordinatlar gönderilir; çevrimdışıyken hiçbir şey gönderilmez.</span>
         </div>
 
       </div>

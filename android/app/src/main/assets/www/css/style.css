@@ -1,12 +1,51 @@
-/* Tam Vakti - Minimalist Adaçayı Yeşili & Sade Mihrap Tasarımı */
+/* Tam Vakti - Minimalist Adaçayı Yeşili & Sade Mihrap Tasarımı (Stitch Nocturne Emerald) */
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Serif:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
 :root {
-  --bg-sage: #ebf4ee;
-  --text-dark: #0f3e2e;
-  --text-muted: #52796f;
-  --card-bg: #ffffff;
-  --accent-green: #2d6a4f;
-  --active-blue: #3b82f6;
-  --border-subtle: rgba(15, 62, 46, 0.08);
+  --bg-sage: #090e1a;
+  --text-dark: #f8fafc;
+  --text-muted: #94a3b8;
+  --card-bg: #0d1527;
+  --accent-green: #38bdf8;
+  --active-blue: #38bdf8;
+  --border-subtle: rgba(56, 189, 248, 0.12);
+
+  /* Stitch Nocturne Arctic 2B Tokens */
+  --arctic-void: #090e1a;
+  --arctic-surface: #0d1527;
+  --arctic-card: #111a30;
+  --arctic-cyan: #38bdf8;
+  --arctic-amber: #fb923c;
+  --arctic-border: rgba(56, 189, 248, 0.18);
+  --stitch-surface: #090e1a;
+  --stitch-surface-low: #0d1527;
+  --stitch-surface-container: #111a30;
+  --stitch-primary: #38bdf8;
+  --stitch-gold: #fb923c;
+}
+
+.kerahat-stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(251, 146, 60, 0.45) 0px,
+    rgba(251, 146, 60, 0.45) 5px,
+    rgba(217, 119, 34, 0.18) 5px,
+    rgba(217, 119, 34, 0.18) 10px
+  );
+}
+
+.arctic-radial-glow {
+  background-color: #060a12;
+  background-image: radial-gradient(circle at 50% 18%, rgba(20, 38, 70, 0.5) 0%, rgba(6, 10, 18, 0.98) 72%);
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.92); }
+}
+
+.pulse-amber {
+  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 * {
@@ -24,7 +63,7 @@ html, body {
   padding: 0;
   background-color: var(--bg-sage);
   color: var(--text-dark);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   overflow-x: hidden;
 }
 
@@ -35,7 +74,7 @@ html, body {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  padding: 16px 20px 90px 20px;
+  padding: 16px 20px 20px 20px;
   position: relative;
 }
 
@@ -658,76 +697,105 @@ html.dark .date-header-card {
 html.dark .date-header-card svg {
   color: #34d399 !important;
 }
+html.dark body {
+  background-color: #03170e !important;
+  color: #d0e8d8 !important;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(104, 219, 169, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(217, 119, 7, 0.08) 0%, transparent 50%),
+    linear-gradient(to right, rgba(135, 148, 139, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(135, 148, 139, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 24px 24px, 24px 24px;
+}
+
 html.dark #miladiDateMain {
+  font-family: 'Noto Serif', serif;
   color: #f0fdf4 !important;
 }
 html.dark #hicriDateSub {
   color: #8faea0 !important;
 }
 
-/* Mihrap Kubbesi */
+/* Mihrap Kubbesi (Nocturne Emerald Luminous Frame) */
 html.dark .mihrab-frame {
-  background: rgba(16, 30, 24, 0.72) !important;
-  border: 1.5px solid rgba(52, 211, 153, 0.2) !important;
-  box-shadow: inset 0 2px 14px rgba(255, 255, 255, 0.02), 0 8px 30px rgba(0, 0, 0, 0.45) !important;
+  background: rgba(10, 31, 21, 0.78) !important;
+  backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(104, 219, 169, 0.22) !important;
+  box-shadow: 0 0 32px -8px rgba(16, 185, 129, 0.25), 0 0 12px -2px rgba(251, 191, 36, 0.12) !important;
 }
 html.dark .next-vakit-label {
-  color: #6ee7b7 !important;
+  color: #68dba9 !important;
+  letter-spacing: 0.04em;
 }
 html.dark .big-countdown .cd-main {
+  font-family: 'Noto Serif', serif;
   color: #f0fdf4 !important;
+  letter-spacing: -0.02em;
 }
 html.dark .big-countdown .cd-sec {
-  color: #34d399 !important;
+  font-family: 'Noto Serif', serif;
+  color: #68dba9 !important;
 }
 html.dark .prayer-progress-track {
-  background-color: #1a3328 !important;
+  background-color: #192e23 !important;
 }
 html.dark .prayer-progress-fill {
-  background-color: #10b981 !important;
+  background: linear-gradient(90deg, #25a475, #68dba9) !important;
 }
 html.dark .prayer-progress-labels {
   color: #8faea0 !important;
 }
 
-/* Vakit Kartları */
+/* Vakit Kartları (Nocturne Emerald Sacred Tiers) */
 html.dark .prayer-card-item {
-  background: #14241d !important;
-  border-color: rgba(52, 211, 153, 0.1) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+  background: rgba(10, 31, 21, 0.65) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(16, 185, 129, 0.12) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
 }
 html.dark .prayer-card-item .card-row-name {
   color: #e2ebe5 !important;
+  font-weight: 700;
 }
 html.dark .prayer-card-item .card-row-time {
-  color: #93c5fd !important;
+  font-family: 'Noto Serif', monospace;
+  color: #ffdcc3 !important;
+  font-weight: 700;
+}
+html.dark .prayer-card-item .card-arabic-sub {
+  font-family: 'Amiri', serif;
+  color: #fbbf24 !important;
 }
 html.dark .prayer-card-item.past {
-  opacity: 0.38 !important;
-  background: #0f1c16 !important;
+  opacity: 0.35 !important;
+  background: rgba(6, 20, 14, 0.5) !important;
 }
 html.dark .prayer-card-item.next {
-  background: #1b3d2e !important;
-  border-color: #10b981 !important;
-  box-shadow: 0 4px 22px rgba(16, 185, 129, 0.28) !important;
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.28) 0%, rgba(10, 31, 21, 0.88) 100%) !important;
+  border-top: 1.5px solid rgba(251, 191, 36, 0.6) !important;
+  border-left: 1.5px solid rgba(16, 185, 129, 0.4) !important;
+  border-right: 1.5px solid rgba(16, 185, 129, 0.4) !important;
+  border-bottom: 1.5px solid rgba(5, 150, 105, 0.3) !important;
+  box-shadow: 0 0 28px -6px rgba(16, 185, 129, 0.35), 0 0 12px -2px rgba(251, 191, 36, 0.2) !important;
   opacity: 1 !important;
 }
 html.dark .prayer-card-item.next .card-row-name {
   color: #ffffff !important;
 }
 html.dark .prayer-card-item.next .card-row-time {
-  color: #ffffff !important;
+  color: #85f8c4 !important;
 }
 html.dark .early-reminder-pill {
   background-color: rgba(16, 185, 129, 0.22) !important;
   color: #6ee7b7 !important;
 }
 html.dark .next-pill {
-  background-color: #10b981 !important;
-  color: #042f1a !important;
+  background: linear-gradient(90deg, #059669, #10b981) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4) !important;
 }
 html.dark .sound-icon-on {
-  color: #34d399 !important;
+  color: #68dba9 !important;
 }
 html.dark .sound-icon-off {
   color: #64748b !important;
@@ -899,102 +967,63 @@ html, body, .minimal-app, .mihrab-frame, .prayer-card-item, .unified-dock-capsul
 
 /* =========================================================
    AYLIK NAMAZ VAKİTLERİ (İMSAKİYE) TABLOSU VE STİLLERİ
+   (Nocturnal Arctic Paleti)
    ========================================================= */
 
-.monthly-row-today {
-  background-color: #d1fae5 !important;
-  font-weight: 800 !important;
-  color: #064e3b !important;
-  border-top: 1.5px solid #059669 !important;
-  border-bottom: 1.5px solid #059669 !important;
+#monthlyModal, html.dark #monthlyModal {
+  background-color: #060a14 !important;
+  color: #f1f5f9 !important;
 }
 
-.monthly-today-badge {
+#monthlyModal > div:first-child, html.dark #monthlyModal > div:first-child {
+  background-color: rgba(6, 10, 20, 0.95) !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
+}
+
+#monthlyModal table thead tr, html.dark #monthlyModal table thead tr {
+  background-color: #111e38 !important;
+  color: #38bdf8 !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
+}
+
+#monthlyModal table tbody tr, html.dark #monthlyModal table tbody tr {
+  border-color: rgba(56, 189, 248, 0.08) !important;
+  color: #e2e8f0 !important;
+}
+
+#monthlyModal table tbody tr:nth-child(even):not(.monthly-row-today), 
+html.dark #monthlyModal table tbody tr:nth-child(even):not(.monthly-row-today) {
+  background-color: rgba(15, 23, 42, 0.55) !important;
+}
+
+#monthlyTableBody tr:not(.monthly-row-today) td {
+  color: #e2e8f0 !important;
+}
+
+.monthly-row-today, html.dark .monthly-row-today {
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.28), rgba(15, 23, 42, 0.85)) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  border-top: 1.5px solid #38bdf8 !important;
+  border-bottom: 1.5px solid #38bdf8 !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.35) !important;
+}
+
+.monthly-today-badge, html.dark .monthly-today-badge {
   font-size: 9px;
-  background-color: #059669;
-  color: #ffffff;
-  padding: 1px 4px;
+  background: linear-gradient(90deg, #0284c7, #38bdf8) !important;
+  color: #030a16 !important;
+  padding: 1.5px 6px;
   border-radius: 9999px;
-  font-weight: 800;
-  margin-left: 3px;
+  font-weight: 900;
+  margin-left: 4px;
   display: inline-block;
   vertical-align: middle;
 }
 
-.monthly-row-friday {
-  color: #047857;
-  font-weight: 700;
-}
-
-/* Koyu Mod: Aylık Vakitler Ekranı (#monthlyModal) */
-html.dark #monthlyModal {
-  background-color: #0b1411 !important;
-  color: #ecfdf5 !important;
-}
-
-html.dark #monthlyModal > div:first-child {
-  background-color: rgba(11, 20, 17, 0.95) !important;
-  border-color: rgba(52, 211, 153, 0.15) !important;
-}
-
-html.dark #monthlyModal .bg-white {
-  background-color: #14241d !important;
-  border-color: rgba(52, 211, 153, 0.15) !important;
-}
-
-html.dark #monthlyModal table thead tr {
-  background-color: rgba(20, 36, 29, 0.9) !important;
-  color: #a7f3d0 !important;
-  border-color: rgba(52, 211, 153, 0.2) !important;
-}
-
-html.dark #monthlyModal table tbody tr {
-  border-color: rgba(52, 211, 153, 0.1) !important;
-  color: #e2ebe5 !important;
-}
-
-html.dark #monthlyModal table tbody tr:nth-child(even) {
-  background-color: rgba(16, 30, 24, 0.4) !important;
-}
-
-html.dark .monthly-row-today {
-  background-color: #1a4231 !important;
-  color: #ffffff !important;
-  border-top: 1.5px solid #10b981 !important;
-  border-bottom: 1.5px solid #10b981 !important;
-}
-
-html.dark .monthly-today-badge {
-  background-color: #10b981 !important;
-  color: #042f1a !important;
-}
-
-html.dark .monthly-row-friday {
-  color: #34d399 !important;
-}
-
-html.dark #monthlyTitleText {
-  color: #ffffff !important;
-}
-
-html.dark #monthlyHijriText {
-  color: #6ee7b7 !important;
-}
-
-html.dark #monthlyModal button.bg-emerald-50 {
-  background-color: #1e3a2c !important;
-  color: #ecfdf5 !important;
-}
-
-html.dark #monthlyModal button.bg-emerald-100 {
-  background-color: #1e4635 !important;
-  color: #6ee7b7 !important;
-}
-
-html.dark #monthlySourceBadge {
-  background-color: #0e1c15 !important;
-  border-color: rgba(52, 211, 153, 0.2) !important;
-  color: #8faea0 !important;
+.monthly-row-friday, html.dark .monthly-row-friday {
+  color: #fb923c !important;
+  font-weight: 700 !important;
 }
 
 /* =========================================================
@@ -1099,4 +1128,22 @@ html.dark .onboarding-dot.active {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Nocturnal Arctic 2B - Tam Dikey Merkezleme ve Tipografi */
+#viewPrayer:not(.hidden) {
+  margin-top: auto;
+  margin-bottom: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#viewPrayer.hidden, #viewQibla.hidden {
+  display: none !important;
+}
+
+#mainCountdown .cd-sec {
+  color: #7dd3fc;
+  opacity: 0.85;
 }

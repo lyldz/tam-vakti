@@ -4,12 +4,12 @@
  */
 
 const PRAYER_LIST = [
-  { key: "imsak", name: "İmsak", iconSvg: "assets/icons/imsak.svg" },
-  { key: "gunes", name: "Güneş", iconSvg: "assets/icons/gunes.svg" },
-  { key: "ogle", name: "Öğle", iconSvg: "assets/icons/ogle.svg" },
-  { key: "ikindi", name: "İkindi", iconSvg: "assets/icons/ikindi.svg" },
-  { key: "aksam", name: "Akşam", iconSvg: "assets/icons/aksam.svg" },
-  { key: "yatsi", name: "Yatsı", iconSvg: "assets/icons/yatsi.svg" }
+  { key: "imsak", name: "İmsak", arabic: "الفجر", iconSvg: "assets/icons/imsak.svg" },
+  { key: "gunes", name: "Güneş", arabic: "الشروق", iconSvg: "assets/icons/gunes.svg" },
+  { key: "ogle", name: "Öğle", arabic: "الظهر", iconSvg: "assets/icons/ogle.svg" },
+  { key: "ikindi", name: "İkindi", arabic: "العصر", iconSvg: "assets/icons/ikindi.svg" },
+  { key: "aksam", name: "Akşam", arabic: "المغرب", iconSvg: "assets/icons/aksam.svg" },
+  { key: "yatsi", name: "Yatsı", arabic: "العشاء", iconSvg: "assets/icons/yatsi.svg" }
 ];
 
 const PRAYER_DETAILS = {
@@ -179,7 +179,19 @@ class TamVaktiApp {
   loadSavedLocation() {
     const saved = localStorage.getItem("tamvakti_active_location");
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && (parsed.name === "Konumum" || parsed.name === "Konum") && parsed.lat && parsed.lon) {
+          const nearest = this.findNearestLocation(parsed.lat, parsed.lon);
+          if (nearest) {
+            parsed.name = (nearest.districtName && nearest.districtName !== "Merkez" && nearest.districtName !== nearest.cityName)
+              ? `${nearest.cityName}/${nearest.districtName}`
+              : nearest.cityName;
+            localStorage.setItem("tamvakti_active_location", JSON.stringify(parsed));
+          }
+        }
+        return parsed;
+      } catch (e) {}
     }
     return { name: "Konum Seçiniz", lat: 39.9334, lon: 32.8597, isPlaceholder: true };
   }
@@ -215,6 +227,17 @@ class TamVaktiApp {
   async init() {
     this.renderCitySelector();
     this.compass = new QiblaCompass(this.engine);
+
+    // Eski kayıtlı 'Konumum' varsa otomatik ilçe/ile yükselt
+    if (this.currentLocation && (this.currentLocation.name === "Konumum" || this.currentLocation.name === "Konum") && this.currentLocation.lat && this.currentLocation.lon) {
+      const nearest = this.findNearestLocation(this.currentLocation.lat, this.currentLocation.lon);
+      if (nearest) {
+        this.currentLocation.name = (nearest.districtName && nearest.districtName !== "Merkez" && nearest.districtName !== nearest.cityName)
+          ? `${nearest.cityName}/${nearest.districtName}`
+          : nearest.cityName;
+        this.saveLocation(this.currentLocation);
+      }
+    }
 
     // Modal açıldığında toggle durumunu senkronize et
     ["ongoingNotifToggle", "onboardingOngoingToggle"].forEach(id => {
@@ -434,20 +457,23 @@ class TamVaktiApp {
       return `
         <div onclick="app.showPrayerDetail('${item.key}')" class="${cardClass}">
           
-          <!-- Sol Kısım: Vektör İkon + Vakit Adı + Sıradaki Rozeti -->
+          <!-- Sol Kısım: Vektör İkon + Vakit Adı + Arapça Hat + Sıradaki Rozeti -->
           <div class="card-left-part">
             <div class="card-icon-box">
               <img src="${item.iconSvg}" alt="${displayName}" class="drop-shadow-xs">
             </div>
             <div class="card-title-group">
-              <span class="card-row-name">${displayName}</span>
-              ${isNext ? `<span class="next-pill">Sıradaki</span>` : ''}
+              <div class="flex items-center gap-2">
+                <span class="card-row-name">${displayName}</span>
+                <span class="card-arabic-sub font-serif text-[11px] opacity-60">${item.arabic || ''}</span>
+              </div>
+              ${isNext ? `<span class="next-pill flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-white inline-block animate-ping"></span>Sıradaki</span>` : ''}
             </div>
           </div>
 
           <!-- Sağ Kısım: Tabular Saat + Erken Hatırlatma (-15dk) + Net Ses Butonu -->
           <div class="card-right-part flex items-center gap-2">
-            <span class="card-row-time">${timeVal}</span>
+            <span class="card-row-time font-serif">${timeVal}</span>
             ${(isNext && isSoundOn) ? `<span class="early-reminder-pill">-${this.reminderMin}dk</span>` : ''}
             <button onclick="app.toggleSound('${item.key}', event)" 
                     class="card-sound-btn"
@@ -456,6 +482,122 @@ class TamVaktiApp {
             </button>
           </div>
 
+        </div>
+      `;
+    }).join("");
+
+    this.renderDayRibbon();
+    this.updateSolarTransitCurve();
+  }
+
+  updateSolarTransitCurve() {
+    const container = document.getElementById("solarTransitNodes");
+    if (!container || !this.currentTimes) return;
+
+    const coords = [
+      { key: "imsak", name: "İmsak", x: 25, y: 38 },
+      { key: "gunes", name: "Güneş", x: 75, y: 22 },
+      { key: "ogle", name: "Öğle", x: 130, y: 10 },
+      { key: "ikindi", name: "İkindi", x: 190, y: 24 },
+      { key: "aksam", name: "Akşam", x: 250, y: 44 },
+      { key: "yatsi", name: "Yatsı", x: 310, y: 34 }
+    ];
+
+    const orderKeys = ["imsak", "gunes", "ogle", "ikindi", "aksam", "yatsi"];
+    const currentIdx = Math.max(0, orderKeys.indexOf(this.activePrayerKey));
+
+    // Canlı İlerleme Dalgası (Aktif vakte kadar turuncu akış)
+    const pathEl = document.getElementById("solarPassedWave");
+    if (pathEl) {
+      if (currentIdx <= 0) {
+        pathEl.setAttribute("d", "M 25 38");
+      } else if (currentIdx === 1) {
+        pathEl.setAttribute("d", "M 25 38 C 45 38, 60 28, 75 22");
+      } else if (currentIdx === 2) {
+        pathEl.setAttribute("d", "M 25 38 C 55 38, 75 10, 130 10");
+      } else if (currentIdx === 3) {
+        pathEl.setAttribute("d", "M 25 38 C 55 38, 75 10, 130 10 C 160 10, 175 18, 190 24");
+      } else if (currentIdx === 4) {
+        pathEl.setAttribute("d", "M 25 38 C 55 38, 75 10, 130 10 C 185 10, 215 44, 250 44");
+      } else {
+        pathEl.setAttribute("d", "M 25 38 C 55 38, 75 10, 130 10 C 185 10, 215 44, 250 44 C 275 44, 295 38, 310 34");
+      }
+    }
+
+    let nodesHtml = "";
+    coords.forEach((c, idx) => {
+      const isPast = (idx < currentIdx);
+      const isActive = (idx === currentIdx);
+      const labelY = (c.y < 20) ? (c.y - 7) : (c.y + 11);
+      const displayName = (c.key === "ogle" && this.isFriday) ? "Cuma" : c.name;
+
+      if (isActive) {
+        nodesHtml += `
+          <g onclick="app.showPrayerDetail('${c.key}')" class="cursor-pointer" title="${displayName}: ${this.currentTimes[c.key]} (Şu An)">
+            <circle cx="${c.x}" cy="${c.y}" r="6.5" fill="none" stroke="#38bdf8" stroke-width="1.5">
+              <animate attributeName="r" values="5.5;8.5;5.5" dur="2.4s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.85;0.25;0.85" dur="2.4s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="${c.x}" cy="${c.y}" r="5" fill="#38bdf8" filter="url(#solarGlow)"/>
+            <text x="${c.x}" y="${labelY}" text-anchor="middle" fill="#38bdf8" font-size="7.5" font-weight="800">${displayName}</text>
+          </g>
+        `;
+      } else if (isPast) {
+        nodesHtml += `
+          <g onclick="app.showPrayerDetail('${c.key}')" class="cursor-pointer" title="${displayName}: ${this.currentTimes[c.key]} (Geçti)">
+            <circle cx="${c.x}" cy="${c.y}" r="4" fill="#fb923c" filter="drop-shadow(0 0 4px rgba(251,146,60,0.8))"/>
+            <text x="${c.x}" y="${labelY}" text-anchor="middle" fill="#fb923c" font-size="7" font-weight="600" opacity="0.9">${displayName}</text>
+          </g>
+        `;
+      } else {
+        nodesHtml += `
+          <g onclick="app.showPrayerDetail('${c.key}')" class="cursor-pointer" title="${displayName}: ${this.currentTimes[c.key]}">
+            <circle cx="${c.x}" cy="${c.y}" r="3" fill="#334155"/>
+            <text x="${c.x}" y="${labelY}" text-anchor="middle" fill="#64748b" font-size="6.5">${displayName}</text>
+          </g>
+        `;
+      }
+    });
+
+    container.innerHTML = nodesHtml;
+  }
+
+  renderDayRibbon() {
+    const ribbon = document.getElementById("dayTimesRibbon");
+    if (!ribbon || !this.currentTimes) return;
+
+    const orderKeys = ["imsak", "gunes", "ogle", "ikindi", "aksam", "yatsi"];
+    const currentIdx = Math.max(0, orderKeys.indexOf(this.activePrayerKey));
+    const nextIdx = (currentIdx + 1) % 6;
+
+    ribbon.innerHTML = PRAYER_LIST.map((item, idx) => {
+      const timeVal = this.currentTimes[item.key] || "--:--";
+      const isCurrent = (item.key === this.activePrayerKey);
+      const isNext = (idx === nextIdx);
+
+      let itemStyle = "flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all";
+      let nameColor = "text-slate-400";
+      let timeColor = "text-slate-200";
+
+      if (isCurrent) {
+        itemStyle += " bg-sky-500/20 border border-sky-400/50 shadow-[0_0_12px_rgba(56,189,248,0.25)]";
+        nameColor = "text-sky-300 font-bold";
+        timeColor = "text-white font-bold";
+      } else if (isNext) {
+        itemStyle += " bg-slate-800/40 border border-slate-700/60";
+        nameColor = "text-sky-200/80 font-medium";
+        timeColor = "text-sky-100 font-semibold";
+      } else {
+        nameColor = "text-slate-400 opacity-75";
+        timeColor = "text-slate-300";
+      }
+
+      const displayName = (item.key === "ogle" && this.isFriday) ? "Cuma" : item.name;
+
+      return `
+        <div onclick="app.showPrayerDetail('${item.key}')" class="${itemStyle} cursor-pointer active:scale-95" title="${displayName}: ${timeVal}">
+          <span class="text-[10px] tracking-tight ${nameColor}">${displayName}</span>
+          <span class="text-xs font-mono font-medium tracking-tight mt-0.5 ${timeColor}">${timeVal}</span>
         </div>
       `;
     }).join("");
@@ -582,20 +724,26 @@ class TamVaktiApp {
 
     // 1. Üst Başlık: "Akşam'a kalan · 18:26"
     const nextLabel = document.getElementById("nextPrayerInfo");
+    const suffixes = {
+      "imsak": "İmsak'a",
+      "gunes": "Güneş'e",
+      "ogle": "Öğle'ye",
+      "ikindi": "İkindi'ye",
+      "aksam": "Akşam'a",
+      "yatsi": "Yatsı'ya"
+    };
+    const orderKeys = ["imsak", "gunes", "ogle", "ikindi", "aksam", "yatsi"];
+    const currentIdx = orderKeys.indexOf(current.key);
+    const nextKey = currentIdx >= 0 ? orderKeys[(currentIdx + 1) % 6] : "aksam";
+    const suffixName = suffixes[nextKey] || `${current.nextName}'e`;
     if (nextLabel) {
-      const suffixes = {
-        "imsak": "İmsak'a",
-        "gunes": "Güneş'e",
-        "ogle": "Öğle'ye",
-        "ikindi": "İkindi'ye",
-        "aksam": "Akşam'a",
-        "yatsi": "Yatsı'ya"
-      };
-      const orderKeys = ["imsak", "gunes", "ogle", "ikindi", "aksam", "yatsi"];
-      const currentIdx = orderKeys.indexOf(current.key);
-      const nextKey = currentIdx >= 0 ? orderKeys[(currentIdx + 1) % 6] : "aksam";
-      const suffixName = suffixes[nextKey] || `${current.nextName}'e`;
-      nextLabel.textContent = `${suffixName} kalan · ${current.nextTimeStr}`;
+      nextLabel.textContent = `${suffixName} Kalan`;
+    }
+
+    // Horizon 2B: Şu An Vakit Rozeti
+    const currentBadge = document.getElementById("currentPrayerBadge");
+    if (currentBadge) {
+      currentBadge.textContent = `ŞU AN: ${current.name.toUpperCase()}`;
     }
 
     // 2. Canlı Geri Sayım (HH:MM:SS) - Tabular ve Soluk Saniye
@@ -614,6 +762,13 @@ class TamVaktiApp {
       countEl.innerHTML = `<span class="cd-main">${hrsStr}:${minsStr}:</span><span class="cd-sec">${secsStr}</span>`;
     }
 
+    // Sub-times Reference: "İkindi 15:31 • Akşam 17:56"
+    const subTimesEl = document.getElementById("subTimesLabel");
+    if (subTimesEl) {
+      const startTimeVal = this.currentTimes[current.key] || "--:--";
+      subTimesEl.innerHTML = `<span>${current.name} ${startTimeVal}</span><span class="opacity-40">•</span><span>${current.nextName} ${current.nextTimeStr}</span>`;
+    }
+
     // 3. İlerleme Çizgisi: Mevcut vakitten sonraki vakte ne kadar süre geçti
     const totalDuration = Math.max(1, current.end.getTime() - current.start.getTime());
     const elapsed = Math.min(Math.max(0, now.getTime() - current.start.getTime()), totalDuration);
@@ -622,6 +777,27 @@ class TamVaktiApp {
     const barEl = document.getElementById("prayerProgressBar");
     if (barEl) {
       barEl.style.width = `${pct}%`;
+    }
+
+    // Horizon 2B Core Bar Elements
+    const hPassed = document.getElementById("horizonPassedSegment");
+    if (hPassed) {
+      hPassed.style.width = `${pct}%`;
+    }
+    const hStartName = document.getElementById("horizonStartName");
+    if (hStartName) hStartName.textContent = current.name.toUpperCase();
+    const hStartTime = document.getElementById("horizonStartTime");
+    if (hStartTime) hStartTime.textContent = this.currentTimes[current.key] || "--:--";
+    const hEndName = document.getElementById("horizonEndName");
+    if (hEndName) hEndName.textContent = current.nextName.toUpperCase();
+    const hEndTime = document.getElementById("horizonEndTime");
+    if (hEndTime) hEndTime.textContent = current.nextTimeStr || "--:--";
+
+    const elapsedHrs = Math.floor(elapsed / 3600000);
+    const elapsedMins = Math.floor((elapsed % 3600000) / 60000);
+    const hElapsedText = document.getElementById("horizonElapsedText");
+    if (hElapsedText) {
+      hElapsedText.textContent = `${elapsedHrs}s ${elapsedMins}dk`;
     }
 
     const startLbl = document.getElementById("progressStartLabel");
@@ -633,6 +809,11 @@ class TamVaktiApp {
     const endLbl = document.getElementById("progressEndLabel");
     const kStartZone = document.getElementById("kerahatStartZone");
     const kEndZone = document.getElementById("kerahatEndZone");
+    const hKerahatBadge = document.getElementById("horizonKerahatBadge");
+    const hKerahatZone = document.getElementById("horizonKerahatZone");
+    const hKerahatRemain = document.getElementById("horizonKerahatRemainText");
+    const statusTitle = document.getElementById("statusTitleText");
+    const statusSubtitle = document.getElementById("statusSubtitleText");
 
     if (current.key === "gunes") {
       const kerahatStr = this.getKerahatTime(tOgle, 45);
@@ -649,6 +830,23 @@ class TamVaktiApp {
         kEndZone.style.width = `${endPct.toFixed(1)}%`;
         kEndZone.classList.remove("hidden");
       }
+      if (hKerahatZone) {
+        hKerahatZone.style.width = "25%";
+        hKerahatZone.classList.remove("hidden");
+      }
+      const msUntilKerahat = (tOgle.getTime() - 45 * 60000) - now.getTime();
+      const minsUntil = Math.floor(msUntilKerahat / 60000);
+      if (minsUntil > 0) {
+        if (hKerahatBadge) hKerahatBadge.innerHTML = `⚠️ Kerahat ${kerahatStr}`;
+        if (hKerahatRemain) hKerahatRemain.textContent = `Kerahate ${minsUntil} dk`;
+        if (statusTitle) statusTitle.innerHTML = `Kerahat vaktine <span class="text-secondary font-bold">${minsUntil} dk</span> kaldı`;
+        if (statusSubtitle) statusSubtitle.textContent = "Öğle öncesi kerahet (istiva) vaktine dikkat ediniz.";
+      } else {
+        if (hKerahatBadge) hKerahatBadge.innerHTML = `⚠️ Kerahat Vakti`;
+        if (hKerahatRemain) hKerahatRemain.textContent = `Kerahat Vaktindesiniz`;
+        if (statusTitle) statusTitle.innerHTML = `<span class="text-secondary font-bold">Kerahat Vaktindesiniz</span>`;
+        if (statusSubtitle) statusSubtitle.textContent = "Güneş tam tepe noktasındayken namaz mekruhtur.";
+      }
     } else if (current.key === "ikindi") {
       const kerahatStr = this.getKerahatTime(tAksam, 45);
       if (endLbl) {
@@ -656,9 +854,27 @@ class TamVaktiApp {
       }
       if (kStartZone) kStartZone.classList.add("hidden");
       if (kEndZone) {
-        const endPct = Math.min(25, Math.max(8, (45 * 60 * 1000 / totalDuration) * 100));
+        const endPct = Math.min(30, Math.max(12, (45 * 60 * 1000 / totalDuration) * 100));
         kEndZone.style.width = `${endPct.toFixed(1)}%`;
         kEndZone.classList.remove("hidden");
+      }
+      if (hKerahatZone) {
+        const endPct = Math.min(32, Math.max(14, (45 * 60 * 1000 / totalDuration) * 100));
+        hKerahatZone.style.width = `${endPct.toFixed(1)}%`;
+        hKerahatZone.classList.remove("hidden");
+      }
+      const msUntilKerahat = (tAksam.getTime() - 45 * 60000) - now.getTime();
+      const minsUntil = Math.floor(msUntilKerahat / 60000);
+      if (minsUntil > 0) {
+        if (hKerahatBadge) hKerahatBadge.innerHTML = `⚠️ Kerahat ${kerahatStr}`;
+        if (hKerahatRemain) hKerahatRemain.textContent = `Kerahate ${minsUntil} dk`;
+        if (statusTitle) statusTitle.innerHTML = `Kerahat vaktine <span class="text-secondary font-bold">${minsUntil} dk</span> kaldı`;
+        if (statusSubtitle) statusSubtitle.textContent = "İbadet için uygun zaman dilimi. Farz namazını geciktirmeyiniz.";
+      } else {
+        if (hKerahatBadge) hKerahatBadge.innerHTML = `⚠️ Kerahat Vakti`;
+        if (hKerahatRemain) hKerahatRemain.textContent = `Kerahat Vaktindesiniz`;
+        if (statusTitle) statusTitle.innerHTML = `<span class="text-secondary font-bold">Kerahat Vaktindesiniz</span>`;
+        if (statusSubtitle) statusSubtitle.textContent = "Güneş batarken kerahet vaktidir (mekruh vakit).";
       }
     } else {
       if (endLbl) {
@@ -666,7 +882,21 @@ class TamVaktiApp {
       }
       if (kStartZone) kStartZone.classList.add("hidden");
       if (kEndZone) kEndZone.classList.add("hidden");
+      if (hKerahatZone) hKerahatZone.classList.add("hidden");
+      if (hKerahatBadge) hKerahatBadge.innerHTML = `✨ İbadet Vakti`;
+      if (hKerahatRemain) hKerahatRemain.textContent = `Kerahat Yok`;
+      if (statusTitle) statusTitle.innerHTML = `Vaktin bereketi üzerinize olsun`;
+      if (statusSubtitle) statusSubtitle.textContent = "Namaz dinin direğidir; vaktinde dosdoğru eda ediniz.";
     }
+
+    // Sunset Micro Stat
+    const sunsetEl = document.getElementById("sunsetStat");
+    if (sunsetEl && this.currentTimes) {
+      sunsetEl.textContent = this.currentTimes.aksam || "--:--";
+    }
+
+    // Namaz Takip Butonu Durumu
+    this.updatePrayerLogButton(current.key, current.name);
 
     // 3. Android Durum Çubuğu Sabit Bildirimini Güncelle
     if (this.ongoingNotifEnabled && window.AndroidBridge && window.AndroidBridge.updatePrayerNotification) {
@@ -688,7 +918,83 @@ class TamVaktiApp {
     }
   }
 
+  getTodayDateString() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  isPrayerLogged(key) {
+    if (!key) return false;
+    const dateStr = this.getTodayDateString();
+    return localStorage.getItem(`tamvakti_prayer_logged_${dateStr}_${key}`) === "true";
+  }
+
+  updatePrayerLogButton(key, prayerName) {
+    const btn = document.getElementById("prayerLogBtn");
+    if (!btn || !key) return;
+    const logged = this.isPrayerLogged(key);
+    const labelName = prayerName || (this.activePrayerKey ? this.activePrayerKey.toUpperCase() : "Vakit");
+    if (logged) {
+      btn.classList.add("bg-sky-500/20", "border-sky-400/60", "text-sky-300");
+      btn.classList.remove("text-slate-200");
+      btn.innerHTML = `
+        <span class="w-4 h-4 rounded-full bg-sky-400 text-slate-950 flex items-center justify-center text-[10px] font-black">✓</span>
+        <span class="text-xs font-semibold tracking-wide">${labelName} Namazı Kılındı ✓</span>
+      `;
+    } else {
+      btn.classList.remove("bg-sky-500/20", "border-sky-400/60", "text-sky-300");
+      btn.classList.add("text-slate-200");
+      btn.innerHTML = `
+        <span class="w-4 h-4 rounded-full border border-slate-400/60 flex items-center justify-center text-[10px]">○</span>
+        <span class="text-xs font-semibold tracking-wide">${labelName} Namazını Kıldım</span>
+      `;
+    }
+  }
+
+  togglePrayerLog() {
+    if (!this.activePrayerKey) return;
+    const key = this.activePrayerKey;
+    const dateStr = this.getTodayDateString();
+    const currentStatus = this.isPrayerLogged(key);
+    const newStatus = !currentStatus;
+    localStorage.setItem(`tamvakti_prayer_logged_${dateStr}_${key}`, newStatus ? "true" : "false");
+    
+    const prayerObj = PRAYER_LIST.find(p => p.key === key);
+    const name = prayerObj ? prayerObj.name : key;
+    this.updatePrayerLogButton(key, name);
+
+    if (newStatus) {
+      this.showToast(`${name} namazı eda edildi olarak kaydedildi. Allah kabul etsin.`, "🤲");
+    } else {
+      this.showToast(`${name} namazı kaydı kaldırıldı.`, "ℹ️");
+    }
+  }
+
+  toggleAllPrayersList() {
+    const container = document.getElementById("allPrayersContainer");
+    const label = document.getElementById("toggleAllPrayersLabel");
+    if (!container) return;
+    const isHidden = container.classList.contains("hidden");
+    if (isHidden) {
+      container.classList.remove("hidden");
+      if (label) label.textContent = "▲ Detaylı Vakitleri Gizle";
+    } else {
+      container.classList.add("hidden");
+      if (label) label.textContent = "▼ Tüm Vakitleri Göster";
+    }
+  }
+
   // Sekme Değiştirici: Vakitler / Kıble / Aylık Vakitler / Ayarlar
+  toggleQiblaTab() {
+    const viewQibla = document.getElementById("viewQibla");
+    const isQiblaVisible = viewQibla && !viewQibla.classList.contains("hidden");
+    if (isQiblaVisible) {
+      this.switchTab("prayer");
+    } else {
+      this.switchTab("qibla");
+    }
+  }
+
   switchTab(tab) {
     const viewPrayer = document.getElementById("viewPrayer");
     const viewQibla = document.getElementById("viewQibla");
@@ -696,16 +1002,25 @@ class TamVaktiApp {
     const btnQibla = document.getElementById("tabBtn-qibla");
     const btnMonthly = document.getElementById("tabBtn-monthly");
     const btnSettings = document.getElementById("tabBtn-settings");
+    const headerQiblaBtn = document.getElementById("headerQiblaBtn");
 
     if (tab === "prayer") {
       this.closeMonthlyModal();
       this.closeSettingsModal();
       if (viewPrayer) viewPrayer.classList.remove("hidden");
       if (viewQibla) viewQibla.classList.add("hidden");
-      if (btnPrayer) btnPrayer.classList.add("active");
-      if (btnQibla) btnQibla.classList.remove("active");
-      if (btnMonthly) btnMonthly.classList.remove("active");
-      if (btnSettings) btnSettings.classList.remove("active");
+      if (btnPrayer) {
+        btnPrayer.classList.add("text-sky-400", "font-bold");
+        btnPrayer.classList.remove("text-slate-400");
+      }
+      if (btnQibla) {
+        btnQibla.classList.add("text-slate-400");
+        btnQibla.classList.remove("text-sky-400", "font-bold");
+      }
+      if (headerQiblaBtn) {
+        headerQiblaBtn.classList.remove("text-sky-400", "border-sky-400/80", "bg-sky-500/25");
+        headerQiblaBtn.classList.add("text-slate-300");
+      }
       if (this.compass) {
         this.compass.stopCompass();
       }
@@ -714,10 +1029,18 @@ class TamVaktiApp {
       this.closeSettingsModal();
       if (viewPrayer) viewPrayer.classList.add("hidden");
       if (viewQibla) viewQibla.classList.remove("hidden");
-      if (btnPrayer) btnPrayer.classList.remove("active");
-      if (btnQibla) btnQibla.classList.add("active");
-      if (btnMonthly) btnMonthly.classList.remove("active");
-      if (btnSettings) btnSettings.classList.remove("active");
+      if (btnPrayer) {
+        btnPrayer.classList.add("text-slate-400");
+        btnPrayer.classList.remove("text-sky-400", "font-bold");
+      }
+      if (btnQibla) {
+        btnQibla.classList.add("text-sky-400", "font-bold");
+        btnQibla.classList.remove("text-slate-400");
+      }
+      if (headerQiblaBtn) {
+        headerQiblaBtn.classList.add("text-sky-400", "border-sky-400/80", "bg-sky-500/25");
+        headerQiblaBtn.classList.remove("text-slate-300");
+      }
 
       if (this.compass) {
         const qiblaInfo = this.engine.calculateQibla(this.currentLocation.lat, this.currentLocation.lon);
@@ -861,7 +1184,7 @@ class TamVaktiApp {
         const friDot = d.isFriday && !d.isToday ? ' •' : '';
 
         return `
-          <tr ${rowId} class="${rowClass} hover:bg-emerald-50/40 transition-colors">
+          <tr ${rowId} class="${rowClass} hover:bg-slate-800/60 transition-colors">
             <td class="py-2.5 px-1.5 text-left pl-3 font-sans">
               <span class="font-extrabold">${d.day}</span>
               <span class="text-[10px] opacity-75 font-semibold ml-0.5">${d.dayOfWeekShort}${friDot}</span>
@@ -1122,16 +1445,105 @@ class TamVaktiApp {
     }
   }
 
+  findNearestLocation(lat, lon) {
+    if (typeof TURKEY_CITIES === "undefined" || !Array.isArray(TURKEY_CITIES) || !TURKEY_CITIES.length) {
+      return null;
+    }
+
+    let closest = null;
+    let minDistanceSq = Infinity;
+    const radLat = (lat * Math.PI) / 180;
+    const cosLat = Math.cos(radLat);
+
+    for (const city of TURKEY_CITIES) {
+      // İl merkezi kontrolü
+      const dLatCity = city.lat - lat;
+      const dLonCity = (city.lon - lon) * cosLat;
+      const distCitySq = dLatCity * dLatCity + dLonCity * dLonCity;
+
+      if (distCitySq < minDistanceSq) {
+        minDistanceSq = distCitySq;
+        closest = {
+          cityName: city.name,
+          districtName: city.name,
+          lat: city.lat,
+          lon: city.lon
+        };
+      }
+
+      // Tüm ilçeleri kontrol et
+      if (city.districts && city.districts.length) {
+        for (const district of city.districts) {
+          const dLat = district.lat - lat;
+          const dLon = (district.lon - lon) * cosLat;
+          const distSq = dLat * dLat + dLon * dLon;
+
+          if (distSq < minDistanceSq) {
+            minDistanceSq = distSq;
+            closest = {
+              cityName: city.name,
+              districtName: district.name,
+              lat: district.lat,
+              lon: district.lon
+            };
+          }
+        }
+      }
+    }
+
+    return closest;
+  }
+
+  async resolveLocationName(lat, lon) {
+    // 1. Çevrimdışı ve anlık en yakın ilçe tespiti (TURKEY_CITIES veritabanından)
+    const nearest = this.findNearestLocation(lat, lon);
+    let fallbackName = "Konum";
+    if (nearest) {
+      if (nearest.districtName && nearest.districtName !== "Merkez" && nearest.districtName !== nearest.cityName) {
+        fallbackName = `${nearest.cityName}/${nearest.districtName}`;
+      } else {
+        fallbackName = nearest.cityName;
+      }
+    }
+
+    // 2. İnternet bağlantısı varsa daha detaylı ilçe tespiti için hızlı ters coğrafi kodlama dene
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=tr`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        const district = data.locality || data.district || "";
+        const city = data.principalSubdivision || data.city || "";
+        if (city && district && district.toLowerCase() !== city.toLowerCase()) {
+          return `${city}/${district}`;
+        } else if (district) {
+          return district;
+        } else if (city) {
+          return city;
+        }
+      }
+    } catch (e) {
+      // Çevrimdışı veya ağ hatasında yerleşik veritabanı (fallbackName) kullanılır
+    }
+
+    return fallbackName;
+  }
+
   locateWithGPS() {
     const btn = document.getElementById("gpsLocateBtn");
-    if (btn) btn.textContent = "Konum alınıyor...";
+    if (btn) btn.textContent = "İlçe ve konum tespit ediliyor...";
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
+        async (pos) => {
           const lat = pos.coords.latitude;
           const lon = pos.coords.longitude;
-          this.selectLocation("Konumum", lat, lon);
+          const locName = await this.resolveLocationName(lat, lon);
+          this.selectLocation(locName, lat, lon);
+          const districtDisplay = locName.includes("/") ? locName.split("/")[1] : locName;
+          this.showToast(`Konumunuz tespit edildi: ${districtDisplay}`, "📍");
           if (btn) btn.textContent = "GPS ile Otomatik Bul";
         },
         (err) => {
@@ -1992,12 +2404,14 @@ class TamVaktiApp {
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
+        async (pos) => {
           const lat = pos.coords.latitude;
           const lon = pos.coords.longitude;
-          this.selectLocation("Konumum", lat, lon);
+          const locName = await this.resolveLocationName(lat, lon);
+          this.selectLocation(locName, lat, lon);
           this.updateOnboardingLocationDisplay();
-          this.showToast("Konumunuz başarıyla tespit edildi.", "✓");
+          const districtDisplay = locName.includes("/") ? locName.split("/")[1] : locName;
+          this.showToast(`Konum tespit edildi: ${districtDisplay}`, "📍");
           if (btn) btn.innerHTML = origHtml;
           setTimeout(() => this.goToOnboardingStep(3), 600);
         },
