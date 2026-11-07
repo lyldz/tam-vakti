@@ -39,6 +39,39 @@ object Scheduler {
         }
     }
 
+    /** Ayarlar ekranındaki tanı satırı için: kurulu alarm sayısı ve sıradaki kullanıcıya görünür alarm. */
+    fun info(ctx: Context): String {
+        val app = ctx.applicationContext
+        val count = Store.prefs(app).getInt("count", 0)
+        val events = Store.schedule(app)?.optJSONArray("events")
+        val now = System.currentTimeMillis()
+        var bestT = Long.MAX_VALUE
+        var bestTitle = ""
+        var bestType = ""
+        if (events != null) {
+            for (i in 0 until events.length()) {
+                val e = events.optJSONObject(i) ?: continue
+                val type = e.optString("type")
+                if (type != "athan" && type != "reminder" && type != "kerahat") continue
+                val t = e.optLong("t", 0L)
+                if (t > now && t < bestT) {
+                    bestT = t
+                    bestTitle = e.optString("title")
+                    bestType = type
+                }
+            }
+        }
+        val o = org.json.JSONObject()
+        o.put("count", count)
+        o.put("exact", canScheduleExact(app))
+        if (bestT != Long.MAX_VALUE) {
+            o.put("nextT", bestT)
+            o.put("nextTitle", bestTitle)
+            o.put("nextType", bestType)
+        }
+        return o.toString()
+    }
+
     fun reschedule(ctx: Context) {
         val app = ctx.applicationContext
         val am = app.getSystemService(Context.ALARM_SERVICE) as AlarmManager

@@ -1448,7 +1448,23 @@ class TamVaktiApp {
     try { return JSON.parse(window.AndroidBridge.getPermissionState()); } catch (e) { return null; }
   }
 
+  refreshAlarmInfo() {
+    const el = document.getElementById("settingsAlarmInfo");
+    if (!el || !window.AndroidBridge || !window.AndroidBridge.getScheduleInfo) return;
+    try {
+      const i = JSON.parse(window.AndroidBridge.getScheduleInfo());
+      if (!i.count) { el.textContent = "Henüz alarm kurulmadı (konum seçin)"; return; }
+      let txt = `${i.count} alarm kuruldu`;
+      if (i.nextT) {
+        const hm = new Date(i.nextT).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+        txt += ` • Sıradaki: ${hm} ${i.nextTitle}`;
+      }
+      el.textContent = txt;
+    } catch (e) {}
+  }
+
   refreshPermissionStatus() {
+    this.refreshAlarmInfo();
     const el = document.getElementById("settingsPermStatus");
     if (!el) return;
     const p = this.getPermissionState();

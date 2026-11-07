@@ -442,6 +442,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
 
         @JavascriptInterface
+        fun getScheduleInfo(): String = Scheduler.info(activity.applicationContext)
+
+        @JavascriptInterface
         fun openDndSettings() {
             activity.runOnUiThread {
                 try {
