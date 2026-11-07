@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -23,7 +25,7 @@ android {
     //  1) Ortam değişkenleri (GitHub Actions Secrets): TAMVAKTI_KEYSTORE_FILE,
     //     TAMVAKTI_KEYSTORE_PASSWORD, TAMVAKTI_KEY_ALIAS, TAMVAKTI_KEY_PASSWORD
     //  2) android/keystore.properties (git'e eklenmez): storeFile, storePassword, keyAlias, keyPassword
-    val keystoreProps = java.util.Properties().apply {
+    val keystoreProps = Properties().apply {
         val f = rootProject.file("keystore.properties")
         if (f.exists()) f.inputStream().use { load(it) }
     }
