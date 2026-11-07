@@ -13,11 +13,12 @@ Bu dosya, "Tam Vakti" projesinin mimari kurallarını, sürümleme standartları
 
 ---
 
-## 2. Sürümleme Mantığı (CalVer)
-Her yeni derleme o günün tarihini alır (**Yıl.Ay.Gün**):
-- **`versionName` (Format: `YYYY.MM.DD`):** Örn: `2026.10.12`, `2026.10.15`, `2027.02.12`
-- **`versionCode` (Format: `YYYYMMDD`):** Örn: `20261012`, `20261015`, `20270212`
-- **Git Tag (Format: `vYYYY.MM.DD`):** Örn: `v2026.10.12`, `v2026.10.15`
+## 2. Sürümleme Mantığı (Major.Minor)
+Projenin fiilen kullandığı şema budur (CalVer'den vazgeçildi):
+- **`versionName`:** `2.3`, `2.4`, ... (kod adıyla: "v2.3 • Seher")
+- **`versionCode`:** her sürümde +100 (örn. `20300`)
+- **Git Tag:** `v2.3`
+- `release.sh` bu şemaya göre otomatik artırır; uygulama içi güncelleme denetimi tag'leri bu şemayla karşılaştırır.
 
 ---
 
@@ -26,7 +27,7 @@ Kullanıcı yeni bir özellik eklemek veya yeni bir sürüm derlemek istediğind
 
 1. **Sürüm Numaralarını Güncelle:**
    - `android/app/build.gradle.kts` içinde `versionName` ve `versionCode` güncellenir.
-   - `www/index.html` başlığındaki sürüm rozeti (`vYYYY.MM.DD`) güncellenir.
+   - `www/index.html` başlığındaki sürüm rozeti (`vX.Y`) güncellenir.
    - Gerekirse web varlıkları `android/app/src/main/assets/www/` klasörüne kopyalanır (`cp -r www/* android/app/src/main/assets/www/`).
 2. **Git Commit & Push:**
    ```bash

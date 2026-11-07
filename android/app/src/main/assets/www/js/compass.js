@@ -1,7 +1,7 @@
 /**
  * Tam Vakti - Gelişmiş Kıble Pusulası ve Sensör Yöneticisi
  * Android Native Donanım Entegrasyonu & Su Terazisi
- * Sürüm: 1.07
+ * Sürüm: v2.3
  */
 
 class QiblaCompass {

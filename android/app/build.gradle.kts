@@ -12,19 +12,34 @@ android {
         minSdk = 24
         targetSdk = 34
         
-        // Sürüm Yapılandırması: v2.2 "Kandil"
-        versionCode = 20200
-        versionName = "2.2"
+        // Sürüm Yapılandırması: v2.3 "Seher"
+        versionCode = 20300
+        versionName = "2.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // İmza bilgileri ASLA depoda tutulmaz. Kaynaklar (öncelik sırasıyla):
+    //  1) Ortam değişkenleri (GitHub Actions Secrets): TAMVAKTI_KEYSTORE_FILE,
+    //     TAMVAKTI_KEYSTORE_PASSWORD, TAMVAKTI_KEY_ALIAS, TAMVAKTI_KEY_PASSWORD
+    //  2) android/keystore.properties (git'e eklenmez): storeFile, storePassword, keyAlias, keyPassword
+    val keystoreProps = java.util.Properties().apply {
+        val f = rootProject.file("keystore.properties")
+        if (f.exists()) f.inputStream().use { load(it) }
+    }
+    fun signingValue(env: String, prop: String): String? =
+        System.getenv(env)?.takeIf { it.isNotBlank() } ?: keystoreProps.getProperty(prop)
+
+    val releaseStoreFile = signingValue("TAMVAKTI_KEYSTORE_FILE", "storeFile")
+
     signingConfigs {
-        create("release") {
-            storeFile = file("release-key.jks")
-            storePassword = "tamvakti_release_key"
-            keyAlias = "tamvakti"
-            keyPassword = "tamvakti_release_key"
+        if (releaseStoreFile != null) {
+            create("release") {
+                storeFile = file(releaseStoreFile)
+                storePassword = signingValue("TAMVAKTI_KEYSTORE_PASSWORD", "storePassword")
+                keyAlias = signingValue("TAMVAKTI_KEY_ALIAS", "keyAlias")
+                keyPassword = signingValue("TAMVAKTI_KEY_PASSWORD", "keyPassword")
+            }
         }
     }
 
@@ -35,7 +50,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+            // Anahtar yoksa derleme kırılmasın diye debug imzası; bu APK dağıtılmamalı
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 

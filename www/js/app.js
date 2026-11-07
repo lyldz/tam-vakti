@@ -1,6 +1,6 @@
 /**
  * Tam Vakti - Minimalist Adaçayı Yeşili & Sade Vakit / Kıble Kontrolcüsü
- * Sürüm: v1.00.05
+ * Sürüm: v2.3
  */
 
 const PRAYER_LIST = [
@@ -110,9 +110,9 @@ class TamVaktiApp {
     this.ongoingNotifEnabled = this.loadOngoingNotifSetting();
 
     // Otomatik Güncelleme Sistemi (GitHub Releases)
-    this.currentVersion = "v2.2";
-    this.versionCodename = "Kandil";
-    this.versionDisplay = "v2.2 • Kandil";
+    this.currentVersion = "v2.3";
+    this.versionCodename = "Seher";
+    this.versionDisplay = "v2.3 • Seher";
     this.onboardingStep = 1;
     this.monthlyYear = null;
     this.monthlyMonth = null;
@@ -124,6 +124,14 @@ class TamVaktiApp {
     this.athanAudio = null;
     this.autoSilent = localStorage.getItem("tamvakti_auto_silent") !== "false";
     this.themeMode = localStorage.getItem("tamvakti_theme_mode") || "Otomatik";
+
+    // Bildirim tercihleri
+    this.reminderMin = parseInt(localStorage.getItem("tamvakti_reminder_min"), 10) || 15;
+    this.notifMode = localStorage.getItem("tamvakti_notif_mode") || "ezan"; // ezan | bip | sessiz
+    this.kerahatAlert = localStorage.getItem("tamvakti_kerahat_alert") !== "false";
+    // İhtiyat: tüm vakitlere eklenen dakika (Diyanet ± ayarı)
+    this.timeOffsetMin = parseInt(localStorage.getItem("tamvakti_time_offset"), 10) || 0;
+    this._syncSeq = 0;
 
     // Kıble Modu (compass: Canlı Pusula, map: Harita Görünümü)
     this.qiblaMode = "compass";
@@ -161,6 +169,7 @@ class TamVaktiApp {
       }
       this.evaluateCurrentPrayer();
     }
+    this.scheduleSync();
   }
 
   toggleOngoingNotification(checked) {
@@ -197,6 +206,7 @@ class TamVaktiApp {
     this.soundSettings[key] = !this.soundSettings[key];
     this.saveSoundSettings();
     this.renderPrayerCards();
+    this.scheduleSync();
     if (this.soundSettings[key]) {
       this.playAlertTone();
     }
@@ -207,10 +217,10 @@ class TamVaktiApp {
     this.compass = new QiblaCompass(this.engine);
 
     // Modal açıldığında toggle durumunu senkronize et
-    const notifCheckbox = document.getElementById("ongoingNotifToggle");
-    if (notifCheckbox) {
-      notifCheckbox.checked = this.ongoingNotifEnabled;
-    }
+    ["ongoingNotifToggle", "onboardingOngoingToggle"].forEach(id => {
+      const cb = document.getElementById(id);
+      if (cb) cb.checked = this.ongoingNotifEnabled;
+    });
 
     // Android bildirim iznini ilk açılışta nazikçe iste
     if (this.ongoingNotifEnabled && window.AndroidBridge && window.AndroidBridge.requestNotificationPermission) {
@@ -243,6 +253,15 @@ class TamVaktiApp {
       this.openOnboarding(1);
     }
 
+    // Eksik izin varsa (alarm / bildirim) bir kez nazikçe hatırlat
+    setTimeout(() => {
+      const p = this.getPermissionState();
+      if (p && !this._permHinted && (!p.exact || !p.notif) && localStorage.getItem("tamvakti_onboarding_completed") === "true") {
+        this._permHinted = true;
+        this.showToast("Uyarıların zamanında gelmesi için Ayarlar › İzinler bölümünü kontrol edin.", "⏰", 4500);
+      }
+    }, 5000);
+
     // Arka planda sessizce yeni GitHub sürümünü denetle
     setTimeout(() => this.checkForUpdates(true), 2500);
   }
@@ -261,15 +280,16 @@ class TamVaktiApp {
       : this.currentLocation.name;
     document.getElementById("headerCityName").textContent = displayName;
 
-    // Miladi Tarih
-    this.updateMiladiDate();
-
     // Vakitleri Al
-    this.currentTimes = await this.engine.getPrayerTimes(
+    const rawTimes = await this.engine.getPrayerTimes(
       now, 
       this.currentLocation.lat, 
       this.currentLocation.lon
     );
+    this.currentTimes = this.applyOffset(rawTimes);
+
+    // Miladi + Hicri tarih (Hicri, API verisi geldikten sonra yazılır)
+    this.updateMiladiDate();
 
     // Kıble Açısı ve Mesafe (Kıble etkinse güvenli çalıştır)
     if (this.compass) {
@@ -288,6 +308,41 @@ class TamVaktiApp {
 
     this.renderPrayerCards();
     this.evaluateCurrentPrayer();
+    this.scheduleSync();
+  }
+
+  // ==========================================
+  // İHTİYAT (dakika ayarı)
+  // ==========================================
+  shiftTime(str, minutes) {
+    if (!str || !/^\d{1,2}:\d{2}$/.test(str) || !minutes) return str;
+    const [h, m] = str.split(":").map(Number);
+    const total = (((h * 60 + m + minutes) % 1440) + 1440) % 1440;
+    return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+  }
+
+  applyOffset(times) {
+    if (!times || !this.timeOffsetMin) return times;
+    const out = { ...times };
+    PRAYER_LIST.forEach(p => { out[p.key] = this.shiftTime(times[p.key], this.timeOffsetMin); });
+    return out;
+  }
+
+  cycleIhtiyat() {
+    const steps = [0, 1, 2, 3, 5, -1, -2, -3];
+    const next = steps[(steps.indexOf(this.timeOffsetMin) + 1) % steps.length];
+    this.timeOffsetMin = next;
+    localStorage.setItem("tamvakti_time_offset", String(next));
+    this.updateSettingsLabels();
+    this.updatePrayers();
+    const monthlyModal = document.getElementById("monthlyModal");
+    if (monthlyModal && !monthlyModal.classList.contains("hidden")) this.loadMonthlyData(false);
+    this.showToast(`İhtiyat: ${this.offsetLabel()} — tüm vakitlere uygulandı`, "🎛️", 2800);
+  }
+
+  offsetLabel() {
+    const o = this.timeOffsetMin;
+    return `${o > 0 ? "+" : o < 0 ? "−" : "±"}${Math.abs(o)} dk`;
   }
 
   updateMiladiDate() {
@@ -319,14 +374,16 @@ class TamVaktiApp {
           "Cemaziyelevvel", "Cemaziyelahir", "Recep", "Şaban",
           "Ramazan", "Şevval", "Zilkade", "Zilhicce"
         ];
-        const parts = new Intl.DateTimeFormat('en-u-ca-islamic-civil', {
+        const parts = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
           day: 'numeric',
           month: 'numeric'
         }).formatToParts(now);
         const hDay = parts.find(p => p.type === 'day')?.value || '';
         const hMonthNum = parseInt(parts.find(p => p.type === 'month')?.value || '1', 10);
         const hMonth = islamicMonths[hMonthNum] || '';
-        hicriEl.textContent = `${dayName} • ${hDay} ${hMonth}`;
+        // Çevrimiçi Diyanet/Aladhan verisi varsa onu esas al; yoksa Ümmü'l-Kurâ hesabı
+        const apiHijri = this.currentTimes && this.currentTimes.hijriDay;
+        hicriEl.textContent = `${dayName} • ${apiHijri || `${hDay} ${hMonth}`}`;
       } catch (e) {
         hicriEl.textContent = dayName;
       }
@@ -391,10 +448,10 @@ class TamVaktiApp {
           <!-- Sağ Kısım: Tabular Saat + Erken Hatırlatma (-15dk) + Net Ses Butonu -->
           <div class="card-right-part flex items-center gap-2">
             <span class="card-row-time">${timeVal}</span>
-            ${(isNext && isSoundOn) ? `<span class="early-reminder-pill">-15dk</span>` : ''}
+            ${(isNext && isSoundOn) ? `<span class="early-reminder-pill">-${this.reminderMin}dk</span>` : ''}
             <button onclick="app.toggleSound('${item.key}', event)" 
                     class="card-sound-btn"
-                    title="${isSoundOn ? '15 Dk Önce Hatırlatıcı Açık' : 'Sessiz'}">
+                    title="${isSoundOn ? this.reminderMin + ' Dk Önce Hatırlatıcı + Vakit Bildirimi Açık' : 'Bildirim Kapalı'}">
               ${soundSvg}
             </button>
           </div>
@@ -410,7 +467,8 @@ class TamVaktiApp {
 
     document.getElementById("detailModalTitle").textContent = `${info.name} Vakti`;
     document.getElementById("detailModalSub").textContent = info.sub;
-    document.getElementById("detailModalDesc").textContent = info.desc;
+    const descEl = document.getElementById("detailModalDesc");
+    if (descEl) descEl.textContent = info.desc;
     document.getElementById("detailModalTotal").textContent = info.total;
 
     const listEl = document.getElementById("detailModalRakahs");
@@ -429,8 +487,31 @@ class TamVaktiApp {
   }
 
   tick() {
+    // Gece yarısı geçildiyse tarihi ve vakitleri yeniden yükle
+    const t = new Date();
+    const todayKey = `${t.getFullYear()}-${t.getMonth()}-${t.getDate()}`;
+    if (this._dayKey && this._dayKey !== todayKey && !this._refreshingDay) {
+      this._refreshingDay = true;
+      this._dayKey = todayKey;
+      this.updatePrayers().finally(() => { this._refreshingDay = false; });
+      return;
+    }
+    this._dayKey = todayKey;
+
     if (this.currentTimes) {
       this.evaluateCurrentPrayer();
+    }
+  }
+
+  // Android uygulaması arka plandan döndüğünde çağrılır
+  onAppResume() {
+    this.updatePrayers();
+    this.refreshPermissionStatus();
+    const viewQibla = document.getElementById("viewQibla");
+    const qiblaVisible = viewQibla && !viewQibla.classList.contains("hidden");
+    if (this.compass && qiblaVisible && this.qiblaMode === "compass") {
+      this.compass.isListening = false; // native taraf onPause'da durdu
+      this.compass.startCompass();
     }
   }
 
@@ -772,7 +853,8 @@ class TamVaktiApp {
 
       if (!tableBody || !data.days) return;
 
-      tableBody.innerHTML = data.days.map(d => {
+      tableBody.innerHTML = data.days.map(d0 => {
+        const d = this.applyOffset(d0) === d0 ? d0 : { ...d0, ...this.applyOffset(d0) };
         const rowClass = d.isToday ? 'monthly-row-today' : (d.isFriday ? 'monthly-row-friday' : '');
         const rowId = d.isToday ? 'id="monthlyRow-today"' : '';
         const todayBadge = d.isToday ? '<span class="monthly-today-badge">Bugün</span>' : '';
@@ -1106,6 +1188,18 @@ class TamVaktiApp {
     if (themeEl) {
       themeEl.textContent = this.themeMode || "Otomatik";
     }
+    this.updateSettingsLabels();
+  }
+
+  updateSettingsLabels() {
+    const modeNames = { ezan: "Ezan", bip: "Bip", sessiz: "Sessiz" };
+    const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+    set("settingsReminderTime", `${this.reminderMin} dk önce`);
+    set("settingsNotifMode", modeNames[this.notifMode] || "Ezan");
+    set("settingsCalcMethod", `Diyanet • ${this.offsetLabel()}`);
+    const k = document.getElementById("kerahatToggle");
+    if (k) k.checked = this.kerahatAlert;
+    this.refreshPermissionStatus();
   }
 
   closeSettingsModal() {
@@ -1147,36 +1241,208 @@ class TamVaktiApp {
   }
 
   sendTestNotification() {
-    if (window.AndroidBridge && window.AndroidBridge.showOngoingPrayerNotification) {
-      const nextTarget = Date.now() + 15 * 60 * 1000;
-      window.AndroidBridge.showOngoingPrayerNotification(
+    const tone = (ATHAN_SOUNDS[this.currentAthanTone] || ATHAN_SOUNDS["Hicaz"]).split("/").pop();
+    if (window.AndroidBridge && window.AndroidBridge.testAlert) {
+      window.AndroidBridge.testAlert(
+        "athan",
+        "Test: Vakit girdi",
         (this.currentLocation && !this.currentLocation.isPlaceholder) ? this.currentLocation.name : "Tam Vakti",
-        "Akşam (Test)",
-        "18:26",
-        nextTarget
+        tone,
+        this.notifMode
       );
+      this.showToast(this.notifMode === "ezan" ? "Test: ezan çalıyor (bildirimden durdurabilirsiniz)" : "Test bildirimi gönderildi", "🔔", 3000);
+      return;
     }
     this.playAlertTone();
-    if (window.AndroidBridge && window.AndroidBridge.vibrateDevice) {
-      window.AndroidBridge.vibrateDevice(200);
-    } else if (navigator.vibrate) {
-      navigator.vibrate(200);
-    }
-    this.showToast("Test bildirimi ve ezan sesi gönderildi!", "🔔");
+    if (navigator.vibrate) navigator.vibrate(200);
+    this.showToast("Test sesi çalındı (bildirimler yalnızca Android uygulamasında çalışır).", "🔔");
   }
 
+  // ==========================================
+  // İZİNLER (alarm, rahatsız etme, bildirim)
+  // ==========================================
+  getPermissionState() {
+    if (!window.AndroidBridge || !window.AndroidBridge.getPermissionState) return null;
+    try { return JSON.parse(window.AndroidBridge.getPermissionState()); } catch (e) { return null; }
+  }
+
+  refreshPermissionStatus() {
+    const el = document.getElementById("settingsPermStatus");
+    if (!el) return;
+    const p = this.getPermissionState();
+    if (!p) { el.textContent = "Yalnızca Android"; return; }
+    const missing = [];
+    if (!p.notif) missing.push("bildirim");
+    if (!p.exact) missing.push("alarm");
+    if (this.autoSilent && !p.dnd) missing.push("sessiz mod");
+    el.textContent = missing.length ? `Eksik: ${missing.join(", ")}` : "Tamam ✓";
+    el.className = missing.length ? "text-amber-600" : "text-emerald-700";
+  }
+
+  openPermissionsFlow() {
+    const p = this.getPermissionState();
+    if (!p) { this.showToast("Bu izinler yalnızca Android uygulamasında gerekir.", "ℹ️"); return; }
+    if (!p.notif) {
+      window.AndroidBridge.requestNotificationPermission();
+    } else if (!p.exact) {
+      this.showToast("Vakitlerde tam zamanında uyarı için 'Alarmlar ve hatırlatıcılar' iznini verin.", "⏰", 4000);
+      setTimeout(() => window.AndroidBridge.openExactAlarmSettings(), 900);
+    } else if (this.autoSilent && !p.dnd) {
+      this.showToast("'Rahatsız Etme' erişiminde Tam Vakti'ni etkinleştirin.", "📵", 4000);
+      setTimeout(() => window.AndroidBridge.openDndSettings(), 900);
+    } else {
+      this.showToast("Tüm izinler tamam. Pil tasarrufundan muaf tutmak için üstteki uyarıyı kullanabilirsiniz.", "✓", 3500);
+    }
+  }
+
+  // ==========================================
+  // ANDROID ALARM LİSTESİ SENKRONİZASYONU
+  // ==========================================
+  scheduleSync() {
+    if (!window.AndroidBridge || !window.AndroidBridge.syncSchedule) return;
+    clearTimeout(this._syncTimer);
+    this._syncTimer = setTimeout(() => this.syncNativeSchedule(), 600);
+  }
+
+  async syncNativeSchedule() {
+    if (!window.AndroidBridge || !window.AndroidBridge.syncSchedule) return;
+    if (!this.currentLocation || this.currentLocation.isPlaceholder) return;
+    const seq = ++this._syncSeq;
+    const { lat, lon } = this.currentLocation;
+    const city = this.currentLocation.name.includes("/")
+      ? this.currentLocation.name.split("/")[1].trim()
+      : this.currentLocation.name.includes(",")
+      ? this.currentLocation.name.split(",")[1].trim()
+      : this.currentLocation.name;
+
+    const DAYS = 7;
+    const monthCache = {};
+    const prayers = [];
+    const events = [];
+    const toneFile = (ATHAN_SOUNDS[this.currentAthanTone] || ATHAN_SOUNDS["Hicaz"]).split("/").pop();
+    const mode = this.notifMode;
+    const rem = this.reminderMin;
+    const MIN = 60000;
+    const start = new Date();
+
+    for (let i = 0; i < DAYS; i++) {
+      const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+      const y = d.getFullYear(), m = d.getMonth() + 1;
+      const k = `${y}-${m}`;
+      if (!monthCache[k]) {
+        try {
+          monthCache[k] = await this.engine.getMonthlyPrayerTimes(y, m, lat, lon);
+        } catch (e) { monthCache[k] = null; }
+      }
+      if (seq !== this._syncSeq) return; // daha yeni bir senkronizasyon başladı
+      const data = monthCache[k];
+      const row = data && data.days ? data.days.find(x => x.day === d.getDate()) : null;
+      if (!row) continue;
+
+      const isFri = d.getDay() === 5;
+      const at = {};
+      PRAYER_LIST.forEach(p => {
+        const str = this.shiftTime(row[p.key], this.timeOffsetMin);
+        const dt = /^\d{1,2}:\d{2}$/.test(str || "") ? this.parseTimeToDate(str, d) : null;
+        if (!dt) return;
+        at[p.key] = { dt, str };
+        const name = (p.key === "ogle" && isFri) ? "Cuma (Öğle)" : p.name;
+        prayers.push({ key: p.key, name, time: str, t: dt.getTime() });
+      });
+
+      PRAYER_LIST.forEach(p => {
+        const x = at[p.key];
+        if (!x) return;
+        const t = x.dt.getTime();
+        const name = (p.key === "ogle" && isFri) ? "Cuma (Öğle)" : p.name;
+
+        events.push({ t, type: "prayer" });
+
+        if (this.soundSettings[p.key]) {
+          if (rem > 0) {
+            events.push({
+              t: t - rem * MIN, type: "reminder",
+              title: `${name} vaktine ${rem} dk kaldı`,
+              body: `${city} • ${x.str}`,
+              mode: mode === "sessiz" ? "sessiz" : "bip"
+            });
+          }
+          events.push({
+            t, type: "athan",
+            title: `${name} vakti girdi`,
+            body: `${city} • ${x.str}`,
+            tone: toneFile,
+            // Güneş doğuşunda ezan okunmaz; yalnızca bildirim
+            mode: (p.key === "gunes" && mode === "ezan") ? "bip" : mode
+          });
+        }
+
+        if (this.autoSilent && p.key !== "gunes") {
+          const dur = (p.key === "ogle" && isFri) ? 60 : 30;
+          events.push({ t, type: "silent_start" });
+          events.push({ t: t + dur * MIN, type: "silent_end" });
+        }
+      });
+
+      if (this.kerahatAlert) {
+        if (at.gunes) {
+          events.push({ t: at.gunes.dt.getTime(), type: "kerahat", title: "Kerahat vakti başladı", body: "Güneş doğdu; yaklaşık 45 dk nafile namaz kılınmaz." });
+        }
+        if (at.ogle) {
+          events.push({ t: at.ogle.dt.getTime() - 45 * MIN, type: "kerahat", title: "Kerahat vakti (istiva)", body: "Öğle vaktine 45 dk kaldı." });
+        }
+        if (at.aksam) {
+          events.push({ t: at.aksam.dt.getTime() - 45 * MIN, type: "kerahat", title: "Kerahat vakti", body: "Güneş batımına 45 dk kaldı; ikindi namazını kılmadıysanız acele edin." });
+        }
+      }
+    }
+
+    events.sort((a, b) => a.t - b.t);
+    prayers.sort((a, b) => a.t - b.t);
+
+    try {
+      window.AndroidBridge.syncSchedule(JSON.stringify({
+        city,
+        ongoing: !!this.ongoingNotifEnabled,
+        prayers,
+        events: events.slice(0, 400)
+      }));
+    } catch (e) {
+      console.warn("Alarm senkronizasyonu başarısız:", e);
+    }
+  }
+
+  // Vakit bildirimi türü: Ezan sesi → Bip (bildirim sesi) → Sessiz (sadece yazı)
   openPrayerModesModal() {
-    this.showToast("Vakit bildirim sesini ana ekrandaki hoparlör simgesinden değiştirebilirsiniz.", "💡", 4000);
+    const order = ["ezan", "bip", "sessiz"];
+    this.notifMode = order[(order.indexOf(this.notifMode) + 1) % order.length];
+    localStorage.setItem("tamvakti_notif_mode", this.notifMode);
+    this.updateSettingsLabels();
+    const msgs = {
+      ezan: "Vakit girince ezan okunacak",
+      bip: "Vakit girince bildirim sesi çalacak",
+      sessiz: "Vakit bildirimleri sessiz olacak"
+    };
+    this.showToast(msgs[this.notifMode], "🔔", 2600);
+    this.scheduleSync();
   }
 
   cycleReminderMinutes() {
-    const minutes = [10, 15, 20, 30, 45];
-    const el = document.getElementById("settingsReminderTime");
-    const current = el ? parseInt(el.textContent) || 15 : 15;
-    const nextIndex = (minutes.indexOf(current) + 1) % minutes.length;
-    const nextVal = minutes[nextIndex];
-    if (el) el.textContent = `${nextVal} dk önce`;
-    this.showToast(`Vakit çıkmadan ${nextVal} dk önce hatırlatılacak`, "⏱️", 2500);
+    const minutes = [0, 5, 10, 15, 20, 30, 45];
+    const nextVal = minutes[(minutes.indexOf(this.reminderMin) + 1) % minutes.length];
+    this.reminderMin = nextVal;
+    localStorage.setItem("tamvakti_reminder_min", String(nextVal));
+    this.updateSettingsLabels();
+    this.renderPrayerCards();
+    this.showToast(nextVal === 0 ? "Vakit öncesi hatırlatma kapatıldı" : `Vakit çıkmadan ${nextVal} dk önce hatırlatılacak`, "⏱️", 2500);
+    this.scheduleSync();
+  }
+
+  toggleKerahatAlert(checked) {
+    this.kerahatAlert = !!checked;
+    localStorage.setItem("tamvakti_kerahat_alert", this.kerahatAlert ? "true" : "false");
+    this.showToast(this.kerahatAlert ? "Kerahat vakitlerinde bildirim gelecek" : "Kerahat bildirimi kapatıldı", "⚠️", 2500);
+    this.scheduleSync();
   }
 
   cycleAthanTone() {
@@ -1193,6 +1459,7 @@ class TamVaktiApp {
       this.playAthanPreview();
     }
     this.showToast(`${nextVal} Makamı seçildi`, "🔊", 2000);
+    this.scheduleSync();
   }
 
   toggleAthanPreview(event) {
@@ -1269,14 +1536,25 @@ class TamVaktiApp {
     this.autoSilent = !!checked;
     localStorage.setItem("tamvakti_auto_silent", this.autoSilent ? "true" : "false");
     if (this.autoSilent) {
-      this.showToast("Namaz esnasında telefon otomatik sessize alınacak.", "📵", 3000);
+      const perm = this.getPermissionState();
+      if (window.AndroidBridge && perm && !perm.dnd) {
+        this.showToast("Bunun için 'Rahatsız Etme' erişimi gerekli. Açılan ekranda Tam Vakti'ni etkinleştirin.", "📵", 4500);
+        setTimeout(() => window.AndroidBridge.openDndSettings && window.AndroidBridge.openDndSettings(), 1200);
+      } else {
+        this.showToast("Namaz esnasında telefon otomatik titreşime alınacak.", "📵", 3000);
+      }
     } else {
       this.showToast("Otomatik sessize alma kapatıldı.", "🔔", 2500);
     }
+    ["autoSilentToggle", "onboardingSilentToggle"].forEach(id => {
+      const cb = document.getElementById(id);
+      if (cb) cb.checked = this.autoSilent;
+    });
+    this.scheduleSync();
   }
 
   openIhtiyatModal() {
-    this.showToast("Hesaplama yöntemi: Diyanet İşleri Başkanlığı (±0 dk)", "🎛️", 3500);
+    this.cycleIhtiyat();
   }
 
   applyTheme(mode) {
@@ -1752,7 +2030,9 @@ class TamVaktiApp {
     const kerahatToggle = document.getElementById("onboardingKerahatToggle");
     if (kerahatToggle) {
       localStorage.setItem("tamvakti_kerahat_alert", kerahatToggle.checked ? "true" : "false");
+      this.kerahatAlert = kerahatToggle.checked;
     }
+    this.scheduleSync();
 
     this.closeOnboarding(true);
     this.showToast("Tam Vakti\x27ne Hoş Geldiniz! Hayırlı ibadetler dileriz.", "🕌", 3500);

@@ -1,7 +1,20 @@
 /**
  * Tam Vakti - Diyanet Uyumlu Namaz Vakti ve Astronomik Hesaplama Motoru
- * Sürüm: 2026.10.12
+ * Sürüm: v2.3
  */
+
+// Hicri ay adları (Aladhan "month.number" 1-12 ile eşleşir; API Türkçe ad döndürmez)
+const HIJRI_MONTHS_TR = [
+  '', 'Muharrem', 'Sefer', 'Rebiülevvel', 'Rebiülahir',
+  'Cemaziyelevvel', 'Cemaziyelahir', 'Recep', 'Şaban',
+  'Ramazan', 'Şevval', 'Zilkade', 'Zilhicce'
+];
+
+function hijriMonthTr(h) {
+  if (!h || !h.month) return '';
+  const n = parseInt(h.month.number, 10);
+  return HIJRI_MONTHS_TR[n] || h.month.en || '';
+}
 
 class PrayerEngine {
   constructor() {
@@ -55,7 +68,9 @@ class PrayerEngine {
     let RA = this.r2d(Math.atan2(Math.cos(this.d2r(e)) * Math.sin(this.d2r(L)), Math.cos(this.d2r(L)))) / 15;
     RA = (RA + 24) % 24;
 
-    const EqT = q / 15 - RA;
+    // Zaman denklemi (saat cinsinden); 24 sa sarmasını [-12, 12) aralığına indir
+    let EqT = q / 15 - RA;
+    EqT = ((EqT + 12) % 24 + 24) % 24 - 12;
     return { declination: d, equationOfTime: EqT };
   }
 
@@ -67,7 +82,7 @@ class PrayerEngine {
     const EqT = solar.equationOfTime;
 
     const hours = date.getHours() + date.getMinutes() / 60 + date.getSeconds() / 3600;
-    const solarTime = hours + (EqT / 60) + ((lon - 15 * tz) / 15);
+    const solarTime = hours + EqT + ((lon - 15 * tz) / 15);
     const hourAngleDeg = (solarTime - 12) * 15;
     const H = this.d2r(hourAngleDeg);
     const phi = this.d2r(lat);
@@ -118,7 +133,7 @@ class PrayerEngine {
         const sinAlt = Math.sin(phi) * Math.sin(delta) + Math.cos(phi) * Math.cos(delta) * Math.cos(Hrad);
         if (sinAlt > 0) {
           const solarHours = 12 + (hDeg / 15);
-          const localHours = solarHours - (solar.equationOfTime / 60) - ((lon - 15 * tz) / 15);
+          const localHours = solarHours - solar.equationOfTime - ((lon - 15 * tz) / 15);
           return this.formatTime(localHours);
         }
       }
@@ -206,7 +221,7 @@ class PrayerEngine {
   // Çevrimiçi Diyanet API'den Çekme ve Yerel Önbelleğe (Cache) Alma
   async getPrayerTimes(date, lat, lon, tz = 3.0) {
     const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    const cacheKey = `tamvakti_${lat.toFixed(2)}_${lon.toFixed(2)}_${dateStr}`;
+    const cacheKey = `tamvakti_v2_${lat.toFixed(2)}_${lon.toFixed(2)}_${dateStr}`;
 
     // Önbellek kontrolü
     const cached = typeof localStorage !== "undefined" ? localStorage.getItem(cacheKey) : null;
@@ -239,10 +254,11 @@ class PrayerEngine {
             ikindi: t.Asr.substring(0, 5),
             aksam: t.Maghrib.substring(0, 5),
             yatsi: t.Isha.substring(0, 5),
-            hijri: json.data.date.hijri ? `${json.data.date.hijri.day} ${json.data.date.hijri.month.tr || json.data.date.hijri.month.en} ${json.data.date.hijri.year}` : null,
+            hijri: json.data.date.hijri ? `${json.data.date.hijri.day} ${hijriMonthTr(json.data.date.hijri)} ${json.data.date.hijri.year}` : null,
+            hijriDay: json.data.date.hijri ? `${parseInt(json.data.date.hijri.day, 10)} ${hijriMonthTr(json.data.date.hijri)}` : null,
             source: 'diyanet-api'
           };
-          localStorage.setItem(cacheKey, JSON.stringify(apiTimes));
+          try { localStorage.setItem(cacheKey, JSON.stringify(apiTimes)); } catch (e) {}
           return apiTimes;
         }
       }
@@ -256,7 +272,7 @@ class PrayerEngine {
   // Aylık Namaz Vakitleri (Çevrimiçi Diyanet API veya %100 Çevrimdışı Astronomik Hesaplama)
   async getMonthlyPrayerTimes(year, month, lat, lon, tz = 3.0) {
     const monthPadded = String(month).padStart(2, '0');
-    const cacheKey = `tamvakti_monthly_${lat.toFixed(2)}_${lon.toFixed(2)}_${year}_${monthPadded}`;
+    const cacheKey = `tamvakti_monthly_v2_${lat.toFixed(2)}_${lon.toFixed(2)}_${year}_${monthPadded}`;
 
     const trMonths = [
       '', 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
@@ -300,7 +316,7 @@ class PrayerEngine {
             const dateStr = `${year}-${monthPadded}-${String(dNum).padStart(2, '0')}`;
 
             if (hijri && hijri.month && !hijriSummary) {
-              hijriSummary = `${hijri.month.tr || hijri.month.en} ${hijri.year}`;
+              hijriSummary = `${hijriMonthTr(hijri)} ${hijri.year}`;
             }
 
             return {
@@ -316,7 +332,7 @@ class PrayerEngine {
               ikindi: t.Asr.substring(0, 5),
               aksam: t.Maghrib.substring(0, 5),
               yatsi: t.Isha.substring(0, 5),
-              hijriDay: hijri ? `${hijri.day} ${hijri.month.tr || hijri.month.en}` : null
+              hijriDay: hijri ? `${parseInt(hijri.day, 10)} ${hijriMonthTr(hijri)}` : null
             };
           });
 
@@ -351,7 +367,7 @@ class PrayerEngine {
 
       let hijriDayStr = null;
       try {
-        const parts = new Intl.DateTimeFormat('en-u-ca-islamic-civil', {
+        const parts = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
           day: 'numeric',
           month: 'numeric'
         }).formatToParts(dDate);
@@ -399,5 +415,5 @@ class PrayerEngine {
 
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { PrayerEngine };
+  module.exports = { PrayerEngine, hijriMonthTr };
 }

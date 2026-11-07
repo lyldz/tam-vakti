@@ -11,7 +11,10 @@ build/
 # Keystore & Keys
 *.jks
 *.keystore
-!android/app/release-key.jks
+
+# İmza bilgileri (ASLA commit etme)
+keystore.properties
+android/keystore.properties
 
 # IDE
 .idea/

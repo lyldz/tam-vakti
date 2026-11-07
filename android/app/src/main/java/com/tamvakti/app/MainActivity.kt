@@ -44,8 +44,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var webView: WebView
     private val LOCATION_PERMISSION_REQUEST = 1001
     private val NOTIFICATION_PERMISSION_REQUEST = 1002
-    private val NOTIFICATION_ID = 2026
-    private val CHANNEL_ID = "tamvakti_ongoing"
 
     private var pendingGeoCallback: GeolocationPermissions.Callback? = null
     private var pendingGeoOrigin: String? = null
@@ -78,7 +76,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        createNotificationChannel()
+        Notifs.createChannels(this)
 
         webView = WebView(this)
         setContentView(webView)
@@ -150,21 +148,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         })
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Tam Vakti Sabit Sayaç"
-            val descriptionText = "Bildirim çubuğunda sıradaki vakti ve kalan süreyi gösterir"
-            val importance = NotificationManager.IMPORTANCE_LOW
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-                description = descriptionText
-                setShowBadge(false)
-            }
-            val notificationManager: NotificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
-
     private fun hasLocationPermission(): Boolean {
         val fine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
         val coarse = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -202,55 +185,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             requestNotificationPermission()
             return
         }
-
-        val intent = Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
-        )
-
-        val notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        val appIconBitmap = try {
-            BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher)
-        } catch (e: Exception) {
-            null
-        }
-
-        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_stat_tamvakti)
-            .apply {
-                if (appIconBitmap != null) {
-                    setLargeIcon(appIconBitmap)
-                }
-            }
-            .setContentTitle("Tam Vakti • $cityName")
-            .setContentText("Sıradaki: $nextPrayerName ($nextPrayerTime)")
-            .setOngoing(true)
-            .setOnlyAlertOnce(true)
-            .setContentIntent(pendingIntent)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-
-        // Android Native Kronometre Canlı Geri Sayımı
-        if (targetMillis > System.currentTimeMillis()) {
-            builder.setUsesChronometer(true)
-            builder.setChronometerCountDown(true)
-            builder.setWhen(targetMillis)
-            builder.setShowWhen(true)
-        }
-
-        notificationManager.notify(NOTIFICATION_ID, builder.build())
+        Notifs.postOngoing(this, cityName, nextPrayerName, nextPrayerTime, targetMillis)
     }
 
     fun cancelOngoingPrayerNotification() {
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.cancel(NOTIFICATION_ID)
+        notificationManager.cancel(Notifs.ID_ONGOING)
     }
 
     override fun onRequestPermissionsResult(
@@ -309,6 +250,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onPause() {
         super.onPause()
         stopCompassListening()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Arka plandan dönünce vakitleri tazele ve pusulayı yeniden başlat
+        if (::webView.isInitialized) {
+            webView.evaluateJavascript("window.app && window.app.onAppResume && window.app.onAppResume();", null)
+        }
     }
 
     override fun onDestroy() {
@@ -449,6 +398,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         @JavascriptInterface
         fun downloadAndInstallApk(downloadUrl: String) {
+            // Yalnızca projenin kendi GitHub sürümlerinden indirmeye izin ver
+            val uri = Uri.parse(downloadUrl)
+            val allowed = uri.scheme == "https" && uri.host == "github.com" &&
+                (uri.path ?: "").startsWith("/lyldz/tam-vakti/")
+            if (!allowed) {
+                activity.runOnUiThread {
+                    activity.webView.evaluateJavascript("window.app && window.app.onUpdateDownloadError('Geçersiz indirme adresi');", null)
+                }
+                return
+            }
             activity.startApkDownload(downloadUrl)
         }
 
@@ -456,10 +415,54 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         fun getAppVersion(): String {
             return try {
                 val pInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
-                pInfo.versionName ?: "1.00.08"
+                pInfo.versionName ?: "2.3"
             } catch (e: Exception) {
-                "1.00.08"
+                "2.3"
             }
+        }
+
+        @JavascriptInterface
+        fun syncSchedule(json: String) {
+            val app = activity.applicationContext
+            thread {
+                try {
+                    Scheduler.sync(app, json)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun getPermissionState(): String {
+            val app = activity.applicationContext
+            return "{\"notif\":" + Notifs.hasPermission(app) +
+                ",\"exact\":" + Scheduler.canScheduleExact(app) +
+                ",\"dnd\":" + Silencer.hasPolicyAccess(app) + "}"
+        }
+
+        @JavascriptInterface
+        fun openDndSettings() {
+            activity.runOnUiThread {
+                try {
+                    activity.startActivity(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
+                } catch (e: Exception) {
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun testAlert(type: String, title: String, body: String, tone: String, mode: String) {
+            val app = activity.applicationContext
+            activity.runOnUiThread {
+                AlarmReceiver.handle(app, type, title, body, tone, mode, 4999)
+            }
+        }
+
+        @JavascriptInterface
+        fun stopAthan() {
+            val app = activity.applicationContext
+            app.stopService(Intent(app, AthanService::class.java))
         }
 
         @JavascriptInterface
@@ -582,7 +585,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             } catch (e: Exception) {
                 e.printStackTrace()
                 runOnUiThread {
-                    val errMsg = e.message?.replace("'", "\\'") ?: "Bilinmeyen hata"
+                    val errMsg = (e.message ?: "Bilinmeyen hata").replace("\\", " ").replace("'", " ").replace("\n", " ")
                     webView.evaluateJavascript("window.app && window.app.onUpdateDownloadError('$errMsg');", null)
                 }
             }
@@ -613,7 +616,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             startActivity(installIntent)
         } catch (e: Exception) {
             e.printStackTrace()
-            val errMsg = e.message?.replace("'", "\\'") ?: "Bilinmeyen hata"
+            val errMsg = (e.message ?: "Bilinmeyen hata").replace("\\", " ").replace("'", " ").replace("\n", " ")
             webView.evaluateJavascript("window.app && window.app.onUpdateDownloadError('Kurulum başlatılamadı: $errMsg');", null)
         }
     }
