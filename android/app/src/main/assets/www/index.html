@@ -4,17 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Tam Vakti - Namaz Vakitleri & İmsakiye</title>
-  <!-- Google Fonts: Inter, JetBrains Mono, Plus Jakarta Sans (Nocturnal Arctic 2B) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/fonts.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="lib/leaflet/leaflet.css">
   <script src="lib/tailwind/tailwindcss.min.js"></script>
   <script>
     if (typeof tailwind !== 'undefined') {
       tailwind.config = {
-        darkMode: 'class',
+        darkMode: 'class', // uygulama yalnızca koyu temayla gelir (<html class="dark">)
         theme: {
           extend: {
             colors: {
@@ -41,7 +38,7 @@
               'outline-variant': '#334155'
             },
             fontFamily: {
-              sans: ['"Plus Jakarta Sans"', '"Inter"', 'sans-serif'],
+              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
               mono: ['"JetBrains Mono"', 'monospace'],
               arabic: ['"Amiri"', 'serif']
             }
@@ -49,16 +46,6 @@
         }
       };
     }
-    // Açılışta tema yanıp sönmesini (white flash) önleyen erken tema kontrolü
-    (function() {
-      try {
-        var mode = localStorage.getItem("tamvakti_theme_mode") || "Otomatik";
-        var isDark = mode === "Koyu" || (mode === "Otomatik" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
-        if (isDark) {
-          document.documentElement.classList.add("dark");
-        }
-      } catch (e) {}
-    })();
   </script>
 </head>
 <body class="select-none bg-[#050811] text-slate-100 min-h-screen antialiased">
@@ -80,7 +67,7 @@
       <!-- Orta: Tarih Kartı (Miladi & Hicri) -->
       <button onclick="app.openMonthlyModal()" class="text-center px-2.5 py-1 rounded-full bg-slate-900/60 border border-slate-700/50 backdrop-blur-md hover:border-sky-400/30 transition-colors cursor-pointer" title="Aylık İmsakiye">
         <span class="text-[11px] font-medium text-slate-300 tracking-wide block">
-          <span id="miladiDateMain">5 Kasım</span> • <span id="hicriDateSub" class="text-slate-400">24 Cemaziyelevvel</span>
+          <span id="miladiDateMain" class="block">5 Kasım 2026 • Perşembe</span><span id="hicriDateSub" class="block text-slate-400 text-[10px] mt-0.5">24 Cemaziyelevvel</span>
         </span>
       </button>
 
@@ -157,12 +144,6 @@
             </h1>
           </div>
 
-          <!-- Sub-times Interval Reference -->
-          <div id="subTimesLabel" class="flex items-center gap-2 text-xs text-slate-400 font-medium">
-            <span>İkindi 15:31</span>
-            <span class="opacity-40">•</span>
-            <span>Akşam 17:56</span>
-          </div>
         </div>
 
         <!-- HORIZONTAL HORIZON TIMELINE BAR (TEK MERKEZİ KART) -->
@@ -216,16 +197,6 @@
           <!-- 6 vakit dinamik doldurulur -->
         </div>
 
-        <!-- Arka Plan DOM Elemanları (JS referans uyumluluğu için gizli tutulur) -->
-        <div class="hidden">
-          <div id="statusTitleText"></div>
-          <div id="statusSubtitleText"></div>
-          <button id="prayerLogBtn"></button>
-          <div id="sunsetStat"></div>
-          <div id="prayerCardsList"></div>
-          <div id="allPrayersContainer"></div>
-        </div>
-
       </section>
 
       <!-- GÖRÜNÜM 2: KIBLE BULUCU (CANLI PUSULA & HARİTA İLE SOKAK YÖNÜ) -->
@@ -237,14 +208,14 @@
             <span>←</span> <span>Vakitler</span>
           </button>
           <div id="qiblaSensorBadge" class="bg-slate-900/80 text-sky-300 text-xs font-bold px-3 py-1.5 rounded-full border border-sky-400/30 flex items-center gap-1.5">
-            <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="inline-block w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
             <span>Canlı Sensör</span>
           </div>
           <span id="qiblaHeaderCity" class="hidden"></span>
         </div>
 
         <!-- Mod Seçici: Pusula vs Harita -->
-        <div class="qibla-mode-toggle flex p-1 bg-emerald-950/5 rounded-2xl mx-1 gap-1">
+        <div class="qibla-mode-toggle flex p-1 bg-sky-950/5 rounded-2xl mx-1 gap-1">
           <button id="qiblaSubTab-compass" onclick="app.switchQiblaMode('compass')" class="qibla-mode-btn active flex-1 py-1.5 rounded-xl text-xs font-black transition-all">
             🧭 Canlı Pusula
           </button>
@@ -273,7 +244,7 @@
             
             <!-- Derece ve Mesafe -->
             <div class="mb-1.5">
-              <div id="qiblaAngleBig" class="font-mono text-4xl font-black text-[#1b4332] tracking-tight">156°</div>
+              <div id="qiblaAngleBig" class="font-mono text-4xl font-black text-sky-300 tracking-tight">156°</div>
               <div id="qiblaDistanceSub" class="text-xs font-bold text-slate-500 mt-0.5">Kâbe'ye ≈ 2.022 km</div>
             </div>
 
@@ -281,7 +252,7 @@
             <div class="relative w-56 h-56 mx-auto flex items-center justify-center my-2">
               
               <!-- Dış Yeşil Çember (Hizalanınca Parlar) -->
-              <div id="qiblaOuterRing" class="absolute inset-0 rounded-full border-3 border-[#2d6a4f] transition-all duration-300"></div>
+              <div id="qiblaOuterRing" class="absolute inset-0 rounded-full border-3 border-[#1d4e75] transition-all duration-300"></div>
 
               <!-- Tepedeki Sabit Kâbe İkonu (12 Yönü Hedefi) -->
               <div class="absolute -top-3.5 z-20 flex flex-col items-center">
@@ -326,15 +297,15 @@
             </div>
 
             <!-- Diyanet Kıble Saati Bilgi Kartı -->
-            <div class="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-2.5 text-xs text-emerald-950 flex items-center justify-between mt-3 text-left">
+            <div class="bg-sky-400/10 border border-sky-400/20 rounded-2xl p-2.5 text-xs text-sky-100 flex items-center justify-between mt-3 text-left">
               <div class="flex items-center gap-2">
                 <span class="text-lg">☀️</span>
                 <div>
-                  <div class="font-bold text-[11px] text-emerald-900">Günün Kıble Saati</div>
-                  <div class="text-[10px] text-emerald-700/90">Güneşe baktığınız an Kâbe yönündesiniz</div>
+                  <div class="font-bold text-[11px] text-sky-100">Günün Kıble Saati</div>
+                  <div class="text-[10px] text-slate-400">Güneşe baktığınız an Kâbe yönündesiniz</div>
                 </div>
               </div>
-              <div id="qiblaHourValue" class="font-mono font-black text-sm text-emerald-800 bg-white/90 px-2.5 py-1 rounded-xl shadow-2xs">--:--</div>
+              <div id="qiblaHourValue" class="font-mono font-black text-sm text-sky-200 bg-sky-400/15 px-2.5 py-1 rounded-xl">--:--</div>
             </div>
 
             <!-- Eğim İpucu -->
@@ -351,10 +322,10 @@
         <div id="qiblaModeContainer-map" class="hidden mihrab-frame p-3 space-y-2.5">
           <div class="flex items-center justify-between text-xs px-1">
             <div class="font-bold text-slate-800 flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block animate-pulse"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-sky-600 inline-block animate-pulse"></span>
               <span>Binanız & Kâbe Hattı</span>
             </div>
-            <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">Manyetik Bozulmaz</span>
+            <span class="text-[10px] bg-sky-400/15 text-sky-200 font-bold px-2 py-0.5 rounded-full">Manyetik Bozulmaz</span>
           </div>
 
           <!-- İnteraktif Harita Kapsayıcısı -->
@@ -472,16 +443,16 @@
   </div>
 
   <!-- MODAL: Derli Toplu Ayarlar Ekranı (3 Grup Kartı + Pil Uyarısı) -->
-  <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-[#ebf4ee] overflow-y-auto">
+  <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-[#ecf0f3] overflow-y-auto">
     <!-- Üst Bar: Geri Dön Butonu & Başlık -->
-    <div class="sticky top-0 z-10 bg-[#ebf4ee]/95 backdrop-blur-md px-4 py-3 border-b border-emerald-900/10 flex items-center justify-between">
-      <button onclick="app.closeSettingsModal()" class="flex items-center gap-2 text-[#0f3e2e] font-extrabold text-base hover:text-emerald-800 cursor-pointer">
+    <div class="sticky top-0 z-10 bg-[#ecf0f3]/95 backdrop-blur-md px-4 py-3 border-b border-sky-900/10 flex items-center justify-between">
+      <button onclick="app.closeSettingsModal()" class="flex items-center gap-2 text-[#0f3e2e] font-extrabold text-base hover:text-sky-800 cursor-pointer">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
         </svg>
         <span>Ayarlar</span>
       </button>
-      <span class="text-xs font-mono font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full">v2.3 • Seher</span>
+      <span class="text-xs font-mono font-bold bg-sky-400/15 text-sky-200 px-2.5 py-1 rounded-full">v2.3 • Seher</span>
     </div>
 
     <div class="max-w-md mx-auto px-4 py-3 space-y-4 pb-28">
@@ -500,18 +471,18 @@
       <!-- 1. KONUM VE HESAPLAMA -->
       <div class="space-y-1.5">
         <div class="text-[11px] font-black text-[#3d695b] uppercase tracking-wider px-1">KONUM VE HESAPLAMA</div>
-        <div class="bg-white rounded-3xl p-3.5 shadow-xs border border-emerald-900/5 divide-y divide-slate-100">
+        <div class="bg-white rounded-3xl p-3.5 shadow-xs border border-sky-900/5 divide-y divide-slate-100">
           
                     <!-- Aylık Vakitler & İmsakiye -->
           <div onclick="app.openMonthlyModal()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
             <div class="flex items-center gap-2.5">
-              <span class="text-base text-emerald-700">📅</span>
+              <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M3 11h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z"/></svg>
               <div>
                 <div class="text-xs font-bold text-[#0f3e2e]">Aylık Namaz Vakitleri</div>
                 <div class="text-[10px] text-slate-400 font-medium">Tüm ayın namaz vakitleri ve imsakiye çizelgesi</div>
               </div>
             </div>
-            <div class="text-xs font-bold text-emerald-700 flex items-center gap-1">
+            <div class="text-xs font-bold text-sky-700 flex items-center gap-1">
               <span>Görüntüle</span>
               <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
@@ -529,7 +500,7 @@
                 <div class="text-[10px] text-slate-400 font-medium" id="settingsLocationDesc">Konum Seçiniz • Otomatik</div>
               </div>
             </div>
-            <div class="text-xs font-bold text-emerald-700 flex items-center gap-1">
+            <div class="text-xs font-bold text-sky-700 flex items-center gap-1">
               <span>Değiştir</span>
               <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
@@ -555,7 +526,7 @@
       <!-- 2. BİLDİRİM VE EZAN -->
       <div class="space-y-1.5">
         <div class="text-[11px] font-black text-[#3d695b] uppercase tracking-wider px-1">BİLDİRİM VE EZAN</div>
-        <div class="bg-white rounded-3xl p-3.5 shadow-xs border border-emerald-900/5 divide-y divide-slate-100">
+        <div class="bg-white rounded-3xl p-3.5 shadow-xs border border-sky-900/5 divide-y divide-slate-100">
           
           <!-- Vakit Bildirimleri -->
           <div onclick="app.openPrayerModesModal()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
@@ -595,7 +566,7 @@
             </div>
             <div class="flex items-center gap-2.5">
               <span id="settingsAthanTone" class="text-xs font-semibold text-slate-600">Hicaz</span>
-              <button id="athanPreviewBtn" onclick="app.toggleAthanPreview(event)" class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-extrabold flex items-center gap-1 hover:bg-emerald-200 active:scale-95 transition-all cursor-pointer">
+              <button id="athanPreviewBtn" onclick="app.toggleAthanPreview(event)" class="px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 text-[11px] font-extrabold flex items-center gap-1 hover:bg-sky-200 active:scale-95 transition-all cursor-pointer">
                 <span id="athanPreviewIcon">▶</span>
                 <span id="athanPreviewText">Dinle</span>
               </button>
@@ -612,14 +583,14 @@
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" id="autoSilentToggle" onchange="app.toggleAutoSilent(this.checked)" class="sr-only peer" checked>
-              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
             </label>
           </div>
 
           <!-- Kerahat Vakti Uyarısı -->
           <div class="py-2.5 flex items-center justify-between px-1.5">
             <div class="flex items-center gap-2.5">
-              <span class="text-base shrink-0">⚠️</span>
+              <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
               <div>
                 <div class="text-xs font-bold text-[#0f3e2e]">Kerahat Vakti Uyarısı</div>
                 <div class="text-[10px] text-slate-400 font-medium">Güneş doğuşu, istiva ve batıma 45 dk kala</div>
@@ -627,14 +598,14 @@
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" id="kerahatToggle" onchange="app.toggleKerahatAlert(this.checked)" class="sr-only peer" checked>
-              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
             </label>
           </div>
 
           <!-- Bildirimi / Ezanı Test Et -->
           <div onclick="app.sendTestNotification()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
             <div class="flex items-center gap-2.5">
-              <span class="text-base shrink-0">🔔</span>
+              <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.065-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
               <span class="text-xs font-bold text-[#0f3e2e]">Bildirimi Test Et</span>
             </div>
             <div class="text-xs font-semibold text-slate-500 flex items-center gap-1">
@@ -646,7 +617,7 @@
           <!-- İzinler -->
           <div onclick="app.openPermissionsFlow()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
             <div class="flex items-center gap-2.5">
-              <span class="text-base shrink-0">🔐</span>
+              <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
               <div>
                 <div class="text-xs font-bold text-[#0f3e2e]">İzinler</div>
                 <div class="text-[10px] text-slate-400 font-medium">Alarm, bildirim ve sessiz mod erişimi</div>
@@ -664,22 +635,8 @@
       <!-- 3. GÖRÜNÜM VE DİĞER -->
       <div class="space-y-1.5">
         <div class="text-[11px] font-black text-[#3d695b] uppercase tracking-wider px-1">GÖRÜNÜM VE DİĞER</div>
-        <div class="bg-white rounded-3xl p-3.5 shadow-xs border border-emerald-900/5 divide-y divide-slate-100">
+        <div class="bg-white rounded-3xl p-3.5 shadow-xs border border-sky-900/5 divide-y divide-slate-100">
           
-          <!-- Tema ve Görünüm -->
-          <div onclick="app.cycleTheme()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
-            <div class="flex items-center gap-2.5">
-              <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4 4 4 0 014-4c.82 0 1.57.25 2.19.68L18 5a2.828 2.828 0 114 4l-8.68 8.81A3.978 3.978 0 019 19c-.64 0-1.25-.15-1.79-.42L7 21z"/>
-              </svg>
-              <span class="text-xs font-bold text-[#0f3e2e]">Tema ve Görünüm</span>
-            </div>
-            <div class="text-xs font-semibold text-slate-500 flex items-center gap-1">
-              <span id="settingsThemeMode">Otomatik</span>
-              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </div>
-          </div>
-
           <!-- Ana Ekran Widget'ı -->
           <div onclick="app.showWidgetInfo()" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
             <div class="flex items-center gap-2.5">
@@ -697,7 +654,7 @@
           <!-- Başlangıç Kurulum Sihirbazı (Onboarding) -->
           <div onclick="app.openOnboarding(1)" class="py-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 rounded-xl px-1.5 transition-colors">
             <div class="flex items-center gap-2.5">
-              <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 text-sky-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
               </svg>
               <span class="text-xs font-bold text-[#0f3e2e]">Başlangıç Kurulum Sihirbazı</span>
@@ -736,30 +693,30 @@
   </div>
 
   <!-- MODAL: Şehir ve İlçe Seçimi -->
-  <div id="locationModal" class="hidden fixed inset-0 z-[100001] flex flex-col bg-white dark:bg-[#0a1f15] select-none">
+  <div id="locationModal" class="hidden fixed inset-0 z-[100001] flex flex-col bg-white dark:bg-[#090e1a] select-none">
     <!-- Başlık -->
-    <div class="px-4 pt-5 pb-3 flex items-center justify-between shrink-0 border-b border-slate-100 dark:border-emerald-900/30">
-      <h3 class="font-extrabold text-base text-[#0f3e2e] dark:text-emerald-100">Şehir ve İlçe Seçimi</h3>
-      <button onclick="app.closeLocationModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-emerald-950/60 flex items-center justify-center text-slate-500 dark:text-emerald-300 hover:bg-slate-200 transition-colors cursor-pointer">
+    <div class="px-4 pt-5 pb-3 flex items-center justify-between shrink-0 border-b border-slate-100 dark:border-sky-900/30">
+      <h3 class="font-extrabold text-base text-[#0f3e2e] dark:text-sky-100">Şehir ve İlçe Seçimi</h3>
+      <button onclick="app.closeLocationModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-sky-950/60 flex items-center justify-center text-slate-500 dark:text-sky-300 hover:bg-slate-200 transition-colors cursor-pointer">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
 
     <!-- Arama Kutusu -->
-    <div class="px-4 py-3 bg-slate-50/80 dark:bg-emerald-950/30 border-b border-slate-100 dark:border-emerald-900/20 shrink-0">
+    <div class="px-4 py-3 bg-slate-50/80 dark:bg-sky-950/30 border-b border-slate-100 dark:border-sky-900/20 shrink-0">
       <div class="relative">
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-sky-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
         </svg>
         <input id="citySearchInput" type="text" placeholder="İl veya ilçe ara..." 
           oninput="app.filterCities(this.value)"
-          class="w-full pl-10 pr-4 py-3 bg-white dark:bg-emerald-950/50 border border-slate-200 dark:border-emerald-700/30 rounded-2xl text-sm font-semibold text-[#0f3e2e] dark:text-emerald-100 placeholder-slate-400 dark:placeholder-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all">
+          class="w-full pl-10 pr-4 py-3 bg-white dark:bg-sky-950/50 border border-slate-200 dark:border-sky-700/30 rounded-2xl text-sm font-semibold text-[#0f3e2e] dark:text-sky-100 placeholder-slate-400 dark:placeholder-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500/30 transition-all">
       </div>
     </div>
 
     <!-- GPS Butonu -->
-    <div class="px-4 py-2 bg-white dark:bg-[#0a1f15] border-b border-slate-100 dark:border-emerald-900/20 shrink-0">
-      <button id="gpsLocateBtn" onclick="app.locateWithGPS()" class="w-full py-2.5 px-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer">
+    <div class="px-4 py-2 bg-white dark:bg-[#090e1a] border-b border-slate-100 dark:border-sky-900/20 shrink-0">
+      <button id="gpsLocateBtn" onclick="app.locateWithGPS()" class="w-full py-2.5 px-3 bg-sky-700 hover:bg-sky-800 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer">
         <span>📡</span>
         <span>GPS ile Otomatik Bul</span>
       </button>
@@ -769,8 +726,8 @@
     <div class="flex-1 overflow-y-auto overscroll-contain px-4 py-2" id="cityListContainer"></div>
 
     <!-- Sonuç Sayısı -->
-    <div class="px-4 py-2 border-t border-slate-100 dark:border-emerald-900/20 bg-slate-50 dark:bg-emerald-950/30 shrink-0">
-      <span id="cityResultCount" class="text-[10px] font-semibold text-slate-400 dark:text-emerald-600"></span>
+    <div class="px-4 py-2 border-t border-slate-100 dark:border-sky-900/20 bg-slate-50 dark:bg-sky-950/30 shrink-0">
+      <span id="cityResultCount" class="text-[10px] font-semibold text-slate-400 dark:text-sky-600"></span>
     </div>
   </div>
 
@@ -784,7 +741,7 @@
           <img src="assets/icons/logo.svg" alt="Tam Vakti Logo" class="w-8 h-9 object-contain drop-shadow-xs">
           <div class="text-left">
             <h3 class="font-extrabold text-base text-[#0f3e2e]">Tam Vakti</h3>
-            <span class="inline-block text-[11px] font-mono font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">v2.3 • Seher</span>
+            <span class="inline-block text-[11px] font-mono font-bold bg-sky-400/15 text-sky-200 px-2 py-0.5 rounded-full">v2.3 • Seher</span>
           </div>
         </div>
         <button onclick="app.closeAboutModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold leading-none">&times;</button>
@@ -801,13 +758,13 @@
       </div>
 
       <!-- Yeni Güncelleme Kartı (GitHub'da Yeni Sürüm Varsa Görünür) -->
-      <div id="updateNoticeCard" class="hidden text-left bg-emerald-50 border border-emerald-200/90 rounded-2xl p-3 space-y-2">
+      <div id="updateNoticeCard" class="hidden text-left bg-sky-50 border border-sky-200/90 rounded-2xl p-3 space-y-2">
         <div class="flex items-center justify-between">
           <span class="text-xs font-extrabold text-[#0f3e2e] flex items-center gap-1.5">
             <span class="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
             Yeni Güncelleme!
           </span>
-          <span id="updateNewVersionTag" class="text-[10px] font-mono font-bold bg-emerald-200/80 text-emerald-900 px-2 py-0.5 rounded-full">v2.3 • Seher</span>
+          <span id="updateNewVersionTag" class="text-[10px] font-mono font-bold bg-sky-200/80 text-sky-900 px-2 py-0.5 rounded-full">v2.3 • Seher</span>
         </div>
         <p id="updateReleaseNotes" class="text-[11px] text-slate-600 leading-snug line-clamp-3">
           Yeni sürüm hazır.
@@ -815,14 +772,14 @@
 
         <!-- Canlı İndirme İlerleme Alanı -->
         <div id="updateProgressArea" class="hidden space-y-1 pt-1">
-          <div class="w-full bg-emerald-200/60 rounded-full h-2 overflow-hidden">
-            <div id="updateProgressBar" class="bg-emerald-600 h-full rounded-full transition-all duration-200" style="width: 0%;"></div>
+          <div class="w-full bg-sky-200/60 rounded-full h-2 overflow-hidden">
+            <div id="updateProgressBar" class="bg-sky-600 h-full rounded-full transition-all duration-200" style="width: 0%;"></div>
           </div>
-          <div id="updateProgressStatus" class="text-[10px] font-bold text-emerald-800 text-center">İndiriliyor... %0</div>
+          <div id="updateProgressStatus" class="text-[10px] font-bold text-sky-800 text-center">İndiriliyor... %0</div>
         </div>
 
         <!-- İndirme & Kurulum Butonu -->
-        <button id="btnStartUpdate" onclick="app.startUpdateDownload()" class="w-full py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer">
+        <button id="btnStartUpdate" onclick="app.startUpdateDownload()" class="w-full py-2 bg-sky-700 hover:bg-sky-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer">
           <span>⚡</span>
           <span>Şimdi Güncelle ve İndir</span>
         </button>
@@ -831,13 +788,13 @@
       <!-- Güncelleme Denetleme Durumu & Butonu -->
       <div class="pt-0.5 flex items-center justify-between text-[11px] text-slate-500 px-1">
         <span id="updateCheckStatus">✓ Sürüm güncel</span>
-        <button onclick="app.checkForUpdates(false)" class="text-emerald-700 font-bold hover:underline cursor-pointer flex items-center gap-1">
+        <button onclick="app.checkForUpdates(false)" class="text-sky-700 font-bold hover:underline cursor-pointer flex items-center gap-1">
           <span>🔄</span>
           <span>Denetle</span>
         </button>
       </div>
 
-      <button onclick="app.closeAboutModal()" class="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs font-bold transition-colors shadow-sm cursor-pointer">
+      <button onclick="app.closeAboutModal()" class="w-full py-2.5 bg-sky-700 hover:bg-sky-800 text-white rounded-2xl text-xs font-bold transition-colors shadow-sm cursor-pointer">
         Kapat
       </button>
     </div>
@@ -851,14 +808,25 @@
           <h3 id="detailModalTitle" class="font-extrabold text-sm text-[#0f3e2e]">Vakit Detayı</h3>
           <p id="detailModalSub" class="text-[11px] text-slate-500">Açıklama</p>
         </div>
-        <span id="detailModalTotal" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">--</span>
+        <span id="detailModalTotal" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-sky-400/15 text-sky-200">--</span>
       </div>
 
       <p id="detailModalDesc" class="text-[11px] text-slate-600 leading-snug"></p>
 
       <div class="space-y-1.5 pt-1" id="detailModalRakahs"></div>
 
-      <button onclick="app.closePrayerDetail()" class="w-full py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 rounded-2xl text-xs font-bold transition-colors">
+      <label class="flex items-center justify-between gap-3 p-2.5 rounded-2xl bg-slate-800/40 text-xs cursor-pointer">
+        <span class="min-w-0">
+          <span class="font-bold text-slate-100 block">Bu vakitte bildir</span>
+          <span id="detailNotifHint" class="text-[10px] text-slate-400 block leading-snug"></span>
+        </span>
+        <span class="relative inline-flex items-center shrink-0">
+          <input type="checkbox" id="detailNotifToggle" onchange="app.toggleSoundFromDetail(this.checked)" class="sr-only peer">
+          <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
+        </span>
+      </label>
+
+      <button onclick="app.closePrayerDetail()" class="w-full py-2.5 bg-sky-500 hover:bg-sky-400 text-slate-950 rounded-2xl text-xs font-bold transition-colors">
         Kapat
       </button>
     </div>
@@ -866,18 +834,18 @@
 
   <!-- MODAL: Yeni Güncelleme Bulundu Ekranı (Changelog & Tek Dokunuşla Yükle) -->
   <div id="updateFoundModal" class="hidden fixed inset-0 z-60 flex items-center justify-center p-4 modal-overlay transition-all duration-300">
-    <div class="bg-white rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-4 border border-emerald-900/10">
+    <div class="bg-white rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-4 border border-sky-900/10">
       
       <!-- Tepe: İkon, Başlık ve Kapat -->
       <div class="flex items-start justify-between">
         <div class="flex items-center gap-3">
-          <div class="w-11 h-11 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl shadow-xs">
+          <div class="w-11 h-11 rounded-2xl bg-sky-100 flex items-center justify-center text-2xl shadow-xs">
             🚀
           </div>
           <div>
             <h3 class="font-extrabold text-base text-[#0f3e2e] leading-tight">Yeni Güncelleme Mevcut!</h3>
             <div class="flex items-center gap-2 mt-1">
-              <span id="updateModalNewTag" class="text-[11px] font-mono font-bold bg-emerald-700 text-white px-2.5 py-0.5 rounded-full">v2.3 • Seher</span>
+              <span id="updateModalNewTag" class="text-[11px] font-mono font-bold bg-sky-700 text-white px-2.5 py-0.5 rounded-full">v2.3 • Seher</span>
               <span class="text-[10px] font-semibold text-slate-400">Mevcut: v2.3 • Seher</span>
             </div>
           </div>
@@ -887,10 +855,10 @@
 
       <!-- Değişiklik Listesi (Changelog Kutusu) -->
       <div class="space-y-1.5">
-        <div class="text-[11px] font-black text-[#52796f] uppercase tracking-wider flex items-center gap-1.5">
+        <div class="text-[11px] font-black text-[#64748b] uppercase tracking-wider flex items-center gap-1.5">
           <span>✨ Neler Yeni?</span>
         </div>
-        <div id="updateModalChangelog" class="max-h-52 overflow-y-auto bg-emerald-50/50 border border-emerald-200/70 rounded-2xl p-3 text-xs text-[#0f3e2e] space-y-1.5 leading-relaxed">
+        <div id="updateModalChangelog" class="max-h-52 overflow-y-auto bg-slate-800/40 border border-sky-400/20 rounded-2xl p-3 text-xs text-slate-200 space-y-1.5 leading-relaxed">
           <!-- Dinamik değişiklik maddeleri listelenecek -->
         </div>
       </div>
@@ -898,9 +866,9 @@
       <!-- İndirme İlerleme Alanı (İndirme başladığında açılır) -->
       <div id="modalUpdateProgressArea" class="hidden space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
         <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
-          <div id="modalUpdateProgressBar" class="bg-emerald-600 h-full rounded-full transition-all duration-150" style="width: 0%;"></div>
+          <div id="modalUpdateProgressBar" class="bg-sky-600 h-full rounded-full transition-all duration-150" style="width: 0%;"></div>
         </div>
-        <div id="modalUpdateProgressStatus" class="text-[11px] font-bold text-emerald-800 text-center">İndiriliyor... %0</div>
+        <div id="modalUpdateProgressStatus" class="text-[11px] font-bold text-sky-800 text-center">İndiriliyor... %0</div>
       </div>
 
       <!-- Butonlar: Şimdi Güncelle & Daha Sonra -->
@@ -908,7 +876,7 @@
         <button onclick="app.closeUpdateFoundModal()" class="flex-1 py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl text-xs font-bold transition-all cursor-pointer">
           Daha Sonra
         </button>
-        <button id="modalBtnStartUpdate" onclick="app.startUpdateDownloadFromModal()" class="flex-[1.5] py-2.5 px-3 bg-[#1b4332] hover:bg-[#2d6a4f] active:scale-95 text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer">
+        <button id="modalBtnStartUpdate" onclick="app.startUpdateDownloadFromModal()" class="flex-[1.5] py-2.5 px-3 bg-[#12304a] hover:bg-[#1d4e75] active:scale-95 text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer">
           <span>⚡</span>
           <span>Şimdi Güncelle</span>
         </button>
@@ -922,14 +890,14 @@
     
     <!-- Üst Bar: Geri Dön Butonu & Atla / Sürüm -->
     <div class="px-5 pt-5 pb-2 flex items-center justify-between shrink-0">
-      <button id="onboardingBackBtn" onclick="app.prevOnboardingStep()" class="invisible w-9 h-9 rounded-full bg-white/80 dark:bg-emerald-950/60 border border-emerald-900/10 dark:border-emerald-500/20 flex items-center justify-center text-[#0f3e2e] dark:text-emerald-300 shadow-2xs hover:bg-white active:scale-90 transition-all cursor-pointer" title="Geri">
+      <button id="onboardingBackBtn" onclick="app.prevOnboardingStep()" class="invisible w-9 h-9 rounded-full bg-white/80 dark:bg-sky-950/60 border border-sky-900/10 dark:border-sky-500/20 flex items-center justify-center text-[#0f3e2e] dark:text-sky-300 shadow-2xs hover:bg-white active:scale-90 transition-all cursor-pointer" title="Geri">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
         </svg>
       </button>
       <div class="flex items-center gap-2">
-        <span class="text-[11px] font-mono font-bold bg-emerald-100/90 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 px-2.5 py-0.5 rounded-full">v2.3 • Seher</span>
-        <button id="onboardingSkipBtn" onclick="app.closeOnboarding(true)" class="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-emerald-300 px-2 py-1 transition-colors cursor-pointer">
+        <span class="text-[11px] font-mono font-bold bg-sky-100/90 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 px-2.5 py-0.5 rounded-full">v2.3 • Seher</span>
+        <button id="onboardingSkipBtn" onclick="app.closeOnboarding(true)" class="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-sky-300 px-2 py-1 transition-colors cursor-pointer">
           Atla
         </button>
       </div>
@@ -942,21 +910,21 @@
       <div id="onboardingStep-1" class="onboarding-step-pane flex flex-col items-center text-center my-auto">
         <!-- Logo Kartı -->
         <div class="relative mb-6">
-          <div class="absolute -inset-2 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-3xl blur-lg opacity-30 animate-pulse"></div>
-          <div class="relative w-28 h-28 rounded-3xl bg-gradient-to-br from-[#1b4332] via-[#143628] to-[#0a2217] shadow-xl border border-emerald-500/30 flex items-center justify-center p-3">
+          <div class="absolute -inset-2 bg-gradient-to-r from-sky-500 to-teal-400 rounded-3xl blur-lg opacity-30 animate-pulse"></div>
+          <div class="relative w-28 h-28 rounded-3xl bg-gradient-to-br from-[#12304a] via-[#132038] to-[#0b1220] shadow-xl border border-sky-500/30 flex items-center justify-center p-3">
             <img src="assets/icons/logo.svg" alt="Tam Vakti Logo" class="w-20 h-20 object-contain drop-shadow-md">
           </div>
         </div>
 
-        <h2 class="text-2xl font-black text-[#0f3e2e] dark:text-emerald-100 leading-tight">
+        <h2 class="text-2xl font-black text-[#0f3e2e] dark:text-sky-100 leading-tight">
           Tam Vakti'ne Hoş Geldiniz
         </h2>
-        <p class="text-sm font-semibold text-slate-600 dark:text-emerald-200/90 mt-2 leading-relaxed">
+        <p class="text-sm font-semibold text-slate-600 dark:text-sky-200/90 mt-2 leading-relaxed">
           İbadet uygulaması nasıl olmalıysa, öyle.
         </p>
 
         <!-- Öne Çıkan Özellikler -->
-        <div class="inline-flex items-center gap-1.5 bg-emerald-100/80 dark:bg-emerald-900/40 text-emerald-900 dark:text-emerald-300 text-[11px] font-bold px-3 py-1.5 rounded-full border border-emerald-200/60 dark:border-emerald-600/30 mt-4">
+        <div class="inline-flex items-center gap-1.5 bg-sky-100/80 dark:bg-sky-900/40 text-sky-900 dark:text-sky-300 text-[11px] font-bold px-3 py-1.5 rounded-full border border-sky-200/60 dark:border-sky-600/30 mt-4">
           <span>Tamamen ücretsiz</span>
           <span class="opacity-40">•</span>
           <span>Reklamsız</span>
@@ -973,19 +941,19 @@
 
       <!-- ADIM 2: NEREDESİNİZ? (KONUM BELİRLEME) -->
       <div id="onboardingStep-2" class="onboarding-step-pane hidden flex flex-col items-center text-center my-auto">
-        <h2 class="text-2xl font-black text-[#0f3e2e] dark:text-emerald-100 leading-tight">
+        <h2 class="text-2xl font-black text-[#0f3e2e] dark:text-sky-100 leading-tight">
           Neredesiniz?
         </h2>
-        <p class="text-xs font-semibold text-slate-600 dark:text-emerald-200/80 mt-2 max-w-xs leading-relaxed">
+        <p class="text-xs font-semibold text-slate-600 dark:text-sky-200/80 mt-2 max-w-xs leading-relaxed">
           Size doğru namaz vakitlerini hesaplamak ve kıble yönünü bulmak için konumunuza ihtiyacımız var.
         </p>
 
         <!-- Radar Animasyon Alanı -->
         <div class="relative w-44 h-44 mx-auto flex items-center justify-center my-6">
-          <div class="radar-circle-1 absolute inset-0 rounded-full border-2 border-emerald-500/30 bg-emerald-500/5"></div>
-          <div class="radar-circle-2 absolute inset-4 rounded-full border-2 border-emerald-400/40 bg-emerald-400/10"></div>
+          <div class="radar-circle-1 absolute inset-0 rounded-full border-2 border-sky-500/30 bg-sky-500/5"></div>
+          <div class="radar-circle-2 absolute inset-4 rounded-full border-2 border-sky-400/40 bg-sky-400/10"></div>
           
-          <div class="relative z-10 w-20 h-20 rounded-full bg-emerald-600 dark:bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-600/30">
+          <div class="relative z-10 w-20 h-20 rounded-full bg-sky-600 dark:bg-sky-500 text-white flex items-center justify-center shadow-lg shadow-sky-600/30">
             <svg class="w-10 h-10 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="3"/>
               <circle cx="12" cy="12" r="8"/>
@@ -998,36 +966,36 @@
         </div>
 
         <!-- Seçili Konum Hapı -->
-        <div id="onboardingLocationBadge" class="flex items-center gap-1.5 bg-white/90 dark:bg-emerald-950/60 border border-emerald-900/10 dark:border-emerald-500/20 text-[#0f3e2e] dark:text-emerald-200 px-3.5 py-1.5 rounded-full text-xs font-bold shadow-2xs opacity-75">
-          <span class="text-emerald-600">📍</span>
+        <div id="onboardingLocationBadge" class="flex items-center gap-1.5 bg-white/90 dark:bg-sky-950/60 border border-sky-900/10 dark:border-sky-500/20 text-[#0f3e2e] dark:text-sky-200 px-3.5 py-1.5 rounded-full text-xs font-bold shadow-2xs opacity-75">
+          <span class="text-sky-600">📍</span>
           <span>Seçili:</span>
-          <span id="onboardingCurrentCity" class="text-emerald-700 dark:text-emerald-400 font-extrabold">Henüz seçilmedi</span>
+          <span id="onboardingCurrentCity" class="text-sky-700 dark:text-sky-400 font-extrabold">Henüz seçilmedi</span>
         </div>
       </div>
 
       <!-- ADIM 3: BİLDİRİMLER (HİÇBİR VAKTİ KAÇIRMAYIN) -->
       <div id="onboardingStep-3" class="onboarding-step-pane hidden flex flex-col items-center text-center my-auto">
-        <h2 class="text-2xl font-black text-[#0f3e2e] dark:text-emerald-100 leading-tight">
+        <h2 class="text-2xl font-black text-[#0f3e2e] dark:text-sky-100 leading-tight">
           Hiçbir vakti kaçırmayın
         </h2>
-        <p class="text-xs font-semibold text-slate-600 dark:text-emerald-200/80 mt-2 max-w-xs leading-relaxed">
+        <p class="text-xs font-semibold text-slate-600 dark:text-sky-200/80 mt-2 max-w-xs leading-relaxed">
           Her vakit girdiğinde size haber verelim. İzin verince hangi vakitlerin ve hangi sesin geleceğini seçersiniz.
         </p>
 
         <!-- Bildirim Önizleme Kartı (Mockup Banner) -->
-        <div class="w-full bg-white/95 dark:bg-[#12281e] border border-emerald-900/10 dark:border-emerald-500/20 rounded-2xl p-3.5 shadow-md shadow-emerald-950/5 text-left my-6 space-y-2">
+        <div class="w-full bg-white/95 dark:bg-[#111a30] border border-sky-900/10 dark:border-sky-500/20 rounded-2xl p-3.5 shadow-md shadow-sky-950/5 text-left my-6 space-y-2">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <div class="w-7 h-7 rounded-lg bg-emerald-800 flex items-center justify-center text-white text-xs shadow-2xs">
+              <div class="w-7 h-7 rounded-lg bg-sky-800 flex items-center justify-center text-white text-xs shadow-2xs">
                 <span>🕌</span>
               </div>
-              <div class="text-xs font-bold text-[#0f3e2e] dark:text-emerald-100">
+              <div class="text-xs font-bold text-[#0f3e2e] dark:text-sky-100">
                 Öğle • <span id="onboardingNotifCity">Vakit Bildirimi</span>
               </div>
             </div>
             <span class="text-[10px] font-semibold text-slate-400">Şimdi</span>
           </div>
-          <p class="text-xs text-slate-600 dark:text-emerald-200/90 leading-relaxed font-medium pl-9">
+          <p class="text-xs text-slate-600 dark:text-sky-200/90 leading-relaxed font-medium pl-9">
             "Sübhânallâhi ve bihamdihî — Allah'ı hamd ile tesbih ederim"
           </p>
         </div>
@@ -1035,61 +1003,61 @@
 
       <!-- ADIM 4: WIDGET'LAR & CANLI TAKİP -->
       <div id="onboardingStep-4" class="onboarding-step-pane hidden flex flex-col items-center text-center my-auto">
-        <h2 class="text-2xl font-black text-[#0f3e2e] dark:text-emerald-100 leading-tight">
+        <h2 class="text-2xl font-black text-[#0f3e2e] dark:text-sky-100 leading-tight">
           Widget'lar & Canlı Takip
         </h2>
-        <p class="text-xs font-semibold text-slate-600 dark:text-emerald-200/80 mt-2 max-w-xs leading-relaxed">
+        <p class="text-xs font-semibold text-slate-600 dark:text-sky-200/80 mt-2 max-w-xs leading-relaxed">
           Vakitleri uygulamayı açmadan kilit ekranında ve ana ekranında gör.
         </p>
 
         <!-- Widget Önizleme Kartı -->
-        <div class="w-full bg-white/95 dark:bg-[#12281e] border border-emerald-900/10 dark:border-emerald-500/20 rounded-2xl p-4 shadow-md text-left my-4 space-y-3">
+        <div class="w-full bg-white/95 dark:bg-[#111a30] border border-sky-900/10 dark:border-sky-500/20 rounded-2xl p-4 shadow-md text-left my-4 space-y-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="text-lg">⏳</span>
-              <span class="text-xs font-extrabold text-[#0f3e2e] dark:text-emerald-100">İkindi Vakti'ne</span>
+              <span class="text-xs font-extrabold text-[#0f3e2e] dark:text-sky-100">İkindi Vakti'ne</span>
             </div>
-            <span class="text-[10px] font-mono font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded-full">Kalan</span>
+            <span class="text-[10px] font-mono font-bold bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 px-2 py-0.5 rounded-full">Kalan</span>
           </div>
           <div class="text-center py-1">
-            <div class="font-mono text-3xl font-black text-[#1b4332] dark:text-emerald-300 tracking-tight">02:45:10</div>
+            <div class="font-mono text-3xl font-black text-[#12304a] dark:text-sky-300 tracking-tight">02:45:10</div>
             <div class="text-[11px] font-semibold text-slate-400 mt-0.5">Hedef Vakit: 15:42</div>
           </div>
         </div>
 
         <!-- İpucu Kutusu -->
-        <div class="w-full flex items-start gap-2.5 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-600/20 rounded-xl p-2.5 text-left text-[11px] text-[#0f3e2e] dark:text-emerald-200">
+        <div class="w-full flex items-start gap-2.5 bg-sky-50/80 dark:bg-sky-950/40 border border-sky-200/80 dark:border-sky-600/20 rounded-xl p-2.5 text-left text-[11px] text-[#0f3e2e] dark:text-sky-200">
           <span class="text-base leading-none shrink-0">📱</span>
           <span class="leading-relaxed">Ana ekranda boş bir yere basılı tutun, <strong>Widget'lar</strong>'a dokunun ve <strong>Tam Vakti</strong>'ni seçin.</span>
         </div>
 
         <!-- Canlı Geri Sayım Bildirimi Switch -->
-        <div class="w-full mt-3 pt-2 border-t border-emerald-900/10 dark:border-emerald-500/10 flex items-center justify-between">
+        <div class="w-full mt-3 pt-2 border-t border-sky-900/10 dark:border-sky-500/10 flex items-center justify-between">
           <div class="text-left">
-            <div class="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-emerald-400">Canlı Takip</div>
-            <div class="text-xs font-bold text-[#0f3e2e] dark:text-emerald-100">Kilit ekranında canlı sayaç</div>
+            <div class="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-sky-400">Canlı Takip</div>
+            <div class="text-xs font-bold text-[#0f3e2e] dark:text-sky-100">Kilit ekranında canlı sayaç</div>
           </div>
           <label class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" id="onboardingOngoingToggle" onchange="app.toggleOngoingNotification(this.checked)" class="sr-only peer" checked>
-            <div class="w-11 h-6 bg-slate-200 dark:bg-emerald-950/80 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+            <div class="w-11 h-6 bg-slate-200 dark:bg-sky-950/80 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
           </label>
         </div>
       </div>
 
       <!-- ADIM 5: VAKİT HESAPLAMA AYARLARI -->
       <div id="onboardingStep-5" class="onboarding-step-pane hidden flex flex-col items-center text-center my-auto">
-        <h2 class="text-2xl font-black text-[#0f3e2e] dark:text-emerald-100 leading-tight">
+        <h2 class="text-2xl font-black text-[#0f3e2e] dark:text-sky-100 leading-tight">
           Vakit Hesaplama Ayarları
         </h2>
-        <p class="text-xs font-semibold text-slate-600 dark:text-emerald-200/80 mt-1.5 max-w-xs leading-relaxed">
+        <p class="text-xs font-semibold text-slate-600 dark:text-sky-200/80 mt-1.5 max-w-xs leading-relaxed">
           Hesaplama yöntemini, temkin süresini ve kerahat saatlerini buradan ayarlayabilirsiniz.
         </p>
 
         <!-- Diyanet Onay Kartı -->
-        <div class="w-full bg-white/95 dark:bg-[#12281e] border border-emerald-900/10 dark:border-emerald-500/20 rounded-2xl p-3 text-left my-3 space-y-1">
+        <div class="w-full bg-white/95 dark:bg-[#111a30] border border-sky-900/10 dark:border-sky-500/20 rounded-2xl p-3 text-left my-3 space-y-1">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-black text-[#0f3e2e] dark:text-emerald-100">Türkiye (Diyanet)</span>
-            <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded-full">Önerilen</span>
+            <span class="text-xs font-black text-[#0f3e2e] dark:text-sky-100">Türkiye (Diyanet)</span>
+            <span class="text-[10px] font-bold text-sky-700 dark:text-sky-300 bg-sky-100 dark:bg-sky-900/60 px-2 py-0.5 rounded-full">Önerilen</span>
           </div>
           <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
             Konumunuza göre Türkiye (Diyanet) takvimi kullanılacak; vakitler resmi takvimle aynı hesaplanır.
@@ -1098,33 +1066,33 @@
 
         <!-- Seçenek Satırları -->
         <div class="w-full space-y-2 text-left">
-          <div class="flex items-center justify-between p-2 rounded-xl bg-white/60 dark:bg-emerald-950/30 border border-emerald-900/5 dark:border-emerald-500/10">
-            <div class="flex items-center gap-2 text-xs font-bold text-[#0f3e2e] dark:text-emerald-100">
+          <div class="flex items-center justify-between p-2 rounded-xl bg-white/60 dark:bg-sky-950/30 border border-sky-900/5 dark:border-sky-500/10">
+            <div class="flex items-center gap-2 text-xs font-bold text-[#0f3e2e] dark:text-sky-100">
               <span>⏱️</span>
               <span>İhtiyat Dakikası (Temkin)</span>
             </div>
-            <span class="text-[11px] font-semibold text-slate-500 dark:text-emerald-300">Kapalı (0 dk)</span>
+            <span class="text-[11px] font-semibold text-slate-500 dark:text-sky-300">Kapalı (0 dk)</span>
           </div>
 
-          <div class="flex items-center justify-between p-2 rounded-xl bg-white/60 dark:bg-emerald-950/30 border border-emerald-900/5 dark:border-emerald-500/10">
-            <div class="flex items-center gap-2 text-xs font-bold text-[#0f3e2e] dark:text-emerald-100">
+          <div class="flex items-center justify-between p-2 rounded-xl bg-white/60 dark:bg-sky-950/30 border border-sky-900/5 dark:border-sky-500/10">
+            <div class="flex items-center gap-2 text-xs font-bold text-[#0f3e2e] dark:text-sky-100">
               <span>⌛</span>
               <span>Kerahat Vakitleri Uyarısı</span>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" id="onboardingKerahatToggle" class="sr-only peer" checked>
-              <div class="w-9 h-5 bg-slate-200 dark:bg-emerald-950/80 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+              <div class="w-9 h-5 bg-slate-200 dark:bg-sky-950/80 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-600"></div>
             </label>
           </div>
 
-          <div class="flex items-center justify-between p-2 rounded-xl bg-white/60 dark:bg-emerald-950/30 border border-emerald-900/5 dark:border-emerald-500/10">
-            <div class="flex items-center gap-2 text-xs font-bold text-[#0f3e2e] dark:text-emerald-100">
+          <div class="flex items-center justify-between p-2 rounded-xl bg-white/60 dark:bg-sky-950/30 border border-sky-900/5 dark:border-sky-500/10">
+            <div class="flex items-center gap-2 text-xs font-bold text-[#0f3e2e] dark:text-sky-100">
               <span>🔕</span>
               <span>Namazda Otomatik Sessiz Mod</span>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" id="onboardingSilentToggle" onchange="app.toggleAutoSilent(this.checked)" class="sr-only peer" checked>
-              <div class="w-9 h-5 bg-slate-200 dark:bg-emerald-950/80 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+              <div class="w-9 h-5 bg-slate-200 dark:bg-sky-950/80 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-600"></div>
             </label>
           </div>
         </div>
@@ -1144,50 +1112,50 @@
         
         <!-- Adım 1 Butonları -->
         <div id="onboardingBtnGroup-1" class="space-y-2">
-          <button onclick="app.goToOnboardingStep(2)" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#059669] to-[#10b981] hover:from-[#047857] hover:to-[#059669] text-white font-extrabold text-sm shadow-md shadow-emerald-900/20 active:scale-98 transition-all cursor-pointer">
+          <button onclick="app.goToOnboardingStep(2)" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] hover:from-[#0284c7] hover:to-[#0ea5e9] text-white font-extrabold text-sm shadow-md shadow-sky-900/20 active:scale-98 transition-all cursor-pointer">
             Başla
           </button>
           <div class="text-[11px] text-slate-400 dark:text-slate-500 text-center">
-            Devam ederek <button onclick="app.openAboutModal()" class="text-emerald-700 dark:text-emerald-400 underline font-semibold cursor-pointer">Gizlilik Politikası</button>'nı kabul etmiş olursunuz.
+            Devam ederek <button onclick="app.openAboutModal()" class="text-sky-700 dark:text-sky-400 underline font-semibold cursor-pointer">Gizlilik Politikası</button>'nı kabul etmiş olursunuz.
           </div>
         </div>
 
         <!-- Adım 2 Butonları -->
         <div id="onboardingBtnGroup-2" class="hidden space-y-2">
-          <button id="onboardingGpsBtn" onclick="app.onboardingLocateWithGPS()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#059669] to-[#10b981] hover:from-[#047857] hover:to-[#059669] text-white font-extrabold text-sm shadow-md shadow-emerald-900/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <button id="onboardingGpsBtn" onclick="app.onboardingLocateWithGPS()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] hover:from-[#0284c7] hover:to-[#0ea5e9] text-white font-extrabold text-sm shadow-md shadow-sky-900/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer">
             <span>📍</span>
             <span>Konumumu Otomatik Bul</span>
           </button>
-          <button onclick="app.openLocationModal()" class="w-full py-3 rounded-2xl bg-white/80 dark:bg-emerald-950/60 border border-emerald-900/10 dark:border-emerald-500/20 text-[#0f3e2e] dark:text-emerald-100 font-extrabold text-xs shadow-2xs hover:bg-white active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <button onclick="app.openLocationModal()" class="w-full py-3 rounded-2xl bg-white/80 dark:bg-sky-950/60 border border-sky-900/10 dark:border-sky-500/20 text-[#0f3e2e] dark:text-sky-100 font-extrabold text-xs shadow-2xs hover:bg-white active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer">
             <span>🔍</span>
             <span>Şehri ve İlçeyi Elle Seç</span>
           </button>
-          <button id="onboardingStep2ContinueBtn" onclick="app.goToOnboardingStep(3)" class="hidden w-full py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline cursor-pointer">
+          <button id="onboardingStep2ContinueBtn" onclick="app.goToOnboardingStep(3)" class="hidden w-full py-2 text-xs font-bold text-sky-700 dark:text-sky-300 hover:underline cursor-pointer">
             Seçili Konum ile İlerle →
           </button>
         </div>
 
         <!-- Adım 3 Butonları -->
         <div id="onboardingBtnGroup-3" class="hidden space-y-2">
-          <button onclick="app.onboardingEnableNotifications()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#059669] to-[#10b981] hover:from-[#047857] hover:to-[#059669] text-white font-extrabold text-sm shadow-md shadow-emerald-900/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <button onclick="app.onboardingEnableNotifications()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] hover:from-[#0284c7] hover:to-[#0ea5e9] text-white font-extrabold text-sm shadow-md shadow-sky-900/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer">
             <span>🔔</span>
             <span>Bildirimleri Aç</span>
           </button>
-          <button onclick="app.goToOnboardingStep(4)" class="w-full py-2.5 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-emerald-200 transition-colors cursor-pointer">
+          <button onclick="app.goToOnboardingStep(4)" class="w-full py-2.5 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-sky-200 transition-colors cursor-pointer">
             Daha Sonra
           </button>
         </div>
 
         <!-- Adım 4 Butonları -->
         <div id="onboardingBtnGroup-4" class="hidden space-y-2">
-          <button onclick="app.goToOnboardingStep(5)" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#059669] to-[#10b981] hover:from-[#047857] hover:to-[#059669] text-white font-extrabold text-sm shadow-md shadow-emerald-900/20 active:scale-98 transition-all cursor-pointer">
+          <button onclick="app.goToOnboardingStep(5)" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] hover:from-[#0284c7] hover:to-[#0ea5e9] text-white font-extrabold text-sm shadow-md shadow-sky-900/20 active:scale-98 transition-all cursor-pointer">
             Devam
           </button>
         </div>
 
         <!-- Adım 5 Butonları -->
         <div id="onboardingBtnGroup-5" class="hidden space-y-2">
-          <button onclick="app.completeOnboarding()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#059669] to-[#10b981] hover:from-[#047857] hover:to-[#059669] text-white font-extrabold text-sm shadow-md shadow-emerald-900/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <button onclick="app.completeOnboarding()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] hover:from-[#0284c7] hover:to-[#0ea5e9] text-white font-extrabold text-sm shadow-md shadow-sky-900/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer">
             <span>🕌</span>
             <span>Uygulamaya Başla</span>
           </button>
@@ -1209,7 +1177,7 @@
   </div>
 
   <!-- IN-APP TOAST BİLDİRİMİ -->
-  <div id="appToast" class="fixed top-5 left-1/2 -translate-x-1/2 z-70 max-w-[90%] bg-[#0f3e2e]/95 backdrop-blur-md text-white px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2.5 text-xs font-bold transition-all duration-300 opacity-0 pointer-events-none -translate-y-4">
+  <div id="appToast" class="fixed top-5 left-1/2 -translate-x-1/2 z-70 max-w-[90%] bg-[#0c2340]/95 border border-sky-400/20 backdrop-blur-md text-white px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2.5 text-xs font-bold transition-all duration-300 opacity-0 pointer-events-none -translate-y-4">
     <span id="toastIcon" class="text-base shrink-0">✓</span>
     <span id="toastMsg" class="leading-tight">İşlem tamamlandı.</span>
   </div>

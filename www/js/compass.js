@@ -86,13 +86,13 @@ class QiblaCompass {
     if (window.AndroidBridge && window.AndroidBridge.startCompass) {
       window.AndroidBridge.startCompass(this.userLat, this.userLon);
       if (this.qiblaSensorBadgeEl) {
-        this.qiblaSensorBadgeEl.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>Donanım Sensörü</span>`;
+        this.qiblaSensorBadgeEl.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span><span>Donanım Sensörü</span>`;
       }
     } else if (window.DeviceOrientationEvent) {
       // Web Fallback (Tarayıcı ortamı için)
       this.bindWebOrientation();
       if (this.qiblaSensorBadgeEl) {
-        this.qiblaSensorBadgeEl.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>Web Sensörü</span>`;
+        this.qiblaSensorBadgeEl.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span><span>Web Sensörü</span>`;
       }
     }
   }

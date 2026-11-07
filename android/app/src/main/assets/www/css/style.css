@@ -1,5 +1,4 @@
 /* Tam Vakti - Minimalist Adaçayı Yeşili & Sade Mihrap Tasarımı (Stitch Nocturne Emerald) */
-@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Serif:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 
 :root {
   --bg-sage: #090e1a;
@@ -131,7 +130,7 @@ html, body {
   position: relative;
   width: 100%;
   background: rgba(255, 255, 255, 0.45);
-  border: 1.5px solid rgba(45, 106, 79, 0.12);
+  border: 1.5px solid rgba(56, 189, 248, 0.12);
   border-radius: 120px 120px 32px 32px;
   padding: 24px 14px 18px 14px;
   box-shadow: inset 0 2px 12px rgba(255, 255, 255, 0.8), 0 4px 20px rgba(0, 0, 0, 0.02);
@@ -146,7 +145,7 @@ html, body {
 .next-vakit-label {
   font-size: 13px;
   font-weight: 700;
-  color: #3b5a45;
+  color: #3d4c58;
   letter-spacing: -0.01em;
   margin-bottom: 2px;
 }
@@ -162,10 +161,10 @@ html, body {
   line-height: 1.1;
 }
 .big-countdown .cd-main {
-  color: #1b4332;
+  color: #12304a;
 }
 .big-countdown .cd-sec {
-  color: #74a892;
+  color: #7890a4;
   margin-left: 1px;
 }
 
@@ -178,13 +177,13 @@ html, body {
   position: relative;
   width: 100%;
   height: 5px;
-  background-color: #d8e9df;
+  background-color: #d9e1e8;
   border-radius: 9999px;
   overflow: hidden;
 }
 .prayer-progress-fill {
   height: 100%;
-  background-color: #2d6a4f;
+  background-color: #1d4e75;
   border-radius: 9999px;
   transition: width 0.3s ease;
   position: relative;
@@ -219,7 +218,7 @@ html, body {
   align-items: center;
   font-size: 11px;
   font-weight: 700;
-  color: #6c8a75;
+  color: #6e7c88;
   margin-top: 5px;
   padding: 0 1px;
 }
@@ -247,19 +246,19 @@ html, body {
 
 /* 2. Tek Odaklı Sıradaki Vakit: Zümrüt Vurgulu Dolgu, Yeşil Çerçeve ve Rozet */
 .prayer-card-item.next {
-  border-color: #2d6a4f;
-  background: #dbeee2;
+  border-color: #1d4e75;
+  background: #dce5ed;
   opacity: 1 !important;
-  box-shadow: 0 3px 14px rgba(45, 106, 79, 0.15);
+  box-shadow: 0 3px 14px rgba(56, 189, 248, 0.15);
 }
 
 .prayer-card-item.next .card-row-name {
-  color: #1b4332;
+  color: #12304a;
   font-weight: 900;
 }
 
 .prayer-card-item.next .card-row-time {
-  color: #1b4332 !important;
+  color: #12304a !important;
   font-weight: 900;
 }
 
@@ -267,7 +266,7 @@ html, body {
 .next-pill {
   font-size: 10px;
   font-weight: 800;
-  background-color: #2d6a4f;
+  background-color: #1d4e75;
   color: #ffffff;
   padding: 1.5px 7px;
   border-radius: 9999px;
@@ -281,8 +280,8 @@ html, body {
   font-size: 10px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-weight: 700;
-  background-color: rgba(45, 106, 79, 0.12);
-  color: #1b4332;
+  background-color: rgba(56, 189, 248, 0.12);
+  color: #12304a;
   padding: 2px 6px;
   border-radius: 6px;
   letter-spacing: -0.02em;
@@ -318,12 +317,12 @@ html, body {
 .card-row-name {
   font-size: 14.5px;
   font-weight: 700;
-  color: #1f3d2b;
+  color: #212f3b;
 }
 
 .now-pill {
   display: inline-block;
-  background: #2d6a4f;
+  background: #1d4e75;
   color: #ffffff;
   font-size: 9.5px;
   font-weight: 800;
@@ -366,7 +365,7 @@ html, body {
   transform: scale(0.9);
 }
 .sound-icon-on {
-  color: #1b4332;
+  color: #12304a;
 }
 .sound-icon-off {
   color: #475569; /* Yüksek kontrastlı okunur gri */
@@ -390,7 +389,7 @@ html, body {
 
 /* Bütünleşik Kapsül Menü */
 .unified-dock-capsule {
-  background-color: rgba(220, 238, 226, 0.92);
+  background-color: rgba(221, 230, 237, 0.92);
   backdrop-filter: blur(12px);
   padding: 4px;
   border-radius: 9999px;
@@ -402,7 +401,7 @@ html, body {
 }
 
 .segment-container {
-  background-color: rgba(220, 238, 226, 0.92);
+  background-color: rgba(221, 230, 237, 0.92);
   backdrop-filter: blur(12px);
   padding: 4px;
   border-radius: 9999px;
@@ -452,7 +451,7 @@ html, body {
 /* Kıble Pusulası Görünümü */
 .qibla-view-container {
   background: rgba(255, 255, 255, 0.65);
-  border: 1.5px solid rgba(45, 106, 79, 0.12);
+  border: 1.5px solid rgba(56, 189, 248, 0.12);
   border-radius: 40px;
   padding: 28px 20px;
   text-align: center;
@@ -465,7 +464,7 @@ html, body {
 
 /* Modal Stilleri */
 .modal-overlay {
-  background-color: rgba(15, 62, 46, 0.4);
+  background-color: rgba(19, 40, 58, 0.4);
   backdrop-filter: blur(6px);
 }
 
@@ -477,7 +476,7 @@ html, body {
   width: 9px;
   height: 9px;
   background-color: #ef4444;
-  border: 1.5px solid #f2f7f4;
+  border: 1.5px solid #f2f5f7;
   border-radius: 9999px;
   box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
   animation: pulse-badge 1.8s infinite ease-in-out;
@@ -497,8 +496,8 @@ html, body {
 
 /* Yenilenmiş Modern Kıble Pusulası */
 .qibla-aligned {
-  border-color: #10b981 !important;
-  box-shadow: 0 0 25px rgba(16, 185, 129, 0.45), inset 0 0 15px rgba(16, 185, 129, 0.15);
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.45), inset 0 0 15px rgba(56, 189, 248, 0.15);
 }
 
 .qibla-needle-modern {
@@ -517,7 +516,7 @@ html, body {
   height: 0;
   border-left: 7px solid transparent;
   border-right: 7px solid transparent;
-  border-bottom: 78px solid #1b4332;
+  border-bottom: 78px solid #12304a;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
@@ -525,7 +524,7 @@ html, body {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #1b4332;
+  background: #12304a;
   border: 3px solid #ffffff;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   z-index: 10;
@@ -545,14 +544,14 @@ html, body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background-color: #d1fae5;
-  color: #065f46;
+  background-color: #e0f2fe;
+  color: #0d3658;
   font-size: 13px;
   font-weight: 800;
   padding: 6px 16px;
   border-radius: 9999px;
   margin-top: 10px;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.25);
   animation: pulse-subtle 2s infinite ease-in-out;
 }
 
@@ -563,7 +562,7 @@ html, body {
 }
 .qibla-mode-btn.active {
   background: #ffffff !important;
-  color: #0f3e2e !important;
+  color: #13283a !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
@@ -581,9 +580,9 @@ html, body {
   transition: all 0.25s ease;
 }
 .qibla-guide-pill.guide-aligned {
-  background: #059669;
+  background: #0ea5e9;
   color: #ffffff;
-  box-shadow: 0 4px 15px rgba(5, 150, 105, 0.45);
+  box-shadow: 0 4px 15px rgba(16, 84, 139, 0.45);
   animation: pulse-subtle 1.5s infinite ease-in-out;
 }
 .qibla-guide-pill.guide-turn {
@@ -599,7 +598,7 @@ html, body {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  border: 1.5px dashed rgba(45, 106, 79, 0.4);
+  border: 1.5px dashed rgba(56, 189, 248, 0.4);
   background: rgba(255, 255, 255, 0.7);
   display: flex;
   align-items: center;
@@ -617,8 +616,8 @@ html, body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 .bubble-dot.bubble-centered {
-  background: #10b981 !important;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.9) !important;
+  background: #38bdf8 !important;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.9) !important;
 }
 
 /* Leaflet Harita Kapsayıcısı */
@@ -628,7 +627,7 @@ html, body {
   border-radius: 24px;
   overflow: hidden;
   box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);
-  border: 1.5px solid rgba(45, 106, 79, 0.15);
+  border: 1.5px solid rgba(56, 189, 248, 0.15);
 }
 .leaflet-container {
   font-family: inherit;
@@ -653,55 +652,55 @@ html, body {
 }
 
 /* =========================================================
-   KOYU TEMA (DARK MODE) - GECE & ADAÇAYI ZÜMRÜT PALETİ
+   KOYU TEMA (DARK MODE) - ARCTIC (LACİVERT & CAMGÖBEĞİ) PALETİ
    ========================================================= */
 
 html.dark {
-  --bg-sage: #0b1411;
-  --text-dark: #ecfdf5;
-  --text-muted: #8faea0;
-  --card-bg: #14241d;
-  --accent-green: #10b981;
+  --bg-sage: #090e1a;
+  --text-dark: #f1f5f9;
+  --text-muted: #94a3b8;
+  --card-bg: #0d1527;
+  --accent-green: #38bdf8;
   --active-blue: #60a5fa;
-  --border-subtle: rgba(52, 211, 153, 0.15);
+  --border-subtle: rgba(56, 189, 248, 0.15);
   color-scheme: dark;
 }
 
 html.dark,
 html.dark body {
-  background-color: #0b1411 !important;
-  color: #ecfdf5 !important;
+  background-color: #090e1a !important;
+  color: #f1f5f9 !important;
 }
 
 /* Sayfa ve Arka Plan */
 html.dark .minimal-app {
-  background-color: #0b1411;
+  background-color: #090e1a;
 }
 
 /* Üst Başlık (Header) */
 html.dark .location-pill {
-  background-color: #14241d !important;
-  color: #ecfdf5 !important;
-  border-color: rgba(52, 211, 153, 0.18) !important;
+  background-color: #0d1527 !important;
+  color: #f1f5f9 !important;
+  border-color: rgba(56, 189, 248, 0.18) !important;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
 }
 html.dark .location-pill svg {
-  color: #34d399 !important;
+  color: #38bdf8 !important;
 }
 
 html.dark .date-header-card {
-  background-color: rgba(20, 36, 29, 0.88) !important;
-  border-color: rgba(52, 211, 153, 0.18) !important;
+  background-color: rgba(21, 29, 35, 0.88) !important;
+  border-color: rgba(56, 189, 248, 0.18) !important;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
 }
 html.dark .date-header-card svg {
-  color: #34d399 !important;
+  color: #38bdf8 !important;
 }
 html.dark body {
-  background-color: #03170e !important;
-  color: #d0e8d8 !important;
+  background-color: #050e15 !important;
+  color: #d2dde6 !important;
   background-image: 
-    radial-gradient(circle at 50% 0%, rgba(104, 219, 169, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 50% 0%, rgba(113, 166, 210, 0.12) 0%, transparent 60%),
     radial-gradient(circle at 100% 100%, rgba(217, 119, 7, 0.08) 0%, transparent 50%),
     linear-gradient(to right, rgba(135, 148, 139, 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(135, 148, 139, 0.03) 1px, transparent 1px);
@@ -710,51 +709,51 @@ html.dark body {
 
 html.dark #miladiDateMain {
   font-family: 'Noto Serif', serif;
-  color: #f0fdf4 !important;
+  color: #f1f7fc !important;
 }
 html.dark #hicriDateSub {
-  color: #8faea0 !important;
+  color: #94a3b8 !important;
 }
 
 /* Mihrap Kubbesi (Nocturne Emerald Luminous Frame) */
 html.dark .mihrab-frame {
-  background: rgba(10, 31, 21, 0.78) !important;
+  background: rgba(12, 21, 29, 0.78) !important;
   backdrop-filter: blur(20px);
-  border: 1.5px solid rgba(104, 219, 169, 0.22) !important;
-  box-shadow: 0 0 32px -8px rgba(16, 185, 129, 0.25), 0 0 12px -2px rgba(251, 191, 36, 0.12) !important;
+  border: 1.5px solid rgba(113, 166, 210, 0.22) !important;
+  box-shadow: 0 0 32px -8px rgba(56, 189, 248, 0.25), 0 0 12px -2px rgba(251, 191, 36, 0.12) !important;
 }
 html.dark .next-vakit-label {
-  color: #68dba9 !important;
+  color: #7dd3fc !important;
   letter-spacing: 0.04em;
 }
 html.dark .big-countdown .cd-main {
   font-family: 'Noto Serif', serif;
-  color: #f0fdf4 !important;
+  color: #f1f7fc !important;
   letter-spacing: -0.02em;
 }
 html.dark .big-countdown .cd-sec {
   font-family: 'Noto Serif', serif;
-  color: #68dba9 !important;
+  color: #7dd3fc !important;
 }
 html.dark .prayer-progress-track {
-  background-color: #192e23 !important;
+  background-color: #1b242c !important;
 }
 html.dark .prayer-progress-fill {
-  background: linear-gradient(90deg, #25a475, #68dba9) !important;
+  background: linear-gradient(90deg, #2f6a9a, #7dd3fc) !important;
 }
 html.dark .prayer-progress-labels {
-  color: #8faea0 !important;
+  color: #94a3b8 !important;
 }
 
 /* Vakit Kartları (Nocturne Emerald Sacred Tiers) */
 html.dark .prayer-card-item {
-  background: rgba(10, 31, 21, 0.65) !important;
+  background: rgba(12, 21, 29, 0.65) !important;
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(16, 185, 129, 0.12) !important;
+  border: 1px solid rgba(56, 189, 248, 0.12) !important;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
 }
 html.dark .prayer-card-item .card-row-name {
-  color: #e2ebe5 !important;
+  color: #e3e7ea !important;
   font-weight: 700;
 }
 html.dark .prayer-card-item .card-row-time {
@@ -768,34 +767,34 @@ html.dark .prayer-card-item .card-arabic-sub {
 }
 html.dark .prayer-card-item.past {
   opacity: 0.35 !important;
-  background: rgba(6, 20, 14, 0.5) !important;
+  background: rgba(7, 14, 19, 0.5) !important;
 }
 html.dark .prayer-card-item.next {
-  background: linear-gradient(135deg, rgba(5, 150, 105, 0.28) 0%, rgba(10, 31, 21, 0.88) 100%) !important;
+  background: linear-gradient(135deg, rgba(16, 84, 139, 0.28) 0%, rgba(12, 21, 29, 0.88) 100%) !important;
   border-top: 1.5px solid rgba(251, 191, 36, 0.6) !important;
-  border-left: 1.5px solid rgba(16, 185, 129, 0.4) !important;
-  border-right: 1.5px solid rgba(16, 185, 129, 0.4) !important;
-  border-bottom: 1.5px solid rgba(5, 150, 105, 0.3) !important;
-  box-shadow: 0 0 28px -6px rgba(16, 185, 129, 0.35), 0 0 12px -2px rgba(251, 191, 36, 0.2) !important;
+  border-left: 1.5px solid rgba(56, 189, 248, 0.4) !important;
+  border-right: 1.5px solid rgba(56, 189, 248, 0.4) !important;
+  border-bottom: 1.5px solid rgba(16, 84, 139, 0.3) !important;
+  box-shadow: 0 0 28px -6px rgba(56, 189, 248, 0.35), 0 0 12px -2px rgba(251, 191, 36, 0.2) !important;
   opacity: 1 !important;
 }
 html.dark .prayer-card-item.next .card-row-name {
   color: #ffffff !important;
 }
 html.dark .prayer-card-item.next .card-row-time {
-  color: #85f8c4 !important;
+  color: #8ec3ef !important;
 }
 html.dark .early-reminder-pill {
-  background-color: rgba(16, 185, 129, 0.22) !important;
-  color: #6ee7b7 !important;
+  background-color: rgba(56, 189, 248, 0.22) !important;
+  color: #7dd3fc !important;
 }
 html.dark .next-pill {
-  background: linear-gradient(90deg, #059669, #10b981) !important;
+  background: linear-gradient(90deg, #0ea5e9, #38bdf8) !important;
   color: #ffffff !important;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4) !important;
 }
 html.dark .sound-icon-on {
-  color: #68dba9 !important;
+  color: #7dd3fc !important;
 }
 html.dark .sound-icon-off {
   color: #64748b !important;
@@ -804,33 +803,33 @@ html.dark .sound-icon-off {
 /* Bütünleşik Alt Bar */
 html.dark .unified-dock-capsule,
 html.dark .segment-container {
-  background-color: rgba(16, 30, 24, 0.94) !important;
-  border-color: rgba(52, 211, 153, 0.2) !important;
+  background-color: rgba(17, 24, 29, 0.94) !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
 }
 html.dark .segment-btn {
-  color: #8faea0 !important;
+  color: #94a3b8 !important;
 }
 html.dark .segment-btn.active {
-  background-color: #244635 !important;
+  background-color: #273643 !important;
   color: #ffffff !important;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* Ayarlar Ekranı (#settingsModal) */
 html.dark #settingsModal {
-  background-color: #0b1411 !important;
+  background-color: #090e1a !important;
 }
 html.dark #settingsModal > div:first-child {
-  background-color: rgba(11, 20, 17, 0.95) !important;
-  border-color: rgba(52, 211, 153, 0.15) !important;
+  background-color: rgba(12, 16, 19, 0.95) !important;
+  border-color: rgba(56, 189, 248, 0.15) !important;
 }
 html.dark #settingsModal button {
-  color: #ecfdf5 !important;
+  color: #f1f5f9 !important;
 }
 html.dark #settingsModal .text-xs.font-mono.font-bold {
-  background-color: #173827 !important;
-  color: #6ee7b7 !important;
+  background-color: #192936 !important;
+  color: #7dd3fc !important;
 }
 
 /* Pil Uyarısı Kutucuğu */
@@ -848,33 +847,33 @@ html.dark #settingsModal .bg-\[\#fde68a\] {
 
 /* Grup Başlıkları ve Kartları */
 html.dark #settingsModal .text-\[\#3d695b\] {
-  color: #6ee7b7 !important;
+  color: #7dd3fc !important;
 }
 html.dark #settingsModal .bg-white {
-  background-color: #14241d !important;
-  border-color: rgba(52, 211, 153, 0.15) !important;
+  background-color: #0d1527 !important;
+  border-color: rgba(56, 189, 248, 0.15) !important;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
 }
 html.dark #settingsModal .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
   border-color: rgba(255, 255, 255, 0.06) !important;
 }
 html.dark #settingsModal .text-\[\#0f3e2e\] {
-  color: #ecfdf5 !important;
+  color: #f1f5f9 !important;
 }
 html.dark #settingsModal .text-slate-500,
 html.dark #settingsModal .text-slate-600,
 html.dark #settingsModal .text-slate-400 {
-  color: #8faea0 !important;
+  color: #94a3b8 !important;
 }
 html.dark #settingsModal svg.text-slate-500 {
-  color: #8faea0 !important;
+  color: #94a3b8 !important;
 }
-html.dark #settingsModal .text-emerald-700 {
-  color: #34d399 !important;
+html.dark #settingsModal .text-sky-700 {
+  color: #38bdf8 !important;
 }
-html.dark #athanPreviewBtn.bg-emerald-100 {
-  background-color: #1a3628 !important;
-  color: #6ee7b7 !important;
+html.dark #athanPreviewBtn.bg-sky-100 {
+  background-color: #1c2934 !important;
+  color: #7dd3fc !important;
 }
 html.dark #athanPreviewBtn.bg-amber-100 {
   background-color: #451a03 !important;
@@ -882,7 +881,7 @@ html.dark #athanPreviewBtn.bg-amber-100 {
   border-color: #b45309 !important;
 }
 html.dark .w-11.h-6.bg-slate-200 {
-  background-color: #233a2e !important;
+  background-color: #252f38 !important;
 }
 
 /* Modallar (Şehir Seçici, Hakkında, Detay, Yeni Güncelleme) */
@@ -890,67 +889,67 @@ html.dark .modal-overlay {
   background-color: rgba(0, 0, 0, 0.75) !important;
 }
 html.dark .modal-overlay .bg-white {
-  background-color: #14241d !important;
-  border: 1px solid rgba(52, 211, 153, 0.2) !important;
-  color: #ecfdf5 !important;
+  background-color: #0d1527 !important;
+  border: 1px solid rgba(56, 189, 248, 0.2) !important;
+  color: #f1f5f9 !important;
 }
 html.dark .modal-overlay .border-slate-100 {
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
 html.dark .modal-overlay .text-\[\#0f3e2e\] {
-  color: #ecfdf5 !important;
+  color: #f1f5f9 !important;
 }
 html.dark .modal-overlay .text-slate-500,
 html.dark .modal-overlay .text-slate-400,
 html.dark .modal-overlay .text-slate-600 {
-  color: #8faea0 !important;
+  color: #94a3b8 !important;
 }
 html.dark #citySearchInput {
-  background-color: #0d1813 !important;
-  border-color: rgba(52, 211, 153, 0.2) !important;
-  color: #ecfdf5 !important;
+  background-color: #0e1317 !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
+  color: #f1f5f9 !important;
 }
 html.dark #gpsLocateBtn {
-  background-color: #1b4332 !important;
+  background-color: #12304a !important;
 }
 html.dark .city-item {
-  color: #ecfdf5 !important;
+  color: #f1f5f9 !important;
 }
 html.dark .city-item:hover {
-  background-color: #1e3a2c !important;
+  background-color: #16304f !important;
 }
 html.dark #updateNoticeCard,
 html.dark #updateModalChangelog {
-  background-color: #0e1c15 !important;
-  border-color: rgba(52, 211, 153, 0.2) !important;
-  color: #e2ebe5 !important;
+  background-color: #0d1527 !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
+  color: #e3e7ea !important;
 }
 html.dark #detailModalRakahs > div {
-  background-color: #0e1c15 !important;
-  border-color: rgba(52, 211, 153, 0.15) !important;
+  background-color: #0d1527 !important;
+  border-color: rgba(56, 189, 248, 0.15) !important;
 }
 
 /* Kıble Pusulası Koyu Mod */
 html.dark .qibla-view-container {
-  background: rgba(16, 30, 24, 0.75) !important;
-  border-color: rgba(52, 211, 153, 0.2) !important;
+  background: rgba(17, 24, 29, 0.75) !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
 }
 html.dark .qibla-needle-tip {
-  border-bottom-color: #10b981 !important;
+  border-bottom-color: #38bdf8 !important;
 }
 html.dark .qibla-needle-center {
-  background: #0b1411 !important;
-  border-color: #10b981 !important;
+  background: #090e1a !important;
+  border-color: #38bdf8 !important;
 }
 html.dark .bubble-target {
-  border-color: rgba(52, 211, 153, 0.35) !important;
-  background: rgba(11, 20, 17, 0.7) !important;
+  border-color: rgba(56, 189, 248, 0.35) !important;
+  background: rgba(12, 16, 19, 0.7) !important;
 }
 html.dark .qibla-mode-btn {
-  color: #8faea0 !important;
+  color: #94a3b8 !important;
 }
 html.dark .qibla-mode-btn.active {
-  background: #1e3a2c !important;
+  background: #16304f !important;
   color: #ffffff !important;
 }
 html.dark .qibla-guide-pill.guide-turn {
@@ -1035,8 +1034,8 @@ html.dark #monthlyModal table tbody tr:nth-child(even):not(.monthly-row-today) {
 }
 
 #locationModal #citySearchInput:focus {
-  border-color: #059669;
-  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(16, 84, 139, 0.15);
 }
 
 /* =========================================================
@@ -1047,7 +1046,7 @@ html.dark #monthlyModal table tbody tr:nth-child(even):not(.monthly-row-today) {
   position: fixed;
   inset: 0;
   z-index: 99999 !important;
-  background: linear-gradient(180deg, #f0f7f3 0%, #ebf4ee 100%);
+  background: linear-gradient(180deg, #f1f4f6 0%, #ecf0f3 100%);
   transition: opacity 0.3s ease, transform 0.3s ease;
   padding-bottom: env(safe-area-inset-bottom, 16px);
 }
@@ -1065,7 +1064,7 @@ body.onboarding-active #mainBottomDock,
 }
 
 html.dark #onboardingModal {
-  background: linear-gradient(180deg, #071710 0%, #0d281e 100%) !important;
+  background: linear-gradient(180deg, #081016 0%, #0f1c26 100%) !important;
 }
 
 /* Sayfa Nokta İndikatörleri */
@@ -1081,17 +1080,17 @@ html.dark #onboardingModal {
 }
 
 html.dark .onboarding-dot {
-  background-color: rgba(52, 211, 153, 0.25);
+  background-color: rgba(56, 189, 248, 0.25);
 }
 
 .onboarding-dot.active {
   width: 24px;
-  background-color: #059669;
+  background-color: #0ea5e9;
 }
 
 html.dark .onboarding-dot.active {
-  background-color: #10b981;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  background-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
 }
 
 /* Radar Dalga Animasyonu (Adım 2) */
@@ -1146,4 +1145,16 @@ html.dark .onboarding-dot.active {
 #mainCountdown .cd-sec {
   color: #7dd3fc;
   opacity: 0.85;
+}
+
+
+/* ---- v2.3 düzeltmeleri ---- */
+/* Açık anahtar: cyan iz (kapalıyla ayırt edilebilsin) */
+html.dark .peer:checked + div.w-11.h-6 {
+  background-color: #0ea5e9 !important;
+}
+/* Kıble ekranı: içerik üstten başlasın, boş üst alan kalmasın */
+main:has(#viewQibla:not(.hidden)) {
+  justify-content: flex-start;
+  margin-top: 0;
 }
