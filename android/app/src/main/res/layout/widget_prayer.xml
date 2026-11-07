@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:maxLines="1"
         android:text="Tam Vakti"
-        android:textColor="#A7F3D0"
+        android:textColor="#7DD3FC"
         android:textSize="11sp" />
 
     <TextView
@@ -33,7 +33,7 @@
         android:layout_height="wrap_content"
         android:maxLines="1"
         android:text="12:00"
-        android:textColor="#D1FAE5"
+        android:textColor="#BAE6FD"
         android:textSize="14sp" />
 
     <Chronometer
@@ -41,7 +41,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:textColor="#FDE68A"
+        android:textColor="#FDBA74"
         android:textSize="18sp"
         android:textStyle="bold" />
 </LinearLayout>

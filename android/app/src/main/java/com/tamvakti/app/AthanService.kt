@@ -39,6 +39,7 @@ class AthanService : Service() {
         )
         val notification = NotificationCompat.Builder(this, Notifs.CH_ATHAN)
             .setSmallIcon(R.drawable.ic_stat_tamvakti)
+            .setColor(androidx.core.content.ContextCompat.getColor(this, R.color.primary))
             .setContentTitle(title)
             .setContentText(if (body.isEmpty()) "Ezan okunuyor" else "$body • Ezan okunuyor")
             .setOngoing(true)

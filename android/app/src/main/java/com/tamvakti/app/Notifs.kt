@@ -82,6 +82,7 @@ object Notifs {
         createChannels(ctx)
         val builder = NotificationCompat.Builder(ctx, if (quiet) CH_QUIET else CH_ALERT)
             .setSmallIcon(R.drawable.ic_stat_tamvakti)
+            .setColor(ContextCompat.getColor(ctx, R.color.primary))
             .setContentTitle(title)
             .setContentText(body)
             .setAutoCancel(true)
@@ -99,6 +100,7 @@ object Notifs {
         val icon = try { BitmapFactory.decodeResource(ctx.resources, R.mipmap.ic_launcher) } catch (e: Exception) { null }
         val builder = NotificationCompat.Builder(ctx, CH_ONGOING)
             .setSmallIcon(R.drawable.ic_stat_tamvakti)
+            .setColor(ContextCompat.getColor(ctx, R.color.primary))
             .setContentTitle("Tam Vakti • $city")
             .setContentText("Sıradaki: $nextName ($nextTime)")
             .setOngoing(true)
