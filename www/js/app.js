@@ -78,16 +78,13 @@ const PRAYER_DETAILS = {
   }
 };
 
-const ATHAN_SOUNDS = {
-  "Hicaz": "assets/audio/ezan_turkey_1.mp3",
-  "Saba": "assets/audio/ezan_fajr.mp3",
-  "Rast": "assets/audio/ezan_madinah.mp3",
-  "Segah": "assets/audio/ezan_turkey_2.mp3",
-  "Mekke": "assets/audio/ezan_makkah.mp3",
-  "Kudüs": "assets/audio/ezan_alaqsa.mp3",
-  "Afasi": "assets/audio/ezan_alafasy.mp3"
-};
-const ATHAN_ORDER = ["Hicaz", "Saba", "Rast", "Segah", "Mekke", "Kudüs", "Afasi"];
+// Ezan kayıtları (Wikimedia Commons; lisanslar Hakkında ekranında). Dosyalar assets/audio/ altında.
+const ATHAN_LIST = [
+  { id: "aaqib",   name: "Aaqib Azeez",     desc: "1 dk 26 sn", file: "assets/audio/ezan_aaqib.mp3" },
+  { id: "sakin",   name: "Sakin",           desc: "2 dk 34 sn", file: "assets/audio/ezan_sakin.mp3" },
+  { id: "hassan2", name: "Hassan II Camii", desc: "2 dk 55 sn • cami ortamından kayıt", file: "assets/audio/ezan_hassan2.mp3" },
+  { id: "uzun",    name: "Uzun Okuyuş",     desc: "3 dk 3 sn", file: "assets/audio/ezan_uzun.mp3" }
+];
 
 class TamVaktiApp {
   constructor() {
@@ -120,7 +117,8 @@ class TamVaktiApp {
     this.isDownloadingUpdate = false;
 
     // Ezan Makamı & Ses Önizleme
-    this.currentAthanTone = localStorage.getItem("tamvakti_athan_tone") || "Hicaz";
+    const savedTone = localStorage.getItem("tamvakti_athan_tone");
+    this.currentAthanTone = ATHAN_LIST.some(a => a.id === savedTone) ? savedTone : ATHAN_LIST[0].id;
     this.athanAudio = null;
     this.autoSilent = localStorage.getItem("tamvakti_auto_silent") !== "false";
 
@@ -327,18 +325,6 @@ class TamVaktiApp {
     const out = { ...times };
     PRAYER_LIST.forEach(p => { out[p.key] = this.shiftTime(times[p.key], this.timeOffsetMin); });
     return out;
-  }
-
-  cycleIhtiyat() {
-    const steps = [0, 1, 2, 3, 5, -1, -2, -3];
-    const next = steps[(steps.indexOf(this.timeOffsetMin) + 1) % steps.length];
-    this.timeOffsetMin = next;
-    localStorage.setItem("tamvakti_time_offset", String(next));
-    this.updateSettingsLabels();
-    this.updatePrayers();
-    const monthlyModal = document.getElementById("monthlyModal");
-    if (monthlyModal && !monthlyModal.classList.contains("hidden")) this.loadMonthlyData(false);
-    this.showToast(`İhtiyat: ${this.offsetLabel()} — tüm vakitlere uygulandı`, "🎛️", 2800);
   }
 
   offsetLabel() {
@@ -1370,10 +1356,8 @@ class TamVaktiApp {
         ? `${this.currentLocation.name} • Otomatik`
         : "Konum Seçiniz";
     }
-    const toneEl = document.getElementById("settingsAthanTone");
-    if (toneEl) {
-      toneEl.textContent = this.currentAthanTone || "Hicaz";
-    }
+    const banner = document.getElementById("batteryBanner");
+    if (banner) banner.classList.toggle("hidden", !window.AndroidBridge);
     const silentToggle = document.getElementById("autoSilentToggle");
     if (silentToggle) {
       silentToggle.checked = this.autoSilent;
@@ -1382,11 +1366,14 @@ class TamVaktiApp {
   }
 
   updateSettingsLabels() {
-    const modeNames = { ezan: "Ezan", bip: "Bip", sessiz: "Sessiz" };
+    const modeNames = { ezan: "Ezan", bip: "Bildirim sesi", sessiz: "Sessiz" };
     const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
-    set("settingsReminderTime", `${this.reminderMin} dk önce`);
+    set("settingsReminderTime", this.reminderMin === 0 ? "Kapalı" : `${this.reminderMin} dk önce`);
     set("settingsNotifMode", modeNames[this.notifMode] || "Ezan");
-    set("settingsCalcMethod", `Diyanet • ${this.offsetLabel()}`);
+    set("settingsCalcMethod", this.timeOffsetMin === 0 ? "Yok" : this.offsetLabel());
+    const tone = ATHAN_LIST.find(a => a.id === this.currentAthanTone) || ATHAN_LIST[0];
+    set("settingsAthanTone", tone.name);
+    set("settingsAthanDesc", this.notifMode === "ezan" ? "Vakit girince çalar" : "Yalnızca “Ezan” bildirim türünde çalar");
     const k = document.getElementById("kerahatToggle");
     if (k) k.checked = this.kerahatAlert;
     this.refreshPermissionStatus();
@@ -1423,7 +1410,7 @@ class TamVaktiApp {
   }
 
   sendTestNotification() {
-    const tone = (ATHAN_SOUNDS[this.currentAthanTone] || ATHAN_SOUNDS["Hicaz"]).split("/").pop();
+    const tone = this.athanFile();
     if (window.AndroidBridge && window.AndroidBridge.testAlert) {
       window.AndroidBridge.testAlert(
         "athan",
@@ -1517,7 +1504,7 @@ class TamVaktiApp {
     const monthCache = {};
     const prayers = [];
     const events = [];
-    const toneFile = (ATHAN_SOUNDS[this.currentAthanTone] || ATHAN_SOUNDS["Hicaz"]).split("/").pop();
+    const toneFile = this.athanFile();
     const mode = this.notifMode;
     const rem = this.reminderMin;
     const MIN = 60000;
@@ -1611,29 +1598,139 @@ class TamVaktiApp {
   }
 
   // Vakit bildirimi türü: Ezan sesi → Bip (bildirim sesi) → Sessiz (sadece yazı)
+  // ==========================================
+  // SEÇİM PENCERESİ (alttan açılır, ayarlar için ortak)
+  // ==========================================
+  openChoice(title, note, options, current, onPick) {
+    this._choiceOptions = options;
+    this._choiceOnPick = onPick;
+    const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+    set("choiceTitle", title);
+    set("choiceNote", note || "");
+    const list = document.getElementById("choiceList");
+    if (!list) return;
+    list.innerHTML = options.map((o, i) => {
+      const on = String(o.value) === String(current);
+      return `
+        <div class="flex items-center gap-2">
+          <button onclick="app.pickChoice(${i})" class="flex-1 min-w-0 flex items-center gap-3 px-3 py-3 rounded-2xl text-left border ${on ? "bg-sky-400/15 border-sky-400/40" : "bg-slate-800/40 border-transparent"}">
+            <span class="w-4 h-4 rounded-full border-2 shrink-0 ${on ? "border-sky-400 bg-sky-400" : "border-slate-500"}"></span>
+            <span class="min-w-0">
+              <span class="block text-[14px] font-semibold text-slate-100">${o.label}</span>
+              ${o.desc ? `<span class="block text-[12px] text-slate-400">${o.desc}</span>` : ""}
+            </span>
+          </button>
+          ${o.preview ? `<button data-preview="${o.value}" onclick="app.previewAthan('${o.value}', event)" aria-label="Dinle" class="w-11 h-11 rounded-full bg-sky-400/15 text-sky-200 text-sm shrink-0">▶</button>` : ""}
+        </div>`;
+    }).join("");
+    const sheet = document.getElementById("choiceSheet");
+    if (sheet) sheet.classList.remove("hidden");
+  }
+
+  pickChoice(i) {
+    const o = this._choiceOptions && this._choiceOptions[i];
+    const cb = this._choiceOnPick;
+    this.closeChoice();
+    if (o && cb) cb(o.value);
+  }
+
+  closeChoice() {
+    this.stopAthanPreview();
+    const sheet = document.getElementById("choiceSheet");
+    if (sheet) sheet.classList.add("hidden");
+  }
+
   openPrayerModesModal() {
-    const order = ["ezan", "bip", "sessiz"];
-    this.notifMode = order[(order.indexOf(this.notifMode) + 1) % order.length];
-    localStorage.setItem("tamvakti_notif_mode", this.notifMode);
-    this.updateSettingsLabels();
-    const msgs = {
-      ezan: "Vakit girince ezan okunacak",
-      bip: "Vakit girince bildirim sesi çalacak",
-      sessiz: "Vakit bildirimleri sessiz olacak"
-    };
-    this.showToast(msgs[this.notifMode], "🔔", 2600);
-    this.scheduleSync();
+    this.openChoice("Vakit bildirimi", "Vakit girince ne olsun?", [
+      { value: "ezan", label: "Ezan", desc: "Seçtiğiniz ezan okunur" },
+      { value: "bip", label: "Bildirim sesi", desc: "Kısa bir bildirim sesi çalar" },
+      { value: "sessiz", label: "Sessiz", desc: "Yalnızca bildirim yazısı gösterilir" }
+    ], this.notifMode, (v) => {
+      this.notifMode = v;
+      localStorage.setItem("tamvakti_notif_mode", v);
+      this.updateSettingsLabels();
+      this.scheduleSync();
+    });
   }
 
   cycleReminderMinutes() {
-    const minutes = [0, 5, 10, 15, 20, 30, 45];
-    const nextVal = minutes[(minutes.indexOf(this.reminderMin) + 1) % minutes.length];
-    this.reminderMin = nextVal;
-    localStorage.setItem("tamvakti_reminder_min", String(nextVal));
-    this.updateSettingsLabels();
-    this.renderDayRibbon();
-    this.showToast(nextVal === 0 ? "Vakit öncesi hatırlatma kapatıldı" : `Vakit çıkmadan ${nextVal} dk önce hatırlatılacak`, "⏱️", 2500);
-    this.scheduleSync();
+    const opts = [0, 5, 10, 15, 20, 30, 45].map(m => ({ value: m, label: m === 0 ? "Kapalı" : `${m} dk önce` }));
+    this.openChoice("Hatırlatma", "Vakit girmeden ne kadar önce uyarılsın?", opts, this.reminderMin, (v) => {
+      this.reminderMin = Number(v);
+      localStorage.setItem("tamvakti_reminder_min", String(this.reminderMin));
+      this.updateSettingsLabels();
+      this.renderDayRibbon();
+      this.scheduleSync();
+    });
+  }
+
+  openIhtiyatModal() {
+    const opts = [-3, -2, -1, 0, 1, 2, 3, 5].map(m => ({
+      value: m,
+      label: m === 0 ? "Yok (Diyanet vakti aynen)" : `${m > 0 ? "+" : "−"}${Math.abs(m)} dk`
+    }));
+    this.openChoice("İhtiyat", "Seçilen dakika tüm vakitlere eklenir.", opts, this.timeOffsetMin, (v) => {
+      this.timeOffsetMin = Number(v);
+      localStorage.setItem("tamvakti_time_offset", String(this.timeOffsetMin));
+      this.updateSettingsLabels();
+      this.updatePrayers();
+      const monthly = document.getElementById("monthlyModal");
+      if (monthly && !monthly.classList.contains("hidden")) this.loadMonthlyData(false);
+    });
+  }
+
+  openAthanSheet() {
+    const opts = ATHAN_LIST.map(a => ({ value: a.id, label: a.name, desc: a.desc, preview: true }));
+    this.openChoice("Ezan sesi", "▶ ile dinleyin, satıra dokunarak seçin.", opts, this.currentAthanTone, (v) => {
+      this.currentAthanTone = v;
+      localStorage.setItem("tamvakti_athan_tone", v);
+      this.updateSettingsLabels();
+      this.scheduleSync();
+    });
+  }
+
+  athanFile() {
+    const a = ATHAN_LIST.find(x => x.id === this.currentAthanTone) || ATHAN_LIST[0];
+    return a.file.split("/").pop();
+  }
+
+  previewAthan(id, ev) {
+    if (ev) ev.stopPropagation();
+    if (this._previewId === id && this.athanAudio && !this.athanAudio.paused) {
+      this.stopAthanPreview();
+      return;
+    }
+    this.stopAthanPreview();
+    const a = ATHAN_LIST.find(x => x.id === id);
+    if (!a) return;
+    try {
+      this.athanAudio = new Audio(a.file);
+      this._previewId = id;
+      this.athanAudio.onended = () => this.stopAthanPreview();
+      this.athanAudio.onerror = () => {
+        this.stopAthanPreview();
+        this.showToast("Ezan sesi yüklenemedi", "⚠️");
+      };
+      this.athanAudio.play().catch(() => this.stopAthanPreview());
+    } catch (e) {
+      this.stopAthanPreview();
+    }
+    this.updatePreviewButtons();
+  }
+
+  stopAthanPreview() {
+    if (this.athanAudio) {
+      try { this.athanAudio.pause(); this.athanAudio.currentTime = 0; } catch (e) {}
+      this.athanAudio = null;
+    }
+    this._previewId = null;
+    this.updatePreviewButtons();
+  }
+
+  updatePreviewButtons() {
+    document.querySelectorAll("[data-preview]").forEach(b => {
+      b.textContent = (b.dataset.preview === this._previewId) ? "■" : "▶";
+    });
   }
 
   toggleKerahatAlert(checked) {
@@ -1641,93 +1738,6 @@ class TamVaktiApp {
     localStorage.setItem("tamvakti_kerahat_alert", this.kerahatAlert ? "true" : "false");
     this.showToast(this.kerahatAlert ? "Kerahat vakitlerinde bildirim gelecek" : "Kerahat bildirimi kapatıldı", "⚠️", 2500);
     this.scheduleSync();
-  }
-
-  cycleAthanTone() {
-    const current = this.currentAthanTone || "Hicaz";
-    const nextIndex = (ATHAN_ORDER.indexOf(current) + 1) % ATHAN_ORDER.length;
-    const nextVal = ATHAN_ORDER[nextIndex];
-    this.currentAthanTone = nextVal;
-    localStorage.setItem("tamvakti_athan_tone", nextVal);
-
-    const el = document.getElementById("settingsAthanTone");
-    if (el) el.textContent = nextVal;
-
-    if (this.athanAudio && !this.athanAudio.paused) {
-      this.playAthanPreview();
-    }
-    this.showToast(`${nextVal} Makamı seçildi`, "🔊", 2000);
-    this.scheduleSync();
-  }
-
-  toggleAthanPreview(event) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    if (this.athanAudio && !this.athanAudio.paused) {
-      this.stopAthanPreview();
-    } else {
-      this.playAthanPreview();
-    }
-  }
-
-  playAthanPreview() {
-    this.stopAthanPreview();
-
-    const tone = this.currentAthanTone || "Hicaz";
-    const soundFile = ATHAN_SOUNDS[tone] || ATHAN_SOUNDS["Hicaz"];
-
-    const btn = document.getElementById("athanPreviewBtn");
-    const icon = document.getElementById("athanPreviewIcon");
-    const text = document.getElementById("athanPreviewText");
-
-    try {
-      this.athanAudio = new Audio(soundFile);
-      this.athanAudio.onended = () => {
-        this.stopAthanPreview();
-      };
-      this.athanAudio.onerror = () => {
-        this.stopAthanPreview();
-        this.showToast("Ezan sesi yüklenemedi", "⚠️");
-      };
-
-      if (btn) {
-        btn.classList.remove("bg-sky-100", "text-sky-800");
-        btn.classList.add("bg-amber-100", "text-amber-900", "ring-1", "ring-amber-300");
-      }
-      if (icon) icon.textContent = "⏹";
-      if (text) text.textContent = "Durdur";
-
-      this.athanAudio.play().catch(err => {
-        console.warn("Audio play error:", err);
-        this.stopAthanPreview();
-      });
-    } catch (err) {
-      console.error(err);
-      this.stopAthanPreview();
-    }
-  }
-
-  stopAthanPreview() {
-    if (this.athanAudio) {
-      try {
-        this.athanAudio.pause();
-        this.athanAudio.currentTime = 0;
-      } catch (e) {}
-      this.athanAudio = null;
-    }
-
-    const btn = document.getElementById("athanPreviewBtn");
-    const icon = document.getElementById("athanPreviewIcon");
-    const text = document.getElementById("athanPreviewText");
-
-    if (btn) {
-      btn.classList.remove("bg-amber-100", "text-amber-900", "ring-1", "ring-amber-300");
-      btn.classList.add("bg-sky-100", "text-sky-800");
-    }
-    if (icon) icon.textContent = "▶";
-    if (text) text.textContent = "Dinle";
   }
 
   toggleAutoSilent(checked) {
@@ -1749,14 +1759,6 @@ class TamVaktiApp {
       if (cb) cb.checked = this.autoSilent;
     });
     this.scheduleSync();
-  }
-
-  openIhtiyatModal() {
-    this.cycleIhtiyat();
-  }
-
-  showWidgetInfo() {
-    this.showToast("Ana ekrana uzun basarak Tam Vakti widget'ını ekleyebilirsiniz.", "🪟", 4000);
   }
 
   openAboutModal() {
