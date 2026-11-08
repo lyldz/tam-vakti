@@ -103,10 +103,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     pendingGeoOrigin = origin
                     ActivityCompat.requestPermissions(
                         this@MainActivity,
-                        arrayOf(
-                            Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.ACCESS_COARSE_LOCATION
-                        ),
+                        arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
                         LOCATION_PERMISSION_REQUEST
                     )
                 }
@@ -149,9 +146,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun hasLocationPermission(): Boolean {
-        val fine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+        // Yalnızca yaklaşık konum istenir (ilçe bulmak için yeterli)
         val coarse = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-        return fine == PackageManager.PERMISSION_GRANTED || coarse == PackageManager.PERMISSION_GRANTED
+        return coarse == PackageManager.PERMISSION_GRANTED
     }
 
     fun hasNotificationPermission(): Boolean {
@@ -398,6 +395,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         @JavascriptInterface
         fun downloadAndInstallApk(downloadUrl: String) {
+            // Google Play sürümü kendini güncellemez (Play politikası)
+            if (BuildConfig.IS_PLAY) {
+                activity.runOnUiThread {
+                    activity.webView.evaluateJavascript("window.app && window.app.onUpdateDownloadError('Güncellemeler Google Play üzerinden yapılır');", null)
+                }
+                return
+            }
             // Yalnızca projenin kendi GitHub sürümlerinden indirmeye izin ver
             val uri = Uri.parse(downloadUrl)
             val allowed = uri.scheme == "https" && uri.host == "github.com" &&
@@ -412,12 +416,30 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
 
         @JavascriptInterface
+        fun getDistribution(): String = if (BuildConfig.IS_PLAY) "play" else "github"
+
+        /** Yalnızca projenin gizlilik sayfası ve GitHub deposu tarayıcıda açılır. */
+        @JavascriptInterface
+        fun openUrl(url: String) {
+            val uri = Uri.parse(url)
+            val ok = uri.scheme == "https" &&
+                (uri.host == "lyldz.github.io" || (uri.host == "github.com" && (uri.path ?: "").startsWith("/lyldz/")))
+            if (!ok) return
+            activity.runOnUiThread {
+                try {
+                    activity.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                } catch (e: Exception) {
+                }
+            }
+        }
+
+        @JavascriptInterface
         fun getAppVersion(): String {
             return try {
                 val pInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
-                pInfo.versionName ?: "2.3"
+                pInfo.versionName ?: "2.4"
             } catch (e: Exception) {
-                "2.3"
+                "2.4"
             }
         }
 
@@ -436,13 +458,28 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         @JavascriptInterface
         fun getPermissionState(): String {
             val app = activity.applicationContext
+            val pm = app.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+            val battery = Build.VERSION.SDK_INT < Build.VERSION_CODES.M || pm.isIgnoringBatteryOptimizations(app.packageName)
             return "{\"notif\":" + Notifs.hasPermission(app) +
                 ",\"exact\":" + Scheduler.canScheduleExact(app) +
-                ",\"dnd\":" + Silencer.hasPolicyAccess(app) + "}"
+                ",\"dnd\":" + Silencer.hasPolicyAccess(app) +
+                ",\"battery\":" + battery + "}"
         }
 
         @JavascriptInterface
         fun getScheduleInfo(): String = Scheduler.info(activity.applicationContext)
+
+        @JavascriptInterface
+        fun openAppNotificationSettings() {
+            activity.runOnUiThread {
+                try {
+                    activity.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                        putExtra(Settings.EXTRA_APP_PACKAGE, activity.packageName)
+                    })
+                } catch (e: Exception) {
+                }
+            }
+        }
 
         @JavascriptInterface
         fun openDndSettings() {

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tam Vakti • Gizlilik Politikası</title>
+<style>
+  :root{color-scheme:dark light;--bg:#090e1a;--card:#0d1527;--tx:#e2e8f0;--mut:#94a3b8;--ac:#38bdf8;--bd:rgba(56,189,248,.18)}
+  @media (prefers-color-scheme: light){:root{--bg:#f4f8fc;--card:#fff;--tx:#0f172a;--mut:#475569;--ac:#0369a1;--bd:rgba(3,105,161,.18)}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  main{max-width:760px;margin:0 auto;padding:28px 18px 64px}
+  h1{font-size:1.7rem;margin:.2em 0 .1em} h2{font-size:1.15rem;margin:1.8em 0 .4em;color:var(--ac)}
+  p,li{color:var(--tx)} .mut{color:var(--mut);font-size:.92rem}
+  .card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px 18px;margin:14px 0}
+  table{width:100%;border-collapse:collapse;font-size:.95rem} td,th{border-bottom:1px solid var(--bd);padding:8px 6px;text-align:left;vertical-align:top}
+  a{color:var(--ac)} nav a{margin-right:14px}
+  hr{border:0;border-top:1px solid var(--bd);margin:40px 0}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="#tr">Türkçe</a><a href="#en">English</a></nav>
+
+<section id="tr">
+<h1>Tam Vakti Gizlilik Politikası</h1>
+<p class="mut">Son güncelleme: 8 Kasım 2026 • Geliştirici: lyldz • Paket: com.tamvakti.app</p>
+
+<div class="card"><strong>Kısaca:</strong> Hesap yok, reklam yok, kullanım analizi ya da izleme yok. Kişisel verileriniz satılmaz ve reklam amacıyla paylaşılmaz. Konumunuz ve ayarlarınız yalnızca cihazınızda saklanır.</div>
+
+<h2>1. Cihazınızda saklananlar</h2>
+<p>Seçtiğiniz şehir/ilçe, konum koordinatları, bildirim ve görünüm ayarlarınız ile önbelleğe alınan vakit çizelgeleri cihazınızdaki uygulama depolamasında tutulur. Bu veriler bize ya da herhangi bir sunucuya gönderilmez ve uygulamayı kaldırdığınızda silinir.</p>
+
+<h2>2. Konum</h2>
+<p>Konum izni <strong>isteğe bağlıdır</strong>. İzin verirseniz yaklaşık konumunuz, bulunduğunuz ilçeyi bulup vakitleri doğru hesaplamak için kullanılır (“GPS ile Otomatik Bul”). İzin vermezseniz şehir/ilçeyi listeden seçerek uygulamayı kullanabilirsiniz.</p>
+
+<h2>3. İnternet bağlantısı ve üçüncü taraf hizmetler</h2>
+<p>İnternet varken uygulama aşağıdaki hizmetlere istek gönderir. İnternet yoksa vakitler cihazda yerleşik astronomik hesapla bulunur ve <strong>hiçbir veri gönderilmez</strong>.</p>
+<table>
+<tr><th>Hizmet</th><th>Ne zaman</th><th>Gönderilen</th></tr>
+<tr><td>Aladhan API (api.aladhan.com)</td><td>Vakitleri almak için</td><td>Enlem, boylam ve tarih</td></tr>
+<tr><td>BigDataCloud (api.bigdatacloud.net)</td><td>Yalnızca “GPS ile Otomatik Bul” kullanıldığında ilçe adını bulmak için</td><td>Enlem ve boylam</td></tr>
+<tr><td>OpenStreetMap harita karoları (tile.openstreetmap.org)</td><td>Yalnızca Kıble “Harita” görünümünü açtığınızda</td><td>Görüntülenen harita bölgesi ve IP adresiniz</td></tr>
+<tr><td>GitHub (api.github.com) — <em>yalnızca GitHub’dan indirilen sürüm</em></td><td>Yeni sürüm denetimi için</td><td>IP adresiniz</td></tr>
+</table>
+<p class="mut">Bu hizmetlerin kendi gizlilik politikaları geçerlidir. Google Play sürümünde GitHub güncelleme denetimi bulunmaz.</p>
+
+<h2>4. İzinler ve kullanım amaçları</h2>
+<ul>
+<li><strong>Konum (yaklaşık):</strong> yukarıda açıklandığı gibi, isteğe bağlı.</li>
+<li><strong>Bildirimler:</strong> vakit girişi, vakit öncesi hatırlatma ve kerahat uyarıları ile sabit sayaç bildirimi.</li>
+<li><strong>Tam zamanlı alarm:</strong> bildirimlerin vaktinde, dakikasında gelmesi için.</li>
+<li><strong>Rahatsız Etme erişimi:</strong> yalnızca isteğe bağlı “Namazda sessize al” özelliği için telefonu geçici olarak titreşime almak ve geri döndürmek amacıyla. Bildirimlerinizin içeriği okunmaz.</li>
+<li><strong>Cihaz açılışında çalış:</strong> telefon yeniden başladığında vakit alarmlarını yeniden kurmak için.</li>
+<li><strong>Titreşim, İnternet:</strong> kıble hizalama titreşimi ve yukarıdaki ağ istekleri için.</li>
+</ul>
+
+<h2>5. Çocuklar</h2>
+<p>Uygulama kişisel veri toplamaz; çocuklara yönelik özel bir veri işleme yapılmaz.</p>
+
+<h2>6. Verilerinizin silinmesi</h2>
+<p>Verilerinizin tamamı cihazınızdadır. Uygulamayı kaldırarak ya da Ayarlar › Uygulamalar › Tam Vakti › Depolama › Verileri temizle yolunu izleyerek silebilirsiniz.</p>
+
+<h2>7. Değişiklikler ve iletişim</h2>
+<p>Bu politika değişirse bu sayfa güncellenir. Sorularınız için: <a href="https://github.com/lyldz/tam-vakti/issues">github.com/lyldz/tam-vakti/issues</a>.</p>
+</section>
+
+<hr>
+
+<section id="en">
+<h1>Tam Vakti Privacy Policy</h1>
+<p class="mut">Last updated: 8 November 2026 • Developer: lyldz • Package: com.tamvakti.app</p>
+<div class="card"><strong>In short:</strong> no accounts, no ads, no analytics or tracking. Your personal data is not sold or shared for advertising. Your location and settings are stored only on your device.</div>
+
+<h2>Stored on your device</h2>
+<p>Your selected city/district, coordinates, notification and display settings, and cached prayer-time tables are kept in the app's local storage. They are not sent to us and are deleted when you uninstall the app.</p>
+
+<h2>Location</h2>
+<p>Location permission is <strong>optional</strong>. If granted, your approximate location is used to find your district and compute prayer times. Without it you can pick a city/district from a list.</p>
+
+<h2>Network requests (only while online)</h2>
+<ul>
+<li><strong>Aladhan API</strong> — latitude, longitude and date, to fetch prayer times.</li>
+<li><strong>BigDataCloud</strong> — latitude and longitude, only when you use “find with GPS”, to name your district.</li>
+<li><strong>OpenStreetMap tile servers</strong> — the viewed map area and your IP address, only when you open the Qibla map view.</li>
+<li><strong>GitHub</strong> — your IP address, only in the version downloaded from GitHub, to check for updates.</li>
+</ul>
+<p>Offline, prayer times are computed on-device and nothing is sent. These services are governed by their own privacy policies.</p>
+
+<h2>Permissions</h2>
+<p>Approximate location (optional), notifications (prayer alerts and reminders), exact alarms (so alerts arrive on time), Do Not Disturb access (only for the optional “silence during prayer” feature; notification content is never read), boot completed (to reschedule alarms after a restart), vibration and internet.</p>
+
+<h2>Children, deletion, contact</h2>
+<p>The app collects no personal data. All data lives on your device; uninstall the app or clear its storage to delete it. Questions: <a href="https://github.com/lyldz/tam-vakti/issues">github.com/lyldz/tam-vakti/issues</a>.</p>
+</section>
+</main>
+</body>
+</html>

@@ -14,11 +14,28 @@ android {
         minSdk = 24
         targetSdk = 34
         
-        // Sürüm Yapılandırması: v2.3 "Seher"
-        versionCode = 20300
-        versionName = "2.3"
+        // Sürüm Yapılandırması: v2.4 "Şafak"
+        versionCode = 20400
+        versionName = "2.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // İki dağıtım: "github" (APK, uygulama içi güncelleme var) ve "play" (AAB, kendini güncelleme yok)
+    flavorDimensions += "dist"
+    productFlavors {
+        create("github") {
+            dimension = "dist"
+            buildConfigField("boolean", "IS_PLAY", "false")
+        }
+        create("play") {
+            dimension = "dist"
+            buildConfigField("boolean", "IS_PLAY", "true")
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     // İmza bilgileri ASLA depoda tutulmaz. Kaynaklar (öncelik sırasıyla):

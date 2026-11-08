@@ -1,6 +1,6 @@
 /**
  * Tam Vakti - Diyanet Uyumlu Namaz Vakti ve Astronomik Hesaplama Motoru
- * Sürüm: v2.3
+ * Sürüm: v2.4
  */
 
 // Hicri ay adları (Aladhan "month.number" 1-12 ile eşleşir; API Türkçe ad döndürmez)

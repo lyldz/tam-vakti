@@ -15,9 +15,9 @@ Bu dosya, "Tam Vakti" projesinin mimari kurallarını, sürümleme standartları
 
 ## 2. Sürümleme Mantığı (Major.Minor)
 Projenin fiilen kullandığı şema budur (CalVer'den vazgeçildi):
-- **`versionName`:** `2.3`, `2.4`, ... (kod adıyla: "v2.3 • Seher")
+- **`versionName`:** `2.4`, `2.5`, ... (kod adıyla: "v2.4 • Şafak")
 - **`versionCode`:** her sürümde +100 (örn. `20300`)
-- **Git Tag:** `v2.3`
+- **Git Tag:** `v2.4`
 - `release.sh` bu şemaya göre otomatik artırır; uygulama içi güncelleme denetimi tag'leri bu şemayla karşılaştırır.
 
 ---

@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- İzinler: İnternet, GPS/Konum, Titreşim ve Bildirimler -->
+    <!-- İzinler: İnternet, yaklaşık konum (isteğe bağlı), titreşim ve bildirimler -->
+    <!-- Donanım zorunlu değil: pusula/konum olmayan cihazlar da Play'de uygulamayı görebilsin -->
+    <uses-feature android:name="android.hardware.location" android:required="false" />
+    <uses-feature android:name="android.hardware.sensor.compass" android:required="false" />
+    <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="false" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <!-- Vakit alarmları, sessize alma ve yeniden başlatma sonrası kurulum -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
@@ -55,16 +57,6 @@
                 android:resource="@xml/prayer_widget_info" />
         </receiver>
 
-        <!-- Güvenli APK Kurulumu İçin FileProvider -->
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
     </application>
 
 </manifest>
