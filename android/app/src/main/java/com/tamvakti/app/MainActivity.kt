@@ -32,6 +32,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -79,7 +84,26 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         Notifs.createChannels(this)
 
         webView = WebView(this)
-        setContentView(webView)
+
+        // Android 15+ (targetSdk 35+) ekranı kenardan kenara çizer: durum/gezinme çubuğu ve
+        // klavye boşluklarını burada içeriğe dolgu olarak veririz; arka plan uygulama rengidir.
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val root = FrameLayout(this).apply { setBackgroundColor(0xFF090E1A.toInt()) }
+        root.addView(webView, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+        setContentView(root)
+        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or
+                    WindowInsetsCompat.Type.displayCutout() or
+                    WindowInsetsCompat.Type.ime()
+            )
+            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            WindowInsetsCompat.CONSUMED
+        }
+        WindowCompat.getInsetsController(window, root).apply {
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = false
+        }
 
         val settings: WebSettings = webView.settings
         settings.javaScriptEnabled = true
