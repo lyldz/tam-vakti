@@ -51,7 +51,7 @@
 <body class="select-none bg-[#050811] text-slate-100 min-h-screen antialiased">
 
   <!-- Ana Minimalist Kapsayıcı (Nocturnal Arctic 2B) -->
-  <div class="minimal-app w-full max-w-[420px] mx-auto min-h-screen relative overflow-hidden flex flex-col pb-4 arctic-radial-glow">
+  <div class="minimal-app w-full max-w-[420px] mx-auto relative overflow-hidden flex flex-col pb-4 arctic-radial-glow">
 
     <!-- 1. ÜST BAŞLIK ALANI (NOCTURNAL ARCTIC 2B) -->
     <header class="top-header flex items-center justify-between gap-2 mb-2 shrink-0">
@@ -93,14 +93,14 @@
     </header>
 
     <!-- 2. ANA İÇERİK ALANI (DİKEY ORTALANMIŞ) -->
-    <main class="flex-1 flex flex-col justify-center my-auto w-full">
+    <main class="flex-1 min-h-0 flex flex-col justify-center my-auto w-full">
 
       <!-- GÖRÜNÜM 1: SAPSADE HORIZON KERAHAT (NOCTURNAL ARCTIC) -->
-      <section id="viewPrayer" class="flex-1 flex flex-col justify-center gap-4 my-auto w-full py-1">
+      <section id="viewPrayer" class="flex-1 min-h-0 flex flex-col justify-between gap-3 w-full py-1">
         
         <!-- SOLAR TRANSIT CURVE (GÜNEŞ & VAKİT DÖNGÜSÜ DALGASI) -->
-        <div id="solarTransitContainer" class="w-full max-w-[380px] mx-auto px-1 flex flex-col items-center">
-           <svg id="solarArc" viewBox="0 0 340 262" class="w-full h-auto overflow-visible" role="img" aria-label="Gün boyunca güneşin yolu ve namaz vakitleri">
+        <div id="solarTransitContainer" class="w-full max-w-[380px] mx-auto px-1 flex-1 min-h-[110px] flex flex-col items-center justify-center">
+           <svg id="solarArc" viewBox="0 0 340 262" preserveAspectRatio="xMidYMid meet" class="w-full h-full max-h-full overflow-visible" role="img" aria-label="Gün boyunca güneşin yolu ve namaz vakitleri">
              <defs>
                <linearGradient id="arcPassedGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                  <stop offset="0%" stop-color="#ea580c"/>

@@ -100,6 +100,14 @@ class TamVaktiApp {
     this.setOngoingNotifSetting(checked);
   }
 
+  // Bildirim ve başlıklarda yalnızca bulunulan yer gösterilir: "Konya/Ilgın" -> "Ilgın"
+  shortPlaceName(name) {
+    const n = String(name !== undefined ? name : (this.currentLocation && this.currentLocation.name) || "").trim();
+    if (n.includes("/")) return n.split("/").pop().trim();
+    if (n.includes(",")) return (n.split(",")[1] || n.split(",")[0]).trim();
+    return n;
+  }
+
   loadSavedLocation() {
     const saved = localStorage.getItem("tamvakti_active_location");
     if (saved) {
@@ -185,13 +193,7 @@ class TamVaktiApp {
     
     // Şehir Rozeti
     const isPlaceholder = !this.currentLocation || this.currentLocation.isPlaceholder || this.currentLocation.name === "Konum Seçiniz";
-    const displayName = isPlaceholder
-      ? "Konum Seçiniz"
-      : this.currentLocation.name.includes(",") 
-      ? this.currentLocation.name.split(",")[1].trim() 
-      : this.currentLocation.name.includes("/")
-      ? this.currentLocation.name.split("/")[1].trim()
-      : this.currentLocation.name;
+    const displayName = isPlaceholder ? "Konum Seçiniz" : this.shortPlaceName();
     document.getElementById("headerCityName").textContent = displayName;
 
     // Vakitleri Al
@@ -749,9 +751,7 @@ class TamVaktiApp {
       if (this._lastNotifTargetMillis !== targetTimeMillis || this._lastNotifCity !== this.currentLocation.name) {
         this._lastNotifTargetMillis = targetTimeMillis;
         this._lastNotifCity = this.currentLocation.name;
-        const cityName = this.currentLocation.name.includes(",")
-          ? this.currentLocation.name.split(",")[1].trim()
-          : this.currentLocation.name;
+        const cityName = this.shortPlaceName();
         window.AndroidBridge.updatePrayerNotification(
           cityName,
           current.nextName,
@@ -1363,7 +1363,7 @@ class TamVaktiApp {
     const locDesc = document.getElementById("settingsLocationDesc");
     if (locDesc) {
       locDesc.textContent = (this.currentLocation && !this.currentLocation.isPlaceholder)
-        ? `${this.currentLocation.name} • Otomatik`
+        ? this.currentLocation.name.replace("/", " / ")
         : "Konum Seçiniz";
     }
     const silentToggle = document.getElementById("autoSilentToggle");
@@ -1419,7 +1419,7 @@ class TamVaktiApp {
       window.AndroidBridge.testAlert(
         "vakit",
         "Test: vakit girdi",
-        (this.currentLocation && !this.currentLocation.isPlaceholder) ? this.currentLocation.name : "Tam Vakti",
+        (this.currentLocation && !this.currentLocation.isPlaceholder) ? this.shortPlaceName() : "Tam Vakti",
         this.notifMode
       );
       this.showToast("Test bildirimi gönderildi", "🔔", 2500);
@@ -1518,11 +1518,7 @@ class TamVaktiApp {
     if (!this.currentLocation || this.currentLocation.isPlaceholder) return;
     const seq = ++this._syncSeq;
     const { lat, lon } = this.currentLocation;
-    const city = this.currentLocation.name.includes("/")
-      ? this.currentLocation.name.split("/")[1].trim()
-      : this.currentLocation.name.includes(",")
-      ? this.currentLocation.name.split(",")[1].trim()
-      : this.currentLocation.name;
+    const city = this.shortPlaceName();
 
     const DAYS = 7;
     const monthCache = {};
@@ -2045,11 +2041,7 @@ class TamVaktiApp {
     }
 
     if (badge) badge.classList.remove("opacity-50");
-    const cityName = this.currentLocation.name.includes(",")
-      ? this.currentLocation.name.split(",")[1].trim()
-      : this.currentLocation.name.includes("/")
-      ? this.currentLocation.name.split("/")[1].trim()
-      : this.currentLocation.name;
+    const cityName = this.shortPlaceName();
     if (cEl) cEl.textContent = cityName;
     if (nEl) nEl.textContent = cityName;
   }
