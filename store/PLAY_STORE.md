@@ -40,6 +40,7 @@ Paket: `com.tamvakti.app` • AAB: GitHub Actions > Artifacts > **TamVakti-Play-
 - **Yaklaşık konum:** İlçeyi bulup vakitleri hesaplamak için, isteğe bağlı. Arka planda konum **kullanılmaz**.
 - Play sürümünde **kendini güncelleme ve REQUEST_INSTALL_PACKAGES yoktur**.
 
-## Teknik not (yapılacak)
-- `targetSdk` şu an 34. Play'in güncel gereksinimi için Play Console'daki "hedef API düzeyi" uyarısını kontrol edin; yükseltme için AGP/Gradle sürümü ve ekran kenarına yayılma (edge-to-edge) uyumu ayrı iştir.
+## Teknik not
+- `targetSdk` / `compileSdk` **36** (AGP 8.9.1, Gradle 8.11.1, Kotlin 2.0.21). Android 15+ ekranı kenardan kenara çizdiği için sistem çubuğu ve klavye boşlukları `MainActivity` içinde `WindowInsets` ile yönetilir. **Gerçek telefonda durum çubuğu/gezinme çubuğu çevresini ve klavye açılışını (şehir arama kutusu) kontrol edin.**
 - Play App Signing: yükleme anahtarı olarak mevcut anahtar kullanılabilir.
+- Görseller: `/root/projeler/tools/store/` (öne çıkan görsel 1024×500, 5 ekran görüntüsü 1080×2400); ikon 512: `/root/projeler/tools/icons/play-store-icon-512.png`.
