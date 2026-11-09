@@ -154,8 +154,9 @@ class TamVaktiApp {
       if (cb) cb.checked = this.ongoingNotifEnabled;
     });
 
-    // Android bildirim iznini ilk açılışta nazikçe iste
-    if (this.ongoingNotifEnabled && window.AndroidBridge && window.AndroidBridge.requestNotificationPermission) {
+    // Bildirim izni: kurulum tamamlandıysa burada, değilse sihirbazın bildirim adımında istenir
+    const setupDone = localStorage.getItem("tamvakti_onboarding_completed") === "true";
+    if (setupDone && this.ongoingNotifEnabled && window.AndroidBridge && window.AndroidBridge.requestNotificationPermission) {
       window.AndroidBridge.requestNotificationPermission();
     }
 
@@ -168,11 +169,13 @@ class TamVaktiApp {
       this.updateOnboardingLocationDisplay();
     }
 
-    // Başlangıç Kurulum Sihirbazı (İlk açılışta veya henüz konum seçilmemişse açılır)
+    // Kurulum sihirbazı: yalnızca ilk açılışta; konum kaybolduysa doğrudan konum adımından
     const onboardingDone = localStorage.getItem("tamvakti_onboarding_completed") === "true";
     const hasSavedLocation = !!localStorage.getItem("tamvakti_active_location");
-    if (!onboardingDone || !hasSavedLocation) {
+    if (!onboardingDone) {
       this.openOnboarding(1);
+    } else if (!hasSavedLocation) {
+      this.openOnboarding("location");
     }
 
     // Eksik izin varsa (alarm / bildirim) bir kez nazikçe hatırlat
@@ -566,6 +569,7 @@ class TamVaktiApp {
   onAppResume() {
     this.updatePrayers();
     this.refreshPermissionStatus();
+    this.onOnboardingResume();
     const viewQibla = document.getElementById("viewQibla");
     const qiblaVisible = viewQibla && !viewQibla.classList.contains("hidden");
     if (this.compass && qiblaVisible && this.qiblaMode === "compass") {
@@ -1210,11 +1214,11 @@ class TamVaktiApp {
     this.closeLocationModal();
     this.updatePrayers();
 
-    // Eğer onboarding aktifse konum bilgisini güncelle ve otomatik adım 3'e geç
+    // Kurulum sihirbazı açıksa konum adımından bir sonrakine geç
     const onboardingModal = document.getElementById("onboardingModal");
     if (onboardingModal && !onboardingModal.classList.contains("hidden")) {
       this.updateOnboardingLocationDisplay();
-      setTimeout(() => this.goToOnboardingStep(3), 400);
+      this.advanceOnboardingFrom("location", 500);
     }
 
     const monthlyModal = document.getElementById("monthlyModal");
@@ -1992,13 +1996,65 @@ class TamVaktiApp {
   // ==========================================
   // BAŞLANGIÇ & KURULUM SİHİRBAZI (ONBOARDING)
   // ==========================================
+  // Kurulum adımları (docs/KURULUM.md). Liste sihirbaz açılırken bir kez çıkarılır;
+  // izin bu Android sürümünde gerekmiyorsa ya da zaten verilmişse adım gösterilmez.
+  onboardingSteps() {
+    const p = this.getPermissionState();
+    const steps = ["welcome", "location"];
+    if (p) {
+      const sdk = p.sdk || 0;
+      if (sdk >= 33 && !p.notif) steps.push("notif");
+      if (sdk >= 31 && !p.exact) steps.push("exact");
+      if (sdk >= 23 && !p.battery) steps.push("battery");
+      if (!p.dnd) steps.push("dnd");
+    }
+    steps.push("prefs", "done");
+    return steps;
+  }
+
+  isOnboardingOpen() {
+    const m = document.getElementById("onboardingModal");
+    return !!m && !m.classList.contains("hidden");
+  }
+
+  hasChosenLocation() {
+    return !!localStorage.getItem("tamvakti_active_location") && !!this.currentLocation && !this.currentLocation.isPlaceholder;
+  }
+
+  // step: 1 tabanlı sıra numarası ya da adım anahtarı ("location" gibi)
   openOnboarding(step = 1) {
     const modal = document.getElementById("onboardingModal");
     if (!modal) return;
+    this._obSteps = this.onboardingSteps();
+    this._obDenied = { notif: false, loc: false };
+    this._obVisited = {};
+    this._obAwaiting = null;
+
+    // Noktalar adım listesine göre üretilir
+    const dots = document.getElementById("onboardingDotsBar");
+    if (dots) {
+      dots.innerHTML = "";
+      this._obSteps.forEach((key, i) => {
+        const b = document.createElement("button");
+        b.className = "onboarding-dot";
+        b.title = `Adım ${i + 1}`;
+        b.onclick = () => this.goToOnboardingStep(i + 1);
+        dots.appendChild(b);
+      });
+    }
+
+    // Tercih anahtarlarını mevcut ayarlarla eşitle
+    const sync = (id, val) => { const cb = document.getElementById(id); if (cb) cb.checked = !!val; };
+    sync("onboardingOngoingToggle", this.ongoingNotifEnabled);
+    sync("onboardingKerahatToggle", this.kerahatAlert);
+    sync("onboardingSilentToggle", this.autoSilent);
+    const tk = document.getElementById("obTemkinValue");
+    if (tk) tk.textContent = this.timeOffsetMin ? `${this.timeOffsetMin > 0 ? "+" : ""}${this.timeOffsetMin} dk` : "Kapalı (0 dk)";
+
     modal.classList.remove("hidden");
     document.body.classList.add("overflow-hidden");
     document.body.classList.add("onboarding-active");
-    
+
     // Kurulum esnasında alt sekmeler / dock tamamen gizlenir
     const dock = document.getElementById("mainBottomDock") || document.querySelector(".minimal-dock");
     if (dock) {
@@ -2007,7 +2063,12 @@ class TamVaktiApp {
     }
 
     this.goToOnboardingStep(step);
-    this.updateOnboardingLocationDisplay();
+  }
+
+  // Ayarlar › Kurulumu yeniden başlat (tercihler silinmez)
+  restartOnboarding() {
+    this.closeSettingsModal();
+    this.openOnboarding(1);
   }
 
   closeOnboarding(savePreference = true) {
@@ -2018,6 +2079,7 @@ class TamVaktiApp {
     if (modal) modal.classList.add("hidden");
     document.body.classList.remove("overflow-hidden");
     document.body.classList.remove("onboarding-active");
+    this._obAwaiting = null;
 
     // Kurulum bittiğinde veya atlandığında alt sekmeleri geri aç
     const dock = document.getElementById("mainBottomDock") || document.querySelector(".minimal-dock");
@@ -2025,89 +2087,243 @@ class TamVaktiApp {
       dock.classList.remove("hidden");
       dock.style.removeProperty("display");
     }
+    this.refreshPermissionStatus();
+  }
+
+  // "Atla": konum yoksa konum adımına götürür, varsa kurulumu kapatır
+  skipOnboarding() {
+    if (!this.hasChosenLocation()) {
+      this.showToast("Önce konumunuzu seçin; vakitler buna göre hesaplanır.", "📍", 3000);
+      this.goToOnboardingStep("location");
+      return;
+    }
+    this.scheduleSync();
+    this.closeOnboarding(true);
   }
 
   updateOnboardingLocationDisplay() {
-    const hasChosen = !!localStorage.getItem("tamvakti_active_location");
     const cEl = document.getElementById("onboardingCurrentCity");
-    const nEl = document.getElementById("onboardingNotifCity");
     const badge = document.getElementById("onboardingLocationBadge");
+    const contBtn = document.getElementById("onboardingStep2ContinueBtn");
+    const chosen = this.hasChosenLocation();
+    if (contBtn) contBtn.classList.toggle("hidden", !chosen);
+    if (badge) badge.classList.toggle("opacity-50", !chosen);
+    if (cEl) cEl.textContent = chosen ? this.shortPlaceName() : "Henüz seçilmedi";
+    const denied = document.getElementById("obLocDenied");
+    if (denied) denied.classList.toggle("hidden", !(this._obDenied && this._obDenied.loc) || chosen);
+  }
 
-    if (!hasChosen || !this.currentLocation || this.currentLocation.isPlaceholder) {
-      if (cEl) cEl.textContent = "Henüz seçilmedi";
-      if (nEl) nEl.textContent = "Vakit Bildirimi";
-      if (badge) badge.classList.add("opacity-50");
-      return;
-    }
-
-    if (badge) badge.classList.remove("opacity-50");
-    const cityName = this.shortPlaceName();
-    if (cEl) cEl.textContent = cityName;
-    if (nEl) nEl.textContent = cityName;
+  currentOnboardingKey() {
+    return this._obSteps ? this._obSteps[this.onboardingStep - 1] : null;
   }
 
   goToOnboardingStep(step) {
-    this.onboardingStep = Math.max(1, Math.min(5, step));
+    if (!this._obSteps) this._obSteps = this.onboardingSteps();
+    const steps = this._obSteps;
+    let idx = typeof step === "string" ? steps.indexOf(step) + 1 : step;
+    if (!idx) idx = 1;
+    idx = Math.max(1, Math.min(steps.length, idx));
 
-    // 1. Panelleri ve buton gruplarını göster/gizle
-    for (let i = 1; i <= 5; i++) {
-      const pane = document.getElementById(`onboardingStep-${i}`);
-      const btnGroup = document.getElementById(`onboardingBtnGroup-${i}`);
-      if (pane) {
-        if (i === this.onboardingStep) {
-          pane.classList.remove("hidden");
-        } else {
-          pane.classList.add("hidden");
-        }
-      }
-      if (btnGroup) {
-        if (i === this.onboardingStep) {
-          btnGroup.classList.remove("hidden");
-        } else {
-          btnGroup.classList.add("hidden");
-        }
-      }
+    // Konum seçilmeden konum adımının ötesine geçilmez
+    const locIdx = steps.indexOf("location") + 1;
+    if (idx > locIdx && !this.hasChosenLocation()) {
+      if (this.onboardingStep === locIdx) this.showToast("Önce konumunuzu seçin.", "📍", 2200);
+      idx = locIdx;
     }
 
-    // Adım 2 İlerleme Butonu
-    if (this.onboardingStep === 2) {
-      const contBtn = document.getElementById("onboardingStep2ContinueBtn");
-      const hasLoc = !!localStorage.getItem("tamvakti_active_location");
-      if (contBtn) {
-        if (hasLoc) contBtn.classList.remove("hidden");
-        else contBtn.classList.add("hidden");
-      }
-    }
+    this.onboardingStep = idx;
+    this._obAwaiting = null;
+    const key = steps[idx - 1];
 
-    // 2. Geri Butonu Yönetimi (1. adımda gizli, 2-5 te görünür)
+    document.querySelectorAll("#onboardingModal .onboarding-step-pane").forEach(el => {
+      el.classList.toggle("hidden", el.id !== `onboardingStep-${key}`);
+    });
+    document.querySelectorAll("#onboardingActionArea > [id^='onboardingBtnGroup-']").forEach(el => {
+      el.classList.toggle("hidden", el.id !== `onboardingBtnGroup-${key}`);
+    });
+
     const backBtn = document.getElementById("onboardingBackBtn");
-    if (backBtn) {
-      if (this.onboardingStep > 1) {
-        backBtn.classList.remove("invisible");
-      } else {
-        backBtn.classList.add("invisible");
-      }
-    }
+    if (backBtn) backBtn.classList.toggle("invisible", idx <= 1);
 
-    // 3. Nokta İndikatörleri
-    const dotsContainer = document.getElementById("onboardingDotsBar");
-    if (dotsContainer) {
-      const dots = dotsContainer.querySelectorAll(".onboarding-dot");
-      dots.forEach((dot, idx) => {
-        if (idx + 1 === this.onboardingStep) {
-          dot.classList.add("active");
-        } else {
-          dot.classList.remove("active");
-        }
-      });
-    }
+    const dots = document.querySelectorAll("#onboardingDotsBar .onboarding-dot");
+    dots.forEach((dot, i) => dot.classList.toggle("active", i + 1 === idx));
 
     this.updateOnboardingLocationDisplay();
+    this.refreshOnboardingPermissions();
+  }
+
+  nextOnboardingStep() {
+    this.goToOnboardingStep(this.onboardingStep + 1);
   }
 
   prevOnboardingStep() {
     if (this.onboardingStep > 1) {
       this.goToOnboardingStep(this.onboardingStep - 1);
+    }
+  }
+
+  // Yalnızca hâlâ o adımdaysak ilerle (çift tetiklemeye karşı)
+  advanceOnboardingFrom(key, delay = 500) {
+    setTimeout(() => {
+      if (this.isOnboardingOpen() && this.currentOnboardingKey() === key) this.nextOnboardingStep();
+    }, delay);
+  }
+
+  // İzin durumu: ok (Verildi) / bad (Reddedildi) / go (Ayarlara git) / wait (Bekliyor)
+  onboardingPermStatus(kind, p) {
+    if (!p) return "wait";
+    if (kind === "notif") return p.notif ? "ok" : (this._obDenied.notif ? "bad" : "wait");
+    if (kind === "exact") return p.exact ? "ok" : (this._obVisited.exact ? "bad" : "go");
+    if (kind === "battery") return p.battery ? "ok" : (this._obVisited.battery ? "bad" : "wait");
+    if (kind === "dnd") return p.dnd ? "ok" : (this._obVisited.dnd ? "bad" : "go");
+    return "wait";
+  }
+
+  refreshOnboardingPermissions() {
+    if (!this._obSteps) return;
+    const p = this.getPermissionState();
+    const labels = { ok: "Verildi", bad: "Reddedildi", go: "Ayarlara git", wait: "Bekliyor" };
+    const actions = {
+      notif: { ok: "Devam", wait: "Bildirimlere izin ver", go: "Ayarlara git", bad: "Ayarlara git" },
+      exact: { ok: "Devam", wait: "Ayarlara git", go: "Ayarlara git", bad: "Tekrar dene" },
+      battery: { ok: "Devam", wait: "İzin ver", go: "Ayarlara git", bad: "Tekrar dene" },
+      dnd: { ok: "Devam", wait: "Ayarlara git", go: "Ayarlara git", bad: "Tekrar dene" }
+    };
+    ["notif", "exact", "battery", "dnd"].forEach(kind => {
+      const st = this.onboardingPermStatus(kind, p);
+      const badge = document.getElementById(`obBadge-${kind}`);
+      if (badge) {
+        badge.textContent = labels[st];
+        badge.className = `ob-badge ${st}`;
+        badge.onclick = st === "go" || st === "bad" ? () => this.obRequest(kind) : null;
+      }
+      const lbl = document.getElementById(`obBtnLabel-${kind}`);
+      if (lbl) lbl.textContent = actions[kind][st];
+    });
+
+    // Sessize alma kapalıysa izin gerekmez
+    const dndRow = document.getElementById("obDndStatusRow");
+    if (dndRow) dndRow.classList.toggle("invisible", !this.autoSilent);
+    if (!this.autoSilent) {
+      const l = document.getElementById("obBtnLabel-dnd");
+      if (l) l.textContent = "Devam";
+    }
+
+    const note = document.getElementById("obOngoingNote");
+    if (note) note.classList.toggle("hidden", !(p && !p.notif && this.ongoingNotifEnabled));
+
+    if (this.currentOnboardingKey() === "done") this.renderOnboardingSummary(p);
+  }
+
+  renderOnboardingSummary(p) {
+    const box = document.getElementById("obSummary");
+    if (!box) return;
+    const rows = [["📍 Konum", this.hasChosenLocation() ? this.shortPlaceName() : "Seçilmedi", this.hasChosenLocation() ? "ok" : "bad"]];
+    let missing = false;
+    if (p) {
+      const add = (label, ok) => { rows.push([label, ok ? "Verildi" : "Kapalı", ok ? "ok" : "bad"]); if (!ok) missing = true; };
+      add("🔔 Bildirimler", p.notif);
+      add("⏰ Tam zamanında uyarı", p.exact);
+      add("🔋 Pil kısıtlaması yok", p.battery);
+      if (this.autoSilent) add("📵 Sessize alma erişimi", p.dnd);
+    }
+    box.innerHTML = "";
+    rows.forEach(([label, val, st]) => {
+      const row = document.createElement("div");
+      row.className = "flex items-center justify-between gap-3 px-3.5 py-2.5";
+      const l = document.createElement("span");
+      l.className = "text-xs font-bold text-sky-50";
+      l.textContent = label;
+      const v = document.createElement("span");
+      v.className = `ob-badge ${st}`;
+      v.textContent = val;
+      row.append(l, v);
+      box.appendChild(row);
+    });
+    const note = document.getElementById("obSummaryNote");
+    if (note) note.classList.toggle("hidden", !missing);
+  }
+
+  // İzin adımlarının ana düğmesi
+  obRequest(kind) {
+    const b = window.AndroidBridge;
+    const p = this.getPermissionState();
+    if (!b || !p) return this.nextOnboardingStep();
+
+    if (kind === "dnd" && !this.autoSilent) return this.nextOnboardingStep();
+    if (p[kind]) return this.nextOnboardingStep();
+
+    this._obAwaiting = kind;
+    if (kind === "notif") {
+      if (this._obDenied.notif) {
+        this.showToast("Bildirimler › İzin ver seçeneğini açın", "🔔", 3000);
+        b.openAppNotificationSettings && b.openAppNotificationSettings();
+      } else {
+        b.requestNotificationPermission && b.requestNotificationPermission();
+      }
+    } else if (kind === "exact") {
+      this._obVisited.exact = true;
+      this.showToast("“Alarmlar ve hatırlatıcılar” iznini açın", "⏰", 3000);
+      setTimeout(() => b.openExactAlarmSettings && b.openExactAlarmSettings(), 600);
+    } else if (kind === "battery") {
+      this._obVisited.battery = true;
+      if (b.requestIgnoreBatteryOptimizations) {
+        b.requestIgnoreBatteryOptimizations();
+      } else {
+        this.showToast("Tam Vakti için “Kısıtlama yok” seçin", "🔋", 3000);
+        setTimeout(() => b.openBatteryOptimizationSettings && b.openBatteryOptimizationSettings(), 600);
+      }
+    } else if (kind === "dnd") {
+      this._obVisited.dnd = true;
+      this.showToast("Listeden Tam Vakti'ni açın", "📵", 3000);
+      setTimeout(() => b.openDndSettings && b.openDndSettings(), 600);
+    }
+  }
+
+  obOpenAppDetails() {
+    const b = window.AndroidBridge;
+    if (b && b.openAppDetailsSettings) {
+      this.showToast("İzinler › Konum › Uygulamayı kullanırken izin ver", "📍", 3500);
+      b.openAppDetailsSettings();
+    }
+  }
+
+  // Sihirbazdaki sessize alma anahtarı: ayar ekranını kendiliğinden açmaz
+  obSetAutoSilent(checked) {
+    this.autoSilent = !!checked;
+    localStorage.setItem("tamvakti_auto_silent", this.autoSilent ? "true" : "false");
+    const cb = document.getElementById("autoSilentToggle");
+    if (cb) cb.checked = this.autoSilent;
+    this.scheduleSync();
+    this.refreshOnboardingPermissions();
+  }
+
+  // Native izin penceresi sonucu (MainActivity.notifyPermissionResult)
+  onPermissionResult(kind, granted) {
+    if (!this._obDenied) this._obDenied = { notif: false, loc: false };
+    if (kind === "notif") {
+      this._obDenied.notif = !granted;
+      if (granted) this.evaluateCurrentPrayer();
+    } else if (kind === "loc") {
+      this._obDenied.loc = !granted;
+    }
+    this.refreshPermissionStatus();
+    if (!this.isOnboardingOpen()) return;
+    this.updateOnboardingLocationDisplay();
+    this.refreshOnboardingPermissions();
+    if (granted && kind === "notif") this.advanceOnboardingFrom("notif", 600);
+  }
+
+  // Sistem ayar ekranından dönüş: rozetleri tazele, izin verildiyse ilerle
+  onOnboardingResume() {
+    if (!this.isOnboardingOpen()) return;
+    this.refreshOnboardingPermissions();
+    const kind = this._obAwaiting;
+    const p = this.getPermissionState();
+    if (kind && p && p[kind] && this.currentOnboardingKey() === kind) {
+      this._obAwaiting = null;
+      this.showToast("İzin verildi", "✓", 1500);
+      this.advanceOnboardingFrom(kind, 700);
     }
   }
 
@@ -2122,14 +2338,14 @@ class TamVaktiApp {
           const lat = pos.coords.latitude;
           const lon = pos.coords.longitude;
           const locName = await this.resolveLocationName(lat, lon);
-          this.selectLocation(locName, lat, lon);
-          this.updateOnboardingLocationDisplay();
+          this.selectLocation(locName, lat, lon); // konum adımından kendiliğinden ilerler
           const districtDisplay = locName.includes("/") ? locName.split("/")[1] : locName;
           this.showToast(`Konum tespit edildi: ${districtDisplay}`, "📍");
           if (btn) btn.innerHTML = origHtml;
-          setTimeout(() => this.goToOnboardingStep(3), 600);
         },
         (err) => {
+          if (err && err.code === 1 && this._obDenied) this._obDenied.loc = true;
+          this.updateOnboardingLocationDisplay();
           this.showToast("GPS konumu alınamadı, lütfen listeden seçiniz.", "⚠️");
           if (btn) btn.innerHTML = origHtml;
           this.openLocationModal();
@@ -2143,25 +2359,8 @@ class TamVaktiApp {
     }
   }
 
-  onboardingEnableNotifications() {
-    this.setOngoingNotifSetting(true);
-    if (window.AndroidBridge && window.AndroidBridge.requestNotificationPermission) {
-      window.AndroidBridge.requestNotificationPermission();
-    } else if (window.Notification && Notification.requestPermission) {
-      Notification.requestPermission();
-    }
-    this.showToast("Bildirimler etkinleştirildi.", "🔔");
-    this.goToOnboardingStep(4);
-  }
-
   completeOnboarding() {
-    const kerahatToggle = document.getElementById("onboardingKerahatToggle");
-    if (kerahatToggle) {
-      localStorage.setItem("tamvakti_kerahat_alert", kerahatToggle.checked ? "true" : "false");
-      this.kerahatAlert = kerahatToggle.checked;
-    }
     this.scheduleSync();
-
     this.closeOnboarding(true);
     this.showToast("Tam Vakti\x27ne Hoş Geldiniz! Hayırlı ibadetler dileriz.", "🕌", 3500);
   }

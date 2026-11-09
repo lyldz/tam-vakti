@@ -626,6 +626,16 @@
               <span id="settingsTestAction">Dene</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </span>
           </button>
+          <button onclick="app.restartOnboarding()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
+            <span class="flex items-center gap-3 min-w-0">
+              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span class="min-w-0">
+                <span class="block text-[14px] font-semibold text-slate-100">Kurulumu yeniden başlat</span>
+                <span class="block text-[12px] text-slate-400 truncate">Konum ve izin adımlarını tekrar gösterir</span>
+              </span>
+            </span>
+            <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          </button>
           <button onclick="app.openAboutModal()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
             <span class="flex items-center gap-3 min-w-0">
               <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -858,293 +868,258 @@
     </div>
   </div>
 
-  <!-- MODAL: MODERN BAŞLANGIÇ & KURULUM SİHİRBAZI (ONBOARDING) -->
+  <!-- MODAL: BAŞLANGIÇ & KURULUM SİHİRBAZI (docs/KURULUM.md) -->
+  <!-- Adımlar app.onboardingSteps() ile dinamik seçilir: welcome, location, notif, exact, battery, dnd, prefs, done -->
   <div id="onboardingModal" class="hidden fixed inset-0 z-[9999] flex flex-col justify-between overflow-y-auto select-none">
-    
-    <!-- Üst Bar: Geri Dön Butonu & Atla / Sürüm -->
+
+    <!-- Üst Bar: Geri / Sürüm / Atla -->
     <div class="px-5 pt-5 pb-2 flex items-center justify-between shrink-0">
-      <button id="onboardingBackBtn" onclick="app.prevOnboardingStep()" class="invisible w-9 h-9 rounded-full bg-white/80 dark:bg-sky-950/60 border border-sky-900/10 dark:border-sky-500/20 flex items-center justify-center text-[#0f3e2e] dark:text-sky-300 shadow-2xs hover:bg-white active:scale-90 transition-all cursor-pointer" title="Geri">
+      <button id="onboardingBackBtn" onclick="app.prevOnboardingStep()" class="invisible w-9 h-9 rounded-full bg-[#0d1527] border border-sky-400/20 flex items-center justify-center text-sky-300 active:scale-90 transition-all cursor-pointer" title="Geri">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
         </svg>
       </button>
       <div class="flex items-center gap-2">
-        <span class="text-[11px] font-mono font-bold bg-sky-100/90 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 px-2.5 py-0.5 rounded-full">v2.4 • Şafak</span>
-        <button id="onboardingSkipBtn" onclick="app.closeOnboarding(true)" class="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-sky-300 px-2 py-1 transition-colors cursor-pointer">
+        <span class="text-[11px] font-mono font-bold bg-sky-900/60 text-sky-300 px-2.5 py-0.5 rounded-full">v2.4 • Şafak</span>
+        <button id="onboardingSkipBtn" onclick="app.skipOnboarding()" class="text-xs font-bold text-slate-400 active:text-sky-300 px-2 py-1 transition-colors cursor-pointer">
           Atla
         </button>
       </div>
     </div>
 
-    <!-- Ortadaki Adım İçerikleri -->
+    <!-- Adım İçerikleri -->
     <div id="onboardingStepsContainer" class="flex-1 flex flex-col justify-center max-w-sm w-full mx-auto px-5 py-4">
 
-      <!-- ADIM 1: HOŞ GELDİNİZ -->
-      <div id="onboardingStep-1" class="onboarding-step-pane flex flex-col items-center text-center my-auto">
-        <!-- Logo Kartı -->
+      <!-- ADIM: HOŞ GELDİNİZ -->
+      <div id="onboardingStep-welcome" class="onboarding-step-pane hidden flex flex-col items-center text-center my-auto">
         <div class="relative mb-6">
-          <div class="absolute -inset-2 bg-gradient-to-r from-sky-500 to-teal-400 rounded-3xl blur-lg opacity-30 animate-pulse"></div>
-          <div class="relative w-28 h-28 flex items-center justify-center">
-            <img src="assets/icons/logo.svg" alt="Tam Vakti Logo" class="w-28 h-28 object-contain rounded-3xl shadow-xl">
-          </div>
+          <div class="absolute -inset-2 bg-gradient-to-r from-sky-500 to-cyan-400 rounded-3xl blur-lg opacity-30 animate-pulse"></div>
+          <img src="assets/icons/logo.svg" alt="Tam Vakti Logo" class="relative w-28 h-28 object-contain rounded-3xl shadow-xl">
         </div>
-
-        <h2 class="text-2xl font-black text-[#0f3e2e] dark:text-sky-100 leading-tight">
-          Tam Vakti'ne Hoş Geldiniz
-        </h2>
-        <p class="text-sm font-semibold text-slate-600 dark:text-sky-200/90 mt-2 leading-relaxed">
-          İbadet uygulaması nasıl olmalıysa, öyle.
-        </p>
-
-        <!-- Öne Çıkan Özellikler -->
-        <div class="inline-flex items-center gap-1.5 bg-sky-100/80 dark:bg-sky-900/40 text-sky-900 dark:text-sky-300 text-[11px] font-bold px-3 py-1.5 rounded-full border border-sky-200/60 dark:border-sky-600/30 mt-4">
-          <span>Tamamen ücretsiz</span>
-          <span class="opacity-40">•</span>
-          <span>Reklamsız</span>
-          <span class="opacity-40">•</span>
-          <span>Vakitler internetsiz</span>
+        <h2 class="text-2xl font-black text-sky-50 leading-tight">Tam Vakti'ne Hoş Geldiniz</h2>
+        <p class="text-[13px] font-medium text-slate-300 mt-2 max-w-xs leading-relaxed">İbadet uygulaması nasıl olmalıysa, öyle. Birkaç adımda kurulumu tamamlayalım.</p>
+        <div class="inline-flex items-center gap-1.5 bg-sky-900/40 text-sky-300 text-[11px] font-bold px-3 py-1.5 rounded-full border border-sky-600/30 mt-5">
+          <span>Tamamen ücretsiz</span><span class="opacity-40">•</span><span>Reklamsız</span><span class="opacity-40">•</span><span>Vakitler internetsiz</span>
         </div>
-
-        <!-- Sistem Teması Uyarısı -->
-        <div class="flex items-center justify-center gap-1.5 text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-5">
-          <span>🌐</span>
-          <span>Diyanet uyumlu • İnternetsiz de çalışır</span>
-        </div>
+        <div class="text-[11px] font-medium text-slate-500 mt-4">Diyanet uyumlu hesaplama</div>
       </div>
 
-      <!-- ADIM 2: NEREDESİNİZ? (KONUM BELİRLEME) -->
-      <div id="onboardingStep-2" class="onboarding-step-pane hidden flex flex-col items-center text-center my-auto">
-        <h2 class="text-2xl font-black text-[#0f3e2e] dark:text-sky-100 leading-tight">
-          Neredesiniz?
-        </h2>
-        <p class="text-xs font-semibold text-slate-600 dark:text-sky-200/80 mt-2 max-w-xs leading-relaxed">
-          Size doğru namaz vakitlerini hesaplamak ve kıble yönünü bulmak için konumunuza ihtiyacımız var.
-        </p>
-
-        <!-- Radar Animasyon Alanı -->
-        <div class="relative w-44 h-44 mx-auto flex items-center justify-center my-6">
+      <!-- ADIM: KONUM -->
+      <div id="onboardingStep-location" class="onboarding-step-pane hidden flex flex-col items-center text-center my-auto">
+        <h2 class="text-2xl font-black text-sky-50 leading-tight">Neredesiniz?</h2>
+        <p class="text-[13px] font-medium text-slate-300 mt-2 max-w-xs leading-relaxed">Namaz vakitleri ve kıble yönü konumunuza göre hesaplanır. Yaklaşık konum yeterlidir; isterseniz il/ilçeyi listeden seçebilirsiniz.</p>
+        <div class="relative w-40 h-40 mx-auto flex items-center justify-center my-6">
           <div class="radar-circle-1 absolute inset-0 rounded-full border-2 border-sky-500/30 bg-sky-500/5"></div>
           <div class="radar-circle-2 absolute inset-4 rounded-full border-2 border-sky-400/40 bg-sky-400/10"></div>
-          
-          <div class="relative z-10 w-20 h-20 rounded-full bg-sky-600 dark:bg-sky-500 text-white flex items-center justify-center shadow-lg shadow-sky-600/30">
-            <svg class="w-10 h-10 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="3"/>
-              <circle cx="12" cy="12" r="8"/>
-              <line x1="12" y1="2" x2="12" y2="4"/>
-              <line x1="12" y1="20" x2="12" y2="22"/>
-              <line x1="2" y1="12" x2="4" y2="12"/>
-              <line x1="20" y1="12" x2="22" y2="12"/>
+          <div class="relative z-10 w-20 h-20 rounded-full bg-sky-500 text-slate-950 flex items-center justify-center shadow-lg shadow-sky-600/30">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/>
+              <line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/>
+              <line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/>
             </svg>
           </div>
         </div>
-
-        <!-- Seçili Konum Hapı -->
-        <div id="onboardingLocationBadge" class="flex items-center gap-1.5 bg-white/90 dark:bg-sky-950/60 border border-sky-900/10 dark:border-sky-500/20 text-[#0f3e2e] dark:text-sky-200 px-3.5 py-1.5 rounded-full text-xs font-bold shadow-2xs opacity-75">
-          <span class="text-sky-600">📍</span>
-          <span>Seçili:</span>
-          <span id="onboardingCurrentCity" class="text-sky-700 dark:text-sky-400 font-extrabold">Henüz seçilmedi</span>
+        <div id="onboardingLocationBadge" class="flex items-center gap-1.5 bg-[#0d1527] border border-sky-400/20 text-sky-200 px-3.5 py-1.5 rounded-full text-xs font-bold opacity-50">
+          <span>📍</span><span>Seçili:</span>
+          <span id="onboardingCurrentCity" class="text-sky-400 font-extrabold">Henüz seçilmedi</span>
         </div>
+        <div id="obLocDenied" class="hidden mt-3 flex flex-col items-center gap-1">
+          <span class="ob-badge bad">Konum izni reddedildi</span>
+          <span class="text-[11px] text-slate-400">Konumu listeden seçebilirsiniz.</span>
+          <button onclick="app.obOpenAppDetails()" class="text-[11px] font-bold text-sky-400 underline cursor-pointer">Konum iznini ayarlardan aç</button>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-3">Bu adım atlanamaz. Sonradan: ana ekrandaki şehir adına dokunun.</p>
       </div>
 
-      <!-- ADIM 3: BİLDİRİMLER (HİÇBİR VAKTİ KAÇIRMAYIN) -->
-      <div id="onboardingStep-3" class="onboarding-step-pane hidden flex flex-col items-center text-center my-auto">
-        <h2 class="text-2xl font-black text-[#0f3e2e] dark:text-sky-100 leading-tight">
-          Hiçbir vakti kaçırmayın
-        </h2>
-        <p class="text-xs font-semibold text-slate-600 dark:text-sky-200/80 mt-2 max-w-xs leading-relaxed">
-          Her vakit girdiğinde size haber verelim. İzin verince hangi vakitlerin ve hangi sesin geleceğini seçersiniz.
-        </p>
-
-        <!-- Bildirim Önizleme Kartı (Mockup Banner) -->
-        <div class="w-full bg-white/95 dark:bg-[#111a30] border border-sky-900/10 dark:border-sky-500/20 rounded-2xl p-3.5 shadow-md shadow-sky-950/5 text-left my-6 space-y-2">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <div class="w-7 h-7 rounded-lg bg-sky-800 flex items-center justify-center text-white text-xs shadow-2xs">
-                <span>🕌</span>
-              </div>
-              <div class="text-xs font-bold text-[#0f3e2e] dark:text-sky-100">
-                Öğle • <span id="onboardingNotifCity">Vakit Bildirimi</span>
-              </div>
-            </div>
-            <span class="text-[10px] font-semibold text-slate-400">Şimdi</span>
-          </div>
-          <p class="text-xs text-slate-600 dark:text-sky-200/90 leading-relaxed font-medium pl-9">
-            "Sübhânallâhi ve bihamdihî — Allah'ı hamd ile tesbih ederim"
-          </p>
+      <!-- ADIM: HIÇBIR VAKTI KAÇIRMAYIN -->
+      <div id="onboardingStep-notif" class="onboarding-step-pane hidden flex flex-col items-center text-center my-auto">
+        <div class="w-20 h-20 rounded-3xl bg-sky-500/10 border border-sky-400/25 flex items-center justify-center text-4xl mb-5 shadow-lg shadow-sky-950/40">🔔</div>
+        <h2 class="text-2xl font-black text-sky-50 leading-tight">Hiçbir vakti kaçırmayın</h2>
+        <p class="text-[13px] font-medium text-slate-300 mt-2 max-w-xs leading-relaxed">Her vakit girdiğinde ve vakitten önce telefonun kendi bildirim sesiyle haber verelim.</p>
+        <ul class="w-full bg-[#0d1527] border border-sky-400/15 rounded-2xl p-3.5 my-5 space-y-1.5 text-left text-[12px] text-slate-300 leading-relaxed">
+            <li class="flex gap-2"><span class="text-sky-400 shrink-0">•</span><span>Vakit girişi ve vakitten önce hatırlatma bildirimle gelir.</span></li>
+            <li class="flex gap-2"><span class="text-sky-400 shrink-0">•</span><span>Kilit ekranındaki canlı geri sayım da bildirim iznine bağlıdır.</span></li>
+            <li class="flex gap-2"><span class="text-sky-400 shrink-0">•</span><span>İzin vermezseniz uygulama çalışır ama uyarı gelmez.</span></li>
+        </ul>
+        <div class="flex items-center gap-2 text-xs font-bold text-slate-400">
+          <span>Durum:</span>
+          <span id="obBadge-notif" class="ob-badge wait">Bekliyor</span>
         </div>
+        <p class="text-[11px] text-slate-500 mt-3">Sonradan: Ayarlar › İzinler › Bildirimler</p>
       </div>
 
-      <!-- ADIM 4: WIDGET'LAR & CANLI TAKİP -->
-      <div id="onboardingStep-4" class="onboarding-step-pane hidden flex flex-col items-center text-center my-auto">
-        <h2 class="text-2xl font-black text-[#0f3e2e] dark:text-sky-100 leading-tight">
-          Widget'lar & Canlı Takip
-        </h2>
-        <p class="text-xs font-semibold text-slate-600 dark:text-sky-200/80 mt-2 max-w-xs leading-relaxed">
-          Vakitleri uygulamayı açmadan kilit ekranında ve ana ekranında gör.
-        </p>
-
-        <!-- Widget Önizleme Kartı -->
-        <div class="w-full bg-white/95 dark:bg-[#111a30] border border-sky-900/10 dark:border-sky-500/20 rounded-2xl p-4 shadow-md text-left my-4 space-y-3">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="text-lg">⏳</span>
-              <span class="text-xs font-extrabold text-[#0f3e2e] dark:text-sky-100">İkindi Vakti'ne</span>
-            </div>
-            <span class="text-[10px] font-mono font-bold bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 px-2 py-0.5 rounded-full">Kalan</span>
-          </div>
-          <div class="text-center py-1">
-            <div class="font-mono text-3xl font-black text-[#12304a] dark:text-sky-300 tracking-tight">02:45:10</div>
-            <div class="text-[11px] font-semibold text-slate-400 mt-0.5">Hedef Vakit: 15:42</div>
-          </div>
+      <!-- ADIM: TAM VAKTINDE UYARI -->
+      <div id="onboardingStep-exact" class="onboarding-step-pane hidden flex flex-col items-center text-center my-auto">
+        <div class="w-20 h-20 rounded-3xl bg-sky-500/10 border border-sky-400/25 flex items-center justify-center text-4xl mb-5 shadow-lg shadow-sky-950/40">⏰</div>
+        <h2 class="text-2xl font-black text-sky-50 leading-tight">Tam vaktinde uyarı</h2>
+        <p class="text-[13px] font-medium text-slate-300 mt-2 max-w-xs leading-relaxed">Uyarıların dakikası dakikasına gelmesi için “Alarmlar ve hatırlatıcılar” izni gerekir.</p>
+        <ul class="w-full bg-[#0d1527] border border-sky-400/15 rounded-2xl p-3.5 my-5 space-y-1.5 text-left text-[12px] text-slate-300 leading-relaxed">
+            <li class="flex gap-2"><span class="text-sky-400 shrink-0">•</span><span>Açılan ekranda Tam Vakti için izni açıp geri dönün.</span></li>
+            <li class="flex gap-2"><span class="text-sky-400 shrink-0">•</span><span>İzin yoksa Android uyarıyı birkaç dakika geciktirebilir.</span></li>
+            <li class="flex gap-2"><span class="text-sky-400 shrink-0">•</span><span>Bu izin için Android pencere göstermez; ayar ekranı açılır.</span></li>
+        </ul>
+        <div class="flex items-center gap-2 text-xs font-bold text-slate-400">
+          <span>Durum:</span>
+          <span id="obBadge-exact" class="ob-badge wait">Bekliyor</span>
         </div>
+        <p class="text-[11px] text-slate-500 mt-3">Sonradan: Ayarlar › İzinler › Tam zamanında uyarı</p>
+      </div>
 
-        <!-- İpucu Kutusu -->
-        <div class="w-full flex items-start gap-2.5 bg-sky-50/80 dark:bg-sky-950/40 border border-sky-200/80 dark:border-sky-600/20 rounded-xl p-2.5 text-left text-[11px] text-[#0f3e2e] dark:text-sky-200">
-          <span class="text-base leading-none shrink-0">📱</span>
-          <span class="leading-relaxed">Ana ekranda boş bir yere basılı tutun, <strong>Widget'lar</strong>'a dokunun ve <strong>Tam Vakti</strong>'ni seçin.</span>
+      <!-- ADIM: PIL KISITLAMASI -->
+      <div id="onboardingStep-battery" class="onboarding-step-pane hidden flex flex-col items-center text-center my-auto">
+        <div class="w-20 h-20 rounded-3xl bg-sky-500/10 border border-sky-400/25 flex items-center justify-center text-4xl mb-5 shadow-lg shadow-sky-950/40">🔋</div>
+        <h2 class="text-2xl font-black text-sky-50 leading-tight">Pil kısıtlaması</h2>
+        <p class="text-[13px] font-medium text-slate-300 mt-2 max-w-xs leading-relaxed">Bazı telefonlar arka plandaki uygulamaları kapatıp uyarıları geciktirir.</p>
+        <ul class="w-full bg-[#0d1527] border border-sky-400/15 rounded-2xl p-3.5 my-5 space-y-1.5 text-left text-[12px] text-slate-300 leading-relaxed">
+            <li class="flex gap-2"><span class="text-sky-400 shrink-0">•</span><span>Açılan pencerede “İzin ver” deyin ya da listede Tam Vakti için “Kısıtlama yok” seçin.</span></li>
+            <li class="flex gap-2"><span class="text-sky-400 shrink-0">•</span><span>Tam Vakti arka planda yalnızca alarm kurar; pil tüketimi yok denecek kadar azdır.</span></li>
+            <li class="flex gap-2"><span class="text-sky-400 shrink-0">•</span><span>Vermezseniz bazı cihazlarda uyarılar gecikebilir.</span></li>
+        </ul>
+        <div class="flex items-center gap-2 text-xs font-bold text-slate-400">
+          <span>Durum:</span>
+          <span id="obBadge-battery" class="ob-badge wait">Bekliyor</span>
         </div>
+        <p class="text-[11px] text-slate-500 mt-3">Sonradan: Ayarlar › İzinler › Pil tasarrufu</p>
+      </div>
 
-        <!-- Canlı Geri Sayım Bildirimi Switch -->
-        <div class="w-full mt-3 pt-2 border-t border-sky-900/10 dark:border-sky-500/10 flex items-center justify-between">
-          <div class="text-left">
-            <div class="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-sky-400">Canlı Takip</div>
-            <div class="text-xs font-bold text-[#0f3e2e] dark:text-sky-100">Kilit ekranında canlı sayaç</div>
+      <!-- ADIM: RAHATSIZ ETMEYİN ERİŞİMİ -->
+      <div id="onboardingStep-dnd" class="onboarding-step-pane hidden flex flex-col items-center text-center my-auto">
+        <div class="w-20 h-20 rounded-3xl bg-sky-500/10 border border-sky-400/25 flex items-center justify-center text-4xl mb-5 shadow-lg shadow-sky-950/40">📵</div>
+        <h2 class="text-2xl font-black text-sky-50 leading-tight">Namazda sessize alma</h2>
+        <p class="text-[13px] font-medium text-slate-300 mt-2 max-w-xs leading-relaxed">Vakit girince telefonu titreşime alır, namazdan sonra eski haline döndürür. Bunun için “Rahatsız Etmeyin erişimi” gerekir.</p>
+        <div class="w-full bg-[#0d1527] border border-sky-400/15 rounded-2xl p-3.5 my-5 flex items-center justify-between text-left">
+          <div>
+            <div class="text-[13px] font-bold text-sky-50">Otomatik sessize alma</div>
+            <div class="text-[11px] text-slate-400">Namaz vaktinde titreşime al</div>
           </div>
           <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="onboardingOngoingToggle" onchange="app.toggleOngoingNotification(this.checked)" class="sr-only peer" checked>
-            <div class="w-11 h-6 bg-slate-200 dark:bg-sky-950/80 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
+            <input type="checkbox" id="onboardingSilentToggle" onchange="app.obSetAutoSilent(this.checked)" class="sr-only peer" checked>
+            <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-500"></div>
           </label>
+        </div>
+        <div id="obDndStatusRow" class="flex items-center gap-2 text-xs font-bold text-slate-400">
+          <span>Durum:</span>
+          <span id="obBadge-dnd" class="ob-badge wait">Bekliyor</span>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-3">Açılan listede Tam Vakti'ni etkinleştirip geri dönün. Sonradan: Ayarlar › İzinler › Sessize alma erişimi</p>
+      </div>
+
+      <!-- ADIM: TERCİHLER -->
+      <div id="onboardingStep-prefs" class="onboarding-step-pane hidden flex flex-col items-center text-center my-auto">
+        <h2 class="text-2xl font-black text-sky-50 leading-tight">Tercihler</h2>
+        <p class="text-[13px] font-medium text-slate-300 mt-2 max-w-xs leading-relaxed">Hepsini dilediğiniz zaman Ayarlar'dan değiştirebilirsiniz.</p>
+        <div class="w-full bg-[#0d1527] border border-sky-400/15 rounded-2xl p-3 text-left mt-4 space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-black text-sky-50">Türkiye (Diyanet)</span>
+            <span class="text-[10px] font-bold text-sky-300 bg-sky-900/60 px-2 py-0.5 rounded-full">Önerilen</span>
+          </div>
+          <p class="text-[11px] text-slate-400 leading-snug">Vakitler resmi takvimle aynı yöntemle hesaplanır.</p>
+        </div>
+        <div class="w-full bg-[#0d1527] border border-sky-400/15 rounded-2xl mt-2 divide-y divide-white/5 text-left">
+          <div class="flex items-center justify-between gap-3 px-3.5 py-3">
+            <div class="text-xs font-bold text-sky-50">⏱️ İhtiyat (temkin) dakikası</div>
+            <span id="obTemkinValue" class="text-[11px] font-semibold text-sky-300">Kapalı</span>
+          </div>
+          <div class="flex items-center justify-between gap-3 px-3.5 py-3">
+            <div class="text-xs font-bold text-sky-50">⌛ Kerahat vakti uyarısı</div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="onboardingKerahatToggle" onchange="app.toggleKerahatAlert(this.checked)" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-500"></div>
+            </label>
+          </div>
+          <div class="px-3.5 py-3">
+            <div class="flex items-center justify-between gap-3">
+              <div class="text-xs font-bold text-sky-50">📌 Kilit ekranında canlı sayaç</div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="onboardingOngoingToggle" onchange="app.toggleOngoingNotification(this.checked)" class="sr-only peer" checked>
+                <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-500"></div>
+              </label>
+            </div>
+            <div id="obOngoingNote" class="hidden text-[11px] text-amber-300 mt-1">Bildirim izni olmadan görünmez.</div>
+          </div>
+        </div>
+        <div class="w-full flex items-start gap-2.5 bg-sky-950/40 border border-sky-600/20 rounded-xl p-2.5 mt-2 text-left text-[11px] text-sky-200">
+          <span class="text-base leading-none shrink-0">📱</span>
+          <span class="leading-relaxed">Widget için ana ekranda boş bir yere basılı tutun, <strong>Widget'lar</strong>'a dokunun ve <strong>Tam Vakti</strong>'ni seçin.</span>
         </div>
       </div>
 
-      <!-- ADIM 5: VAKİT HESAPLAMA AYARLARI -->
-      <div id="onboardingStep-5" class="onboarding-step-pane hidden flex flex-col items-center text-center my-auto">
-        <h2 class="text-2xl font-black text-[#0f3e2e] dark:text-sky-100 leading-tight">
-          Vakit Hesaplama Ayarları
-        </h2>
-        <p class="text-xs font-semibold text-slate-600 dark:text-sky-200/80 mt-1.5 max-w-xs leading-relaxed">
-          Hesaplama yöntemini, temkin süresini ve kerahat saatlerini buradan ayarlayabilirsiniz.
-        </p>
-
-        <!-- Diyanet Onay Kartı -->
-        <div class="w-full bg-white/95 dark:bg-[#111a30] border border-sky-900/10 dark:border-sky-500/20 rounded-2xl p-3 text-left my-3 space-y-1">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-black text-[#0f3e2e] dark:text-sky-100">Türkiye (Diyanet)</span>
-            <span class="text-[10px] font-bold text-sky-700 dark:text-sky-300 bg-sky-100 dark:bg-sky-900/60 px-2 py-0.5 rounded-full">Önerilen</span>
-          </div>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
-            Konumunuza göre Türkiye (Diyanet) takvimi kullanılacak; vakitler resmi takvimle aynı hesaplanır.
-          </p>
-        </div>
-
-        <!-- Seçenek Satırları -->
-        <div class="w-full space-y-2 text-left">
-          <div class="flex items-center justify-between p-2 rounded-xl bg-white/60 dark:bg-sky-950/30 border border-sky-900/5 dark:border-sky-500/10">
-            <div class="flex items-center gap-2 text-xs font-bold text-[#0f3e2e] dark:text-sky-100">
-              <span>⏱️</span>
-              <span>İhtiyat Dakikası (Temkin)</span>
-            </div>
-            <span class="text-[11px] font-semibold text-slate-500 dark:text-sky-300">Kapalı (0 dk)</span>
-          </div>
-
-          <div class="flex items-center justify-between p-2 rounded-xl bg-white/60 dark:bg-sky-950/30 border border-sky-900/5 dark:border-sky-500/10">
-            <div class="flex items-center gap-2 text-xs font-bold text-[#0f3e2e] dark:text-sky-100">
-              <span>⌛</span>
-              <span>Kerahat Vakitleri Uyarısı</span>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="onboardingKerahatToggle" class="sr-only peer" checked>
-              <div class="w-9 h-5 bg-slate-200 dark:bg-sky-950/80 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-600"></div>
-            </label>
-          </div>
-
-          <div class="flex items-center justify-between p-2 rounded-xl bg-white/60 dark:bg-sky-950/30 border border-sky-900/5 dark:border-sky-500/10">
-            <div class="flex items-center gap-2 text-xs font-bold text-[#0f3e2e] dark:text-sky-100">
-              <span>🔕</span>
-              <span>Namazda Otomatik Sessiz Mod</span>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="onboardingSilentToggle" onchange="app.toggleAutoSilent(this.checked)" class="sr-only peer" checked>
-              <div class="w-9 h-5 bg-slate-200 dark:bg-sky-950/80 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-600"></div>
-            </label>
-          </div>
-        </div>
-
-        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-3 text-center">
-          Tüm ayarları dilediğiniz zaman Ayarlar menüsünden değiştirebilirsiniz.
-        </p>
+      <!-- ADIM: BİTİR -->
+      <div id="onboardingStep-done" class="onboarding-step-pane hidden flex flex-col items-center text-center my-auto">
+        <div class="w-20 h-20 rounded-3xl bg-sky-500/10 border border-sky-400/25 flex items-center justify-center text-4xl mb-5">🕌</div>
+        <h2 class="text-2xl font-black text-sky-50 leading-tight">Hazırsınız</h2>
+        <p class="text-[13px] font-medium text-slate-300 mt-2 max-w-xs leading-relaxed">Kurulum özeti:</p>
+        <div id="obSummary" class="w-full bg-[#0d1527] border border-sky-400/15 rounded-2xl mt-4 divide-y divide-white/5 text-left"></div>
+        <p id="obSummaryNote" class="hidden text-[11px] text-slate-400 mt-3">Eksik izinleri sonradan Ayarlar › İzinler bölümünden açabilirsiniz.</p>
       </div>
 
     </div>
 
-    <!-- Alt İşlem ve Buton Alanı (Sabit Alt Bar) -->
+    <!-- Alt Buton Alanı -->
     <div class="max-w-sm w-full mx-auto px-5 pb-6 pt-2 shrink-0 space-y-4">
-      
-      <!-- Butonlar (Her Adıma Göre Dinamik Değişir) -->
       <div id="onboardingActionArea">
-        
-        <!-- Adım 1 Butonları -->
-        <div id="onboardingBtnGroup-1" class="space-y-2">
-          <button onclick="app.goToOnboardingStep(2)" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] hover:from-[#0284c7] hover:to-[#0ea5e9] text-slate-950 font-extrabold text-sm shadow-md shadow-sky-900/20 active:scale-98 transition-all cursor-pointer">
-            Başla
-          </button>
-          <div class="text-[11px] text-slate-400 dark:text-slate-500 text-center">
-            Devam ederek <button onclick="app.openPrivacy()" class="text-sky-700 dark:text-sky-400 underline font-semibold cursor-pointer">Gizlilik Politikası</button>'nı kabul etmiş olursunuz.
+
+        <div id="onboardingBtnGroup-welcome" class="hidden space-y-2">
+          <button onclick="app.nextOnboardingStep()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] active:from-[#0284c7] active:to-[#0ea5e9] text-slate-950 font-extrabold text-sm shadow-md shadow-sky-900/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer">Başla</button>
+          <div class="text-[11px] text-slate-500 text-center">
+            Devam ederek <button onclick="app.openPrivacy()" class="text-sky-400 underline font-semibold cursor-pointer">Gizlilik Politikası</button>'nı kabul etmiş olursunuz.
           </div>
         </div>
 
-        <!-- Adım 2 Butonları -->
-        <div id="onboardingBtnGroup-2" class="hidden space-y-2">
-          <button id="onboardingGpsBtn" onclick="app.onboardingLocateWithGPS()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] hover:from-[#0284c7] hover:to-[#0ea5e9] text-slate-950 font-extrabold text-sm shadow-md shadow-sky-900/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer">
-            <span>📍</span>
-            <span>Konumumu Otomatik Bul</span>
+        <div id="onboardingBtnGroup-location" class="hidden space-y-2">
+          <button id="onboardingGpsBtn" onclick="app.onboardingLocateWithGPS()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] active:from-[#0284c7] active:to-[#0ea5e9] text-slate-950 font-extrabold text-sm shadow-md shadow-sky-900/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <span>📍</span><span>Konumumu otomatik bul</span>
           </button>
-          <button onclick="app.openLocationModal()" class="w-full py-3 rounded-2xl bg-white/80 dark:bg-sky-950/60 border border-sky-900/10 dark:border-sky-500/20 text-[#0f3e2e] dark:text-sky-100 font-extrabold text-xs shadow-2xs hover:bg-white active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer">
-            <span>🔍</span>
-            <span>Şehri ve İlçeyi Elle Seç</span>
+          <button onclick="app.openLocationModal()" class="w-full py-3 rounded-2xl bg-[#0d1527] border border-sky-400/20 text-sky-100 font-bold text-xs active:bg-white/5 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <span>🔍</span><span>İl ve ilçeyi elle seç</span>
           </button>
-          <button id="onboardingStep2ContinueBtn" onclick="app.goToOnboardingStep(3)" class="hidden w-full py-2 text-xs font-bold text-sky-700 dark:text-sky-300 hover:underline cursor-pointer">
-            Seçili Konum ile İlerle →
+          <button id="onboardingStep2ContinueBtn" onclick="app.nextOnboardingStep()" class="hidden w-full py-2 text-xs font-bold text-sky-300 cursor-pointer">
+            Seçili konumla devam et →
           </button>
         </div>
 
-        <!-- Adım 3 Butonları -->
-        <div id="onboardingBtnGroup-3" class="hidden space-y-2">
-          <button onclick="app.onboardingEnableNotifications()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] hover:from-[#0284c7] hover:to-[#0ea5e9] text-slate-950 font-extrabold text-sm shadow-md shadow-sky-900/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer">
-            <span>🔔</span>
-            <span>Bildirimleri Aç</span>
+        <div id="onboardingBtnGroup-notif" class="hidden space-y-2">
+          <button id="obBtn-notif" onclick="app.obRequest('notif')" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] active:from-[#0284c7] active:to-[#0ea5e9] text-slate-950 font-extrabold text-sm shadow-md shadow-sky-900/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <span>🔔</span><span id="obBtnLabel-notif">Bildirimlere izin ver</span>
           </button>
-          <button onclick="app.goToOnboardingStep(4)" class="w-full py-2.5 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-sky-200 transition-colors cursor-pointer">
-            Daha Sonra
-          </button>
+          <button onclick="app.nextOnboardingStep()" class="w-full py-2.5 text-xs font-bold text-slate-400 active:text-sky-200 transition-colors cursor-pointer">Daha sonra</button>
         </div>
 
-        <!-- Adım 4 Butonları -->
-        <div id="onboardingBtnGroup-4" class="hidden space-y-2">
-          <button onclick="app.goToOnboardingStep(5)" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] hover:from-[#0284c7] hover:to-[#0ea5e9] text-slate-950 font-extrabold text-sm shadow-md shadow-sky-900/20 active:scale-98 transition-all cursor-pointer">
-            Devam
+        <div id="onboardingBtnGroup-exact" class="hidden space-y-2">
+          <button id="obBtn-exact" onclick="app.obRequest('exact')" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] active:from-[#0284c7] active:to-[#0ea5e9] text-slate-950 font-extrabold text-sm shadow-md shadow-sky-900/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <span>⏰</span><span id="obBtnLabel-exact">Ayarlara git</span>
           </button>
+          <button onclick="app.nextOnboardingStep()" class="w-full py-2.5 text-xs font-bold text-slate-400 active:text-sky-200 transition-colors cursor-pointer">Daha sonra</button>
         </div>
 
-        <!-- Adım 5 Butonları -->
-        <div id="onboardingBtnGroup-5" class="hidden space-y-2">
-          <button onclick="app.completeOnboarding()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] hover:from-[#0284c7] hover:to-[#0ea5e9] text-slate-950 font-extrabold text-sm shadow-md shadow-sky-900/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer">
-            <span>🕌</span>
-            <span>Uygulamaya Başla</span>
+        <div id="onboardingBtnGroup-battery" class="hidden space-y-2">
+          <button id="obBtn-battery" onclick="app.obRequest('battery')" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] active:from-[#0284c7] active:to-[#0ea5e9] text-slate-950 font-extrabold text-sm shadow-md shadow-sky-900/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <span>🔋</span><span id="obBtnLabel-battery">İzin ver</span>
+          </button>
+          <button onclick="app.nextOnboardingStep()" class="w-full py-2.5 text-xs font-bold text-slate-400 active:text-sky-200 transition-colors cursor-pointer">Daha sonra</button>
+        </div>
+
+        <div id="onboardingBtnGroup-dnd" class="hidden space-y-2">
+          <button id="obBtn-dnd" onclick="app.obRequest('dnd')" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] active:from-[#0284c7] active:to-[#0ea5e9] text-slate-950 font-extrabold text-sm shadow-md shadow-sky-900/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <span>📵</span><span id="obBtnLabel-dnd">Ayarlara git</span>
+          </button>
+          <button onclick="app.nextOnboardingStep()" class="w-full py-2.5 text-xs font-bold text-slate-400 active:text-sky-200 transition-colors cursor-pointer">Daha sonra</button>
+        </div>
+
+        <div id="onboardingBtnGroup-prefs" class="hidden space-y-2">
+          <button onclick="app.nextOnboardingStep()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] active:from-[#0284c7] active:to-[#0ea5e9] text-slate-950 font-extrabold text-sm shadow-md shadow-sky-900/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer">Devam</button>
+        </div>
+
+        <div id="onboardingBtnGroup-done" class="hidden space-y-2">
+          <button onclick="app.completeOnboarding()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] active:from-[#0284c7] active:to-[#0ea5e9] text-slate-950 font-extrabold text-sm shadow-md shadow-sky-900/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <span>🕌</span><span>Uygulamaya başla</span>
           </button>
         </div>
 
       </div>
 
-      <!-- Sayfa Gösterge Noktaları (Pagination Dots) -->
-      <div id="onboardingDotsBar" class="flex items-center justify-center gap-1.5 pt-1">
-        <button onclick="app.goToOnboardingStep(1)" class="onboarding-dot active" title="Adım 1"></button>
-        <button onclick="app.goToOnboardingStep(2)" class="onboarding-dot" title="Adım 2"></button>
-        <button onclick="app.goToOnboardingStep(3)" class="onboarding-dot" title="Adım 3"></button>
-        <button onclick="app.goToOnboardingStep(4)" class="onboarding-dot" title="Adım 4"></button>
-        <button onclick="app.goToOnboardingStep(5)" class="onboarding-dot" title="Adım 5"></button>
-      </div>
-
+      <!-- Sayfa Noktaları (adım listesine göre üretilir) -->
+      <div id="onboardingDotsBar" class="flex items-center justify-center gap-1.5 pt-1"></div>
     </div>
 
   </div>

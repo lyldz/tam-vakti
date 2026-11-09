@@ -982,7 +982,7 @@ html.dark #monthlyModal table tbody tr:nth-child(even):not(.monthly-row-today) {
   position: fixed;
   inset: 0;
   z-index: 99999 !important;
-  background: linear-gradient(180deg, #f1f4f6 0%, #ecf0f3 100%);
+  background: linear-gradient(180deg, #081016 0%, #0f1c26 100%);
   transition: opacity 0.3s ease, transform 0.3s ease;
   padding-bottom: env(safe-area-inset-bottom, 16px);
 }
@@ -999,35 +999,39 @@ body.onboarding-active #mainBottomDock,
   pointer-events: none !important;
 }
 
-html.dark #onboardingModal {
-  background: linear-gradient(180deg, #081016 0%, #0f1c26 100%) !important;
-}
-
 /* Sayfa Nokta İndikatörleri */
 .onboarding-dot {
   width: 8px;
   height: 8px;
   border-radius: 9999px;
-  background-color: #cbd5e1;
+  background-color: rgba(56, 189, 248, 0.25);
   border: none;
   padding: 0;
   cursor: pointer;
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-html.dark .onboarding-dot {
-  background-color: rgba(56, 189, 248, 0.25);
-}
-
 .onboarding-dot.active {
   width: 24px;
-  background-color: #0ea5e9;
-}
-
-html.dark .onboarding-dot.active {
   background-color: #38bdf8;
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
 }
+
+/* İzin durum rozetleri: Verildi / Reddedildi / Ayarlara git / Bekliyor */
+.ob-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+}
+.ob-badge.ok   { color: #7dd3fc; background: rgba(14, 165, 233, 0.15); border-color: rgba(56, 189, 248, 0.35); }
+.ob-badge.bad  { color: #fcd34d; background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.35); }
+.ob-badge.go   { color: #fcd34d; background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.35); cursor: pointer; text-decoration: underline; }
+.ob-badge.wait { color: #94a3b8; background: rgba(148, 163, 184, 0.10); border-color: rgba(148, 163, 184, 0.25); }
 
 /* Radar Dalga Animasyonu (Adım 2) */
 @keyframes radar-ripple {

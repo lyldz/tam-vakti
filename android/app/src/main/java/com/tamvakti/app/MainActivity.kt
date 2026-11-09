@@ -169,7 +169,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         })
     }
 
-    private fun hasLocationPermission(): Boolean {
+    fun hasLocationPermission(): Boolean {
         // Yalnızca yaklaşık konum istenir (ilçe bulmak için yeterli)
         val coarse = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
         return coarse == PackageManager.PERMISSION_GRANTED
@@ -226,6 +226,21 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             pendingGeoCallback?.invoke(pendingGeoOrigin, granted, false)
             pendingGeoCallback = null
             pendingGeoOrigin = null
+            notifyPermissionResult("loc", granted)
+        } else if (requestCode == NOTIFICATION_PERMISSION_REQUEST) {
+            val granted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+            notifyPermissionResult("notif", granted)
+        }
+    }
+
+    /** İzin penceresinin sonucunu web tarafına bildirir (kurulum sihirbazı rozetleri için). */
+    private fun notifyPermissionResult(kind: String, granted: Boolean) {
+        if (!::webView.isInitialized) return
+        webView.post {
+            webView.evaluateJavascript(
+                "window.app && window.app.onPermissionResult && window.app.onPermissionResult('$kind', $granted);",
+                null
+            )
         }
     }
 
@@ -487,7 +502,40 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             return "{\"notif\":" + Notifs.hasPermission(app) +
                 ",\"exact\":" + Scheduler.canScheduleExact(app) +
                 ",\"dnd\":" + Silencer.hasPolicyAccess(app) +
-                ",\"battery\":" + battery + "}"
+                ",\"battery\":" + battery +
+                ",\"loc\":" + activity.hasLocationPermission() +
+                ",\"sdk\":" + Build.VERSION.SDK_INT + "}"
+        }
+
+        /** Pil optimizasyonu muafiyetini uygulamaya özel pencereyle ister; olmazsa genel listeyi açar. */
+        @SuppressLint("BatteryLife")
+        @JavascriptInterface
+        fun requestIgnoreBatteryOptimizations() {
+            activity.runOnUiThread {
+                try {
+                    activity.startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                        data = Uri.parse("package:${activity.packageName}")
+                    })
+                } catch (e: Exception) {
+                    try {
+                        activity.startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                    } catch (e2: Exception) {
+                    }
+                }
+            }
+        }
+
+        /** Uygulama ayrıntıları sayfası (kalıcı reddedilen konum/bildirim izni için). */
+        @JavascriptInterface
+        fun openAppDetailsSettings() {
+            activity.runOnUiThread {
+                try {
+                    activity.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.parse("package:${activity.packageName}")
+                    })
+                } catch (e: Exception) {
+                }
+            }
         }
 
         @JavascriptInterface
