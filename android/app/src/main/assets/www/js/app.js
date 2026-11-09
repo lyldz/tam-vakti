@@ -259,7 +259,6 @@ class TamVaktiApp {
 
     const dayNum = now.getDate();
     const monthName = months[now.getMonth()];
-    const yearNum = now.getFullYear();
     const dayName = days[now.getDay()];
     this.isFriday = (now.getDay() === 5);
 
@@ -784,7 +783,6 @@ class TamVaktiApp {
     const btnPrayer = document.getElementById("tabBtn-prayer");
     const btnQibla = document.getElementById("tabBtn-qibla");
     const btnMonthly = document.getElementById("tabBtn-monthly");
-    const btnSettings = document.getElementById("tabBtn-settings");
     const headerQiblaBtn = document.getElementById("headerQiblaBtn");
 
     if (tab === "prayer") {
@@ -1305,14 +1303,6 @@ class TamVaktiApp {
     } else {
       if (btnPrayer) btnPrayer.classList.add("active");
       if (btnQibla) btnQibla.classList.remove("active");
-    }
-  }
-
-  openBatterySettings() {
-    if (window.AndroidBridge && window.AndroidBridge.openBatteryOptimizationSettings) {
-      window.AndroidBridge.openBatteryOptimizationSettings();
-    } else {
-      this.showToast("Android pil optimizasyon ayarlarına yönlendiriliyor...", "⚙️");
     }
   }
 

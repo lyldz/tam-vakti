@@ -8,11 +8,11 @@ Bir madde yapılamazsa `- [!]` ile işaretlenir ve altına nedeni yazılır.
 
 ## Sıradakiler
 
-- [ ] Kullanılmayan eski kodları temizle: `www/` ve `android/` içinde hiçbir yerden çağrılmayan JS fonksiyonları, kullanılmayan CSS sınıfları/dosyaları, referansı olmayan asset'ler, eski ezan sesi/servisi kalıntıları, açık tema ve CalVer artıkları, yorum satırına alınmış ölü kod blokları. Sildiğin her şeyin referansını `grep` ile doğrula; emin olmadığın şeyi silme, commit mesajında listele. `assets/www` kopyasından da sil. `node --check` ile JS'leri kontrol et.
 - [ ] Arka planda güncelleme bildirimi: mevcut `checkForUpdates` her açılışta sessizce çalışsın (sadece `canSelfUpdate` dağıtımında; Play sürümünde değil). Yeni sürüm varsa alt menüdeki Ayarlar düğmesinde küçük camgöbeği bir nokta (rozet) ve Ayarlar içindeki güncelleme satırında "Yeni sürüm vX.Y" işareti çıksın. Kullanıcıyı bir kez uyarsın (sürüm notlarıyla birlikte "Güncelle / Sonra" penceresi). "Sonra" denirse reddetme zamanını localStorage'a sürümle birlikte kaydet ve 24 saat dolmadan aynı sürüm için tekrar pencere açma. Nokta ise güncelleme yapılana kadar görünsün. Daha yeni bir sürüm çıkarsa bekleme süresi sıfırlansın. İnternet yoksa sessizce geç. `www/` → `assets/www` eşitle, `node --check` ile kontrol et.
 
 ## Tamamlananlar
 
+- [x] 2026-11-09 — Eski kod temizliği: `style.css` 1050 → ~700 satır (eski vakit kartı, dock/segment, tarih/konum rozeti, ilerleme çubuğu, güncelleme noktası ve bunların `html.dark` kopyaları; `pulse-badge` keyframes; kullanılmayan 17 CSS değişkeni; `.mihrab-frame` ve `.modal-overlay` içindeki açık tema renkleri), `app.js` içinde `openBatterySettings()`, `yearNum`, `btnSettings`. Ezan/Leaflet/CalVer/yorum satırı kod kalıntısı bulunmadı (zaten temizdi). Her sınıf/ad `index.html`+JS+Kotlin'de `grep`/betikle doğrulandı; 390 px'te Ana/Kıble/Ayarlar ekran görüntüleri eskiyle karşılaştırıldı (fark yok). Silinmeyenler (emin değilim): `MainActivity.getAppVersion()` (JS'te çağrılmıyor ama köprü API'si), HTML'de dinamik üretilen id'ler (`onboardingStep-*`, `obBadge-*`).
 - [x] 2026-11-09 — v2.6.4 telefonda denendi: pusula/kalibrasyon ve kerahat satırı sorunsuz çalışıyor, yerleşimde kayma yok.
 - [x] 2026-11-09 — Ana sayfada kerahat süresi saat+dakika ("Kerahate 1 sa 36 dk"); 360/390 px'te tek satıra sığıyor, 320 px'te zaten önceden de iki satıra sarıyordu. v2.6.4 ile yayınlanacak.
 - [x] 2026-11-09 — Cami emojisi silme işi: v2.6.1 ile yayınlandı (sihirbaz düğmesi + toast).
