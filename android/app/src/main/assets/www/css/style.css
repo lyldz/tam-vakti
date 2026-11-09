@@ -449,20 +449,6 @@ html, body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* Kıble Pusulası Görünümü */
-.qibla-view-container {
-  background: rgba(255, 255, 255, 0.65);
-  border: 1.5px solid rgba(56, 189, 248, 0.12);
-  border-radius: 40px;
-  padding: 28px 20px;
-  text-align: center;
-  box-shadow: inset 0 2px 12px rgba(255, 255, 255, 0.8);
-}
-
-.compass-dial {
-  transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
 /* Modal Stilleri */
 .modal-overlay {
   background-color: rgba(19, 40, 58, 0.4);
@@ -495,77 +481,38 @@ html, body {
   }
 }
 
-/* Yenilenmiş Modern Kıble Pusulası */
-.qibla-aligned {
-  border-color: #38bdf8 !important;
-  box-shadow: 0 0 25px rgba(56, 189, 248, 0.45), inset 0 0 15px rgba(56, 189, 248, 0.15);
+/* Kıble Pusulası (Arctic koyu) */
+.qibla-panel { border-radius: 32px !important; padding: 18px 14px 16px !important; }
+.qibla-dial-wrap {
+  width: min(17rem, 72vw);
+  aspect-ratio: 1 / 1;
+  transition: filter 0.3s ease;
+}
+.qibla-dial-wrap .qd-ring { transition: stroke 0.3s ease; }
+.qibla-dial-wrap.qibla-aligned { filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.6)); }
+.qibla-dial-wrap.qibla-aligned .qd-ring { stroke: #38bdf8; }
+.compass-dial { will-change: transform; transform-origin: 50% 50%; }
+
+.qibla-warn {
+  background: rgba(251, 146, 60, 0.12);
+  border: 1px solid rgba(251, 146, 60, 0.35);
+  color: #fdba74;
 }
 
-.qibla-needle-modern {
-  position: absolute;
-  width: 14px;
-  height: 180px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
+/* Kalibrasyon */
+.qibla-calib-svg { width: 100%; max-width: 260px; height: auto; margin: 6px auto 4px; display: block; }
+.qibla-acc-bars { display: flex; align-items: flex-end; gap: 3px; height: 18px; }
+.qibla-acc-bars span {
+  width: 5px; border-radius: 2px; background: #1e293b; transition: background-color 0.25s;
 }
-
-.qibla-needle-tip {
-  width: 0;
-  height: 0;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-bottom: 78px solid #12304a;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-}
-
-.qibla-needle-center {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #12304a;
-  border: 3px solid #ffffff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  z-index: 10;
-  margin: -8px 0;
-}
-
-.qibla-needle-tail {
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 60px solid #94a3b8;
-  opacity: 0.85;
-}
-
-.qibla-aligned-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background-color: #e0f2fe;
-  color: #0d3658;
-  font-size: 13px;
-  font-weight: 800;
-  padding: 6px 16px;
-  border-radius: 9999px;
-  margin-top: 10px;
-  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.25);
-  animation: pulse-subtle 2s infinite ease-in-out;
-}
-
-/* Kıble Mod Butonları (Pusula / Harita) */
-.qibla-mode-btn {
-  color: #64748b;
-  cursor: pointer;
-}
-.qibla-mode-btn.active {
-  background: #ffffff !important;
-  color: #13283a !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-}
+.qibla-acc-bars span:nth-child(1) { height: 25%; }
+.qibla-acc-bars span:nth-child(2) { height: 50%; }
+.qibla-acc-bars span:nth-child(3) { height: 75%; }
+.qibla-acc-bars span:nth-child(4) { height: 100%; }
+.qibla-acc-bars span.on { background: #38bdf8; }
+.qibla-acc-bars.low span.on { background: #fb923c; }
+.qibla-progress { height: 4px; border-radius: 9999px; background: #1e293b; overflow: hidden; max-width: 220px; margin-left: auto; margin-right: auto; }
+.qibla-progress > div { height: 100%; width: 100%; background: #38bdf8; transform: scaleX(0); transform-origin: left; transition: transform 0.2s linear; }
 
 /* Dinamik Yönlendirme Rozeti */
 .qibla-guide-pill {
@@ -578,60 +525,45 @@ html, body {
   padding: 8px 18px;
   border-radius: 9999px;
   margin-top: 6px;
-  transition: all 0.25s ease;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 .qibla-guide-pill.guide-aligned {
   background: #0ea5e9;
-  color: #ffffff;
-  box-shadow: 0 4px 15px rgba(16, 84, 139, 0.45);
-  animation: pulse-subtle 1.5s infinite ease-in-out;
+  color: #04121f;
+  box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
 }
 .qibla-guide-pill.guide-turn {
-  background: #fef3c7;
-  color: #92400e;
-  border: 1px solid #fde68a;
-  box-shadow: 0 2px 6px rgba(146, 64, 14, 0.1);
+  background: rgba(56, 189, 248, 0.1);
+  color: #bae6fd;
+  border: 1px solid rgba(56, 189, 248, 0.25);
 }
 
 /* Su Terazisi (Bubble Level) */
 .bubble-target {
   position: absolute;
+  left: 50%; top: 50%;
+  margin: -19px 0 0 -19px;
   width: 38px;
   height: 38px;
   border-radius: 50%;
   border: 1.5px dashed rgba(56, 189, 248, 0.4);
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(9, 14, 26, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
   z-index: 15;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
 }
 .bubble-dot {
   width: 14px;
   height: 14px;
   border-radius: 50%;
   background: #94a3b8;
-  transition: transform 0.06s ease-out, background-color 0.2s;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  transition: background-color 0.2s;
 }
 .bubble-dot.bubble-centered {
-  background: #38bdf8 !important;
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.9) !important;
-}
-
-/* Leaflet Harita Kapsayıcısı */
-#qiblaMapContainer {
-  width: 100%;
-  height: 340px;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);
-  border: 1.5px solid rgba(56, 189, 248, 0.15);
-}
-.leaflet-container {
-  font-family: inherit;
+  background: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.9);
 }
 
 @keyframes pulse-subtle {
@@ -863,35 +795,6 @@ html.dark #updateModalChangelog {
 html.dark #detailModalRakahs > div {
   background-color: #0d1527 !important;
   border-color: rgba(56, 189, 248, 0.15) !important;
-}
-
-/* Kıble Pusulası Koyu Mod */
-html.dark .qibla-view-container {
-  background: rgba(17, 24, 29, 0.75) !important;
-  border-color: rgba(56, 189, 248, 0.2) !important;
-}
-html.dark .qibla-needle-tip {
-  border-bottom-color: #38bdf8 !important;
-}
-html.dark .qibla-needle-center {
-  background: #090e1a !important;
-  border-color: #38bdf8 !important;
-}
-html.dark .bubble-target {
-  border-color: rgba(56, 189, 248, 0.35) !important;
-  background: rgba(12, 16, 19, 0.7) !important;
-}
-html.dark .qibla-mode-btn {
-  color: #94a3b8 !important;
-}
-html.dark .qibla-mode-btn.active {
-  background: #16304f !important;
-  color: #ffffff !important;
-}
-html.dark .qibla-guide-pill.guide-turn {
-  background: #271a08 !important;
-  color: #fde68a !important;
-  border-color: #78350f !important;
 }
 
 /* Yumuşak Tema Geçişleri */

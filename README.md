@@ -1,114 +1,106 @@
-# 🕌 Tam Vakti - Namaz & İbadet Asistanı
+# 🕌 Tam Vakti
 
-> **Modern, reklamsız, Diyanet uyumlu ve çevrimdışı (offline) çalışabilen Android namaz vakti ve ibadet takip uygulaması.**
+> **Reklamsız, sade ve çevrimdışı çalışabilen Android namaz vakti uygulaması.** Lacivert & camgöbeği "Arctic" koyu tema.
 
-[![Build APK](https://github.com/USER_OR_ORG/tam-vakti/actions/workflows/build-apk.yml/badge.svg)](https://github.com/USER_OR_ORG/tam-vakti/actions/workflows/build-apk.yml)
-[![Sürüm](https://img.shields.io/badge/Sürüm-2026.10.12-10B981.svg)](https://github.com/USER_OR_ORG/tam-vakti/releases)
+[![Build APK](https://github.com/lyldz/tam-vakti/actions/workflows/build-apk.yml/badge.svg)](https://github.com/lyldz/tam-vakti/actions/workflows/build-apk.yml)
+[![Sürüm](https://img.shields.io/github/v/release/lyldz/tam-vakti?label=S%C3%BCr%C3%BCm&color=22d3ee)](https://github.com/lyldz/tam-vakti/releases)
 [![Lisans](https://img.shields.io/badge/Lisans-MIT-blue.svg)](LICENSE)
 
----
-
-## 📱 Sürümleme Modeli (CalVer)
-
-Bu projede sürüm numaraları tarih tabanlıdır (**Yıl.Ay.Gün**):
-- **Örnek Sürüm Adı (`versionName`):** `2026.10.12`
-- **Örnek Derleme No (`versionCode`):** `20261012`
-- Her yeni güncellemede o günün tarihi versiyon numarası olarak atanır (örn: `2026.10.15`, `2027.02.12`).
+Paket adı: `com.tamvakti.app`
 
 ---
 
-## ✨ Temel Özellikler
+## ✨ Özellikler
 
-- ⏱️ **Diyanet Uyumlu & Canlı Sayaç:**
-  - İmsak, Güneş, Öğle, İkindi, Akşam, Yatsı vakitleri.
-  - Vaktin dolum oranı (ilerleme çubuğu) ve bir sonraki vakte kalan saniyelik dijital geri sayım.
-  - **Kerahat Vakti Uyarısı:** Güneş doğuşu ve batışı öncesindeki kerahet vakitlerinde otomatik sarı ikaz.
-- 🌐 **İki Katmanlı Offline-First Mimari:**
-  - İnternet varken Diyanet API'den en güncel verileri alır ve önbelleğe yazar.
-  - İnternet yokken bile yerleşik matematiksel astronomi motoru (İmsak 18°, Yatsı 17°) sayesinde kesintisiz çalışır.
-- 📍 **Konum Desteği:**
-  - Türkiye'nin 81 ili ve Ilgın gibi ilçeler için yerleşik koordinat kütüphanesi.
-  - Tek dokunuşla GPS üzerinden anlık koordinat tespiti.
-- 🧭 **Canlı Kıble Pusulası:**
-  - Telefonun manyetometre ve yön sensörünü kullanarak Kâbe yönüne dönen akıcı pusula kadranı.
-  - Kâbe'ye olan kuş uçuşu mesafe (km) ve derece göstergesi.
-- 📿 **Akıllı Zikirmatik:**
-  - Namaz sonrası 33 Sübhanallah, 33 Elhamdülillah, 33 Allahuekber tesbihatı.
-  - Dokunma ve aşama geçişlerinde haptik titreşim geri bildirimi.
-- 📋 **Kaza Namazı Defteri:**
-  - Sabah, Öğle, İkindi, Akşam, Yatsı, Vitir ve Kaza Orucu borçlarını takip eden yerel depolamalı sayaç.
-- 📅 **Aylık İmsakiye:**
-  - Seçili il veya ilçe için tüm ayın namaz vakitlerini listeleyen tablo.
-- 🛡️ **Sıfır Reklam, Sıfır İzleyici:**
-  - Tamamen açık kaynak ve kullanıcı gizliliğine saygılı.
+- ⏱️ **Canlı vakit takibi:** İmsak, Güneş, Öğle, İkindi, Akşam ve Yatsı. Bir sonraki vakte saniyelik geri sayım, güneş yolu yayı ve kaydırmasız ana sayfada 3x2 büyük vakit kutuları.
+- ⚠️ **Kerahat vakti uyarısı:** Kerahat vakitlerinde ana sayfada ikaz gösterilir.
+- 🔔 **Esnek uyarılar:** Her vakit için "vakit girince" ve "vakitten önce" bildirimi. Bildirimler **telefonun kendi bildirim sesiyle** gelir. Ses, Ayarlar'daki "Bildirim sesi" satırıyla telefonun kanal ayarından seçilir. Uygulamada ezan dosyası yoktur.
+- 🌐 **Offline-first:** İnternet varken güncel vakitleri alır. İnternet yokken yerleşik astronomi motoruyla hesaplamaya devam eder. Yazı tipleri ve Tailwind pakete gömülüdür.
+- 📍 **Konum:** GPS ile otomatik konum ya da il/ilçeyi listeden seçme. İhtiyat süreleri Ayarlar'dan ayarlanır.
+- 🧭 **Kıble pusulası:** Telefonun sensörleriyle Kâbe yönünü gösterir. Kullanım öncesi kalibrasyon ister. Kâbe'ye mesafeyi ve günün kıble saatini de gösterir.
+- 🧙 **Kurulum sihirbazı:** Konum, bildirim, tam zamanlı alarm, pil muafiyeti ve Rahatsız Etmeyin izinlerini adım adım ister. Her izin için durum rozeti gösterir (Verildi / Reddedildi / Ayarlara git). Ayarlar'dan yeniden başlatılabilir. Akış `docs/KURULUM.md` içinde anlatılmıştır.
+- 🧩 **Ana ekran widget'ı:** Sıradaki vakti ana ekranda gösterir.
+- 🛡️ **Reklamsız, izleyicisiz:** Hesap, reklam veya takip yok.
 
 ---
 
-## 📦 APK İndirme & Kurulum
+## 📦 İndirme ve kurulum
 
-1. GitHub'da **[Releases](https://github.com/USER_OR_ORG/tam-vakti/releases)** sekmesine gidin.
-2. En güncel sürüme ait `TamVakti-2026.10.12.apk` dosyasını telefonunuza indirin.
-3. İndirilen APK'ya dokunup kurulumu tamamlayın.
+1. **[Releases](https://github.com/lyldz/tam-vakti/releases)** sayfasına gidin.
+2. En güncel sürümün `.apk` dosyasını telefonunuza indirin.
+3. APK'ya dokunup kurulumu tamamlayın. Gerekirse "bilinmeyen kaynaklardan kuruluma izin ver" seçeneğini açın.
+4. GitHub APK'sı yeni sürümleri uygulama içinden denetler.
+
+İki dağıtım türü vardır:
+
+| Dağıtım | Çıktı | Kendini güncelleme |
+|---|---|---|
+| `github` | APK | Var |
+| `play` | AAB (Google Play) | Yok |
 
 ---
 
-## 🚀 GitHub'a Yükleme Adımları
+## 🏷️ Sürümleme (Major.Minor)
 
-Projeyi kendi GitHub hesabınıza yüklemek için terminalden sırasıyla şu komutları çalıştırabilirsiniz:
+- **`versionName`:** `2.5`, `2.6`, ... (Git etiketi: `v2.5`)
+- **`versionCode`:** her sürümde +100 (örn. `20500`)
+- Etiket (`vX.Y`) push edildiğinde **GitHub Actions** APK'yı bulutta derler ve Releases sayfasına ekler.
+- Uygulama içi güncelleme denetimi etiketleri bu şemayla karşılaştırır.
+
+Yeni sürüm çıkarmak için:
 
 ```bash
-cd "/storage/emulated/0/Documents/tam-vakti"
-
-# 1. Git deposunu hazırla
-git init
-git add .
-git commit -m "feat: Tam Vakti v2026.10.12 ilk sürüm"
-
-# 2. GitHub reponuzu bağlayın (kendi kullanıcı adınızı yazın)
-git remote add origin https://github.com/KULLANICI_ADINIZ/tam-vakti.git
-git branch -M main
-git push -u origin main
-
-# 3. Otomatik APK Derlemesini Başlatmak İçin Sürüm Etiketi Atın:
-git tag v2026.10.12
-git push origin v2026.10.12
+./release.sh          # sürümü otomatik artırır, commit atar, etiketler ve push eder
+./release.sh 2.6      # ya da sürümü kendiniz verin
 ```
 
-> [!TIP]
-> Etiket (`v2026.10.12`) push edildiğinde **GitHub Actions** devreye girer; projeyi bulutta derler ve saniyeler içinde GitHub Releases sayfasına hazır `.apk` dosyasını otomatik olarak ekler!
+Betik `android/app/build.gradle.kts` içindeki sürümü günceller. `www/index.html` içindeki sürüm rozetini ayrıca kontrol edin.
 
 ---
 
-## 📂 Proje Dizin Yapısı
+## 🛠️ Geliştirme
+
+Uygulama, yerel bir Android WebView kabuğunun içinde çalışan HTML/CSS/JS arayüzünden oluşur.
+
+- Web varlıklarını (`www/`) değiştirdikten sonra Android'in gömülü kopyasıyla eşitleyin: `cp -r www/* android/app/src/main/assets/www/`. Silinen dosyaları iki yerden de silin.
+- JS dosyalarını `node --check www/js/<dosya>.js` ile denetleyin.
+- **İmza anahtarı depoda yoktur.** GitHub Secrets (`KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`) veya yerel `android/keystore.properties` kullanılır.
+- Yapılacaklar için `TODO.md`, devir notu için `HANDOFF.md` dosyasına bakın.
+
+---
+
+## 📂 Proje yapısı
 
 ```
 tam-vakti/
-├── .github/workflows/
-│   └── build-apk.yml           # Otomatik APK derleme ve Releases CI/CD
-├── android/                    # Android Studio & Gradle Yerel Projesi
-│   ├── app/
-│   │   ├── build.gradle.kts    # CalVer 2026.10.12 tanımları
-│   │   └── src/main/
-│   │       ├── AndroidManifest.xml
-│   │       ├── java/com/tamvakti/app/MainActivity.kt
-│   │       ├── res/
-│   │       └── assets/www/     # Gömülü çevrimdışı web varlıkları
-├── www/                        # Uygulama Web Çekirdeği
-│   ├── index.html              # Ana kullanıcı arayüzü
-│   ├── css/style.css           # Zümrüt & Gece teması
+├── .github/workflows/build-apk.yml   # APK derleme ve Releases CI/CD
+├── android/                          # Android (Gradle/Kotlin) projesi
+│   └── app/src/main/
+│       ├── java/com/tamvakti/app/    # MainActivity, Scheduler, Notifs, Widget...
+│       └── assets/www/               # www/ klasörünün gömülü kopyası
+├── www/                              # Uygulama arayüzü
+│   ├── index.html
+│   ├── css/
+│   ├── lib/tailwind/                 # Yerel Tailwind
 │   └── js/
-│       ├── cities.js           # 81 İl ve ilçe koordinatları
-│       ├── prayer-engine.js    # Diyanet & astronomik hesaplama motoru
-│       ├── compass.js          # Kıble yön sensörü yöneticisi
-│       ├── dhikr.js            # Zikirmatik & kaza takipçisi
-│       └── app.js              # Canlı saat, sayaç ve sekme kontrolcüsü
-├── README.md
-├── LICENSE
-└── .gitignore
+│       ├── app.js                    # Ana denetleyici
+│       ├── prayer-engine.js          # Vakit ve astronomi hesaplama motoru
+│       ├── compass.js                # Kıble pusulası
+│       └── cities.js                 # İl/ilçe koordinatları
+├── docs/                             # Gizlilik politikası, kurulum şeması
+├── store/PLAY_STORE.md               # Google Play mağaza metinleri
+├── tools/                            # Test ve görsel üretim araçları
+├── release.sh                        # Sürümleme ve yayın betiği
+├── AGENTS.md  HANDOFF.md  TODO.md
+└── LICENSE
 ```
 
 ---
 
+## 🙏 Kaynaklar
+
+Vakit verisi: Aladhan API. Yazı tipleri: Plus Jakarta Sans, JetBrains Mono, Amiri (SIL OFL).
+
 ## 📄 Lisans
 
-Bu proje [MIT Lisansı](LICENSE) ile lisanslanmıştır. Herkes serbestçe geliştirebilir, kullanabilir ve paylaşabilir.
+[MIT Lisansı](LICENSE).

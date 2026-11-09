@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.provider.Settings
 import android.webkit.GeolocationPermissions
 import android.webkit.JavascriptInterface
@@ -74,8 +75,27 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     // Titremeyi önleyen birim çember EMA filtresi
     private var smoothedSin = 0.0
     private var smoothedCos = 0.0
+    private var smoothingInitialized = false
     private val smoothingFactor = 0.18
     private var lastUpdateTimestamp: Long = 0
+
+    // Doğruluk (0..3 = UNRELIABLE..HIGH) yalnızca manyetometre / rotasyon vektöründen izlenir
+    private var lastMagAccuracy = 0
+    private var magAccuracyOnly: Sensor? = null
+    private var lastSentAccuracy = -1
+    private var lastSentHeading = -1000.0
+    private var lastSentPitch = 0.0
+    private var lastSentRoll = 0.0
+    private var hasHeading = false
+    private var lastFilteredDeg = 0.0
+    private var lastPitchDeg = 0.0
+    private var lastRollDeg = 0.0
+
+    // Manyetik sapma önbelleği (her olayda GeomagneticField üretmemek için)
+    private var cachedDeclination = 0f
+    private var declinationTime = 0L
+    private var declinationLat = Double.NaN
+    private var declinationLon = Double.NaN
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -258,28 +278,65 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
 
         sensorManager?.let { sm ->
+            resetCompassState()
             rotationSensor = sm.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
                 ?: sm.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)
-            accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-            magnetometer = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+            accelerometer = null
+            magnetometer = null
+            magAccuracyOnly = null
 
-            rotationSensor?.let { sm.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
-            accelerometer?.let { sm.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
-            magnetometer?.let { sm.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
+            var registered = false
+            val rv = rotationSensor
+            if (rv != null) {
+                registered = sm.registerListener(this, rv, SensorManager.SENSOR_DELAY_GAME)
+                if (registered) {
+                    // Rotasyon vektörünün accuracy değeri çoğu cihazda güvenilmez; kalibrasyon
+                    // durumu için manyetometreyi yalnızca doğruluk kaynağı olarak (düşük hızda) dinle
+                    magAccuracyOnly = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+                    magAccuracyOnly?.let { sm.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
+                }
+            }
+            if (!registered) {
+                // Yedek: rotasyon vektörü yoksa (veya kaydedilemediyse) ivmeölçer + manyetometre
+                rotationSensor = null
+                accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+                magnetometer = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+                val a = accelerometer
+                val m = magnetometer
+                if (a != null && m != null) {
+                    val r1 = sm.registerListener(this, a, SensorManager.SENSOR_DELAY_GAME)
+                    val r2 = sm.registerListener(this, m, SensorManager.SENSOR_DELAY_GAME)
+                    registered = r1 && r2
+                    if (!registered) sm.unregisterListener(this)
+                }
+            }
 
-            isCompassListening = true
-            android.util.Log.d("TamVaktiCompass", "Started compass: rv=${rotationSensor != null}, acc=${accelerometer != null}, mag=${magnetometer != null}")
+            isCompassListening = registered
+            android.util.Log.d("TamVaktiCompass", "Started compass: ok=$registered, rv=${rotationSensor != null}, acc=${accelerometer != null}, mag=${magnetometer != null}")
         }
     }
 
-    fun stopCompassListening() {
-        if (!isCompassListening) return
-        sensorManager?.unregisterListener(this)
-        isCompassListening = false
+    private fun resetCompassState() {
         smoothedSin = 0.0
         smoothedCos = 0.0
+        smoothingInitialized = false
         hasAccelerometer = false
         hasMagnetometer = false
+        hasHeading = false
+        lastMagAccuracy = 0
+        lastSentAccuracy = -1
+        lastSentHeading = -1000.0
+        lastSentPitch = 0.0
+        lastSentRoll = 0.0
+        lastUpdateTimestamp = 0
+    }
+
+    fun stopCompassListening() {
+        // Idempotent: kayıtlı dinleyici kalmadığından emin ol
+        sensorManager?.unregisterListener(this)
+        if (!isCompassListening) return
+        isCompassListening = false
+        resetCompassState()
         android.util.Log.d("TamVaktiCompass", "Stopped compass listening")
     }
 
@@ -301,66 +358,105 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         stopCompassListening()
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        if (!isCompassListening || sensor == null) return
+        val t = sensor.type
+        val accSource = if (magAccuracyOnly != null) {
+            t == Sensor.TYPE_MAGNETIC_FIELD
+        } else {
+            t == Sensor.TYPE_ROTATION_VECTOR ||
+                t == Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR ||
+                t == Sensor.TYPE_MAGNETIC_FIELD
+        }
+        if (accSource) {
+            if (accuracy != lastMagAccuracy) {
+                lastMagAccuracy = accuracy.coerceIn(0, 3)
+                pushCompass(SystemClock.elapsedRealtime())
+            }
+        }
+    }
 
     override fun onSensorChanged(event: SensorEvent) {
         if (!isCompassListening) return
 
         var success = false
-        if (event.sensor.type == Sensor.TYPE_ROTATION_VECTOR ||
-            event.sensor.type == Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR) {
-            SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
-            success = true
-        } else if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-            System.arraycopy(event.values, 0, lastAccelerometer, 0, 3)
-            hasAccelerometer = true
-            if (hasMagnetometer) {
-                success = SensorManager.getRotationMatrix(rotationMatrix, null, lastAccelerometer, lastMagnetometer)
+        when (event.sensor.type) {
+            Sensor.TYPE_ROTATION_VECTOR, Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR -> {
+                if (magAccuracyOnly == null) lastMagAccuracy = event.accuracy.coerceIn(0, 3)
+                // Bazı cihazlarda values 4+ eleman içerir; getRotationMatrixFromVector hepsini kabul eder
+                SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+                success = true
             }
-        } else if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD) {
-            System.arraycopy(event.values, 0, lastMagnetometer, 0, 3)
-            hasMagnetometer = true
-            if (hasAccelerometer) {
-                success = SensorManager.getRotationMatrix(rotationMatrix, null, lastAccelerometer, lastMagnetometer)
+            Sensor.TYPE_ACCELEROMETER -> {
+                System.arraycopy(event.values, 0, lastAccelerometer, 0, 3)
+                hasAccelerometer = true
+                if (hasMagnetometer) {
+                    success = SensorManager.getRotationMatrix(rotationMatrix, null, lastAccelerometer, lastMagnetometer)
+                }
+            }
+            Sensor.TYPE_MAGNETIC_FIELD -> {
+                lastMagAccuracy = event.accuracy.coerceIn(0, 3)
+                if (magAccuracyOnly != null) return
+                System.arraycopy(event.values, 0, lastMagnetometer, 0, 3)
+                hasMagnetometer = true
+                if (hasAccelerometer) {
+                    success = SensorManager.getRotationMatrix(rotationMatrix, null, lastAccelerometer, lastMagnetometer)
+                }
             }
         }
 
         if (success) {
-            processOrientation(event.accuracy)
+            processOrientation()
         }
     }
 
-    private fun processOrientation(accuracy: Int) {
-        // Dikey tutuş için eksen remap
-        SensorManager.remapCoordinateSystem(
-            rotationMatrix,
-            SensorManager.AXIS_X,
-            SensorManager.AXIS_Y,
-            remappedMatrix
-        )
+    @Suppress("DEPRECATION")
+    private fun currentDisplayRotation(): Int {
+        return try {
+            windowManager.defaultDisplay.rotation
+        } catch (e: Exception) {
+            android.view.Surface.ROTATION_0
+        }
+    }
+
+    private fun declination(): Float {
+        val now = System.currentTimeMillis()
+        if (declinationLat != userLat || declinationLon != userLon || now - declinationTime > 600_000L) {
+            try {
+                cachedDeclination = GeomagneticField(userLat.toFloat(), userLon.toFloat(), 0f, now).declination
+            } catch (e: Exception) {
+                cachedDeclination = 0f
+            }
+            declinationLat = userLat
+            declinationLon = userLon
+            declinationTime = now
+        }
+        return cachedDeclination
+    }
+
+    private fun processOrientation() {
+        // Ekran dönüşüne göre eksen remap (kaynak ve hedef dizi farklı; yerinde işlem yok)
+        var axisX = SensorManager.AXIS_X
+        var axisY = SensorManager.AXIS_Y
+        when (currentDisplayRotation()) {
+            android.view.Surface.ROTATION_90 -> { axisX = SensorManager.AXIS_Y; axisY = SensorManager.AXIS_MINUS_X }
+            android.view.Surface.ROTATION_180 -> { axisX = SensorManager.AXIS_MINUS_X; axisY = SensorManager.AXIS_MINUS_Y }
+            android.view.Surface.ROTATION_270 -> { axisX = SensorManager.AXIS_MINUS_Y; axisY = SensorManager.AXIS_X }
+        }
+        if (!SensorManager.remapCoordinateSystem(rotationMatrix, axisX, axisY, remappedMatrix)) return
         SensorManager.getOrientation(remappedMatrix, orientationAngles)
 
         var azimuthDeg = Math.toDegrees(orientationAngles[0].toDouble())
-        if (azimuthDeg < 0) azimuthDeg += 360.0
-
         // Kullanıcının GPS konumuna göre Manyetik Sapma (True North) düzeltmesi
-        try {
-            val geoField = GeomagneticField(
-                userLat.toFloat(),
-                userLon.toFloat(),
-                0f,
-                System.currentTimeMillis()
-            )
-            azimuthDeg += geoField.declination
-            if (azimuthDeg < 0) azimuthDeg += 360.0
-            if (azimuthDeg >= 360.0) azimuthDeg -= 360.0
-        } catch (e: Exception) {}
+        azimuthDeg += declination()
+        azimuthDeg = ((azimuthDeg % 360.0) + 360.0) % 360.0
 
         // Titreşimi engelleyen ve 360 wrap sıçramasını çözen dairesel EMA filtresi
         val rad = Math.toRadians(azimuthDeg)
-        if (smoothedSin == 0.0 && smoothedCos == 0.0) {
+        if (!smoothingInitialized) {
             smoothedSin = Math.sin(rad)
             smoothedCos = Math.cos(rad)
+            smoothingInitialized = true
         } else {
             smoothedSin = smoothedSin * (1.0 - smoothingFactor) + Math.sin(rad) * smoothingFactor
             smoothedCos = smoothedCos * (1.0 - smoothingFactor) + Math.cos(rad) * smoothingFactor
@@ -369,20 +465,41 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         var filteredDeg = Math.toDegrees(Math.atan2(smoothedSin, smoothedCos))
         if (filteredDeg < 0) filteredDeg += 360.0
 
-        val now = System.currentTimeMillis()
-        if (now - lastUpdateTimestamp >= 30) { // ~33 FPS UI güncelleme hızı
-            lastUpdateTimestamp = now
-            val pitchDeg = Math.toDegrees(orientationAngles[1].toDouble())
-            val rollDeg = Math.toDegrees(orientationAngles[2].toDouble())
+        lastFilteredDeg = filteredDeg
+        lastPitchDeg = Math.toDegrees(orientationAngles[1].toDouble())
+        lastRollDeg = Math.toDegrees(orientationAngles[2].toDouble())
+        hasHeading = true
 
-            val formattedDeg = String.format(java.util.Locale.US, "%.1f", filteredDeg)
-            val formattedPitch = String.format(java.util.Locale.US, "%.1f", pitchDeg)
-            val formattedRoll = String.format(java.util.Locale.US, "%.1f", rollDeg)
+        pushCompass(SystemClock.elapsedRealtime())
+    }
 
-            val jsCmd = "if (window.onNativeCompassUpdate) { window.onNativeCompassUpdate($formattedDeg, $accuracy, $formattedPitch, $formattedRoll); } else if (window.app && window.app.onNativeCompassUpdate) { window.app.onNativeCompassUpdate($formattedDeg, $accuracy, $formattedPitch, $formattedRoll); }"
-            runOnUiThread {
-                webView.evaluateJavascript(jsCmd, null)
-            }
+    // JS'e en fazla ~30 Hz gönder; anlamlı değişiklik yoksa atla
+    private fun pushCompass(now: Long) {
+        if (!hasHeading || !::webView.isInitialized) return
+
+        val accuracy = lastMagAccuracy
+        val accuracyChanged = accuracy != lastSentAccuracy
+        if (!accuracyChanged && now - lastUpdateTimestamp < 33) return
+
+        var dHeading = Math.abs(lastFilteredDeg - lastSentHeading)
+        if (dHeading > 180.0) dHeading = 360.0 - dHeading
+        val tiltChanged = Math.abs(lastPitchDeg - lastSentPitch) >= 1.0 ||
+            Math.abs(lastRollDeg - lastSentRoll) >= 1.0
+        if (!accuracyChanged && !tiltChanged && dHeading < 0.3) return
+
+        lastUpdateTimestamp = now
+        lastSentAccuracy = accuracy
+        lastSentHeading = lastFilteredDeg
+        lastSentPitch = lastPitchDeg
+        lastSentRoll = lastRollDeg
+
+        val loc = java.util.Locale.US
+        val h = String.format(loc, "%.1f", lastFilteredDeg)
+        val p = String.format(loc, "%.1f", lastPitchDeg)
+        val r = String.format(loc, "%.1f", lastRollDeg)
+        val jsCmd = "if (window.onNativeCompassUpdate) { window.onNativeCompassUpdate($h, $accuracy, $p, $r); } else if (window.app && window.app.onNativeCompassUpdate) { window.app.onNativeCompassUpdate($h, $accuracy, $p, $r); }"
+        runOnUiThread {
+            webView.evaluateJavascript(jsCmd, null)
         }
     }
 

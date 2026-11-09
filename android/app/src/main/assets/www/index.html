@@ -6,7 +6,6 @@
   <title>Tam Vakti - Namaz Vakitleri & İmsakiye</title>
   <link rel="stylesheet" href="css/fonts.css">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="lib/leaflet/leaflet.css">
   <script src="lib/tailwind/tailwindcss.min.js"></script>
   <script>
     if (typeof tailwind !== 'undefined') {
@@ -209,104 +208,122 @@
 
       </section>
 
-      <!-- GÖRÜNÜM 2: KIBLE BULUCU (CANLI PUSULA & HARİTA İLE SOKAK YÖNÜ) -->
+      <!-- GÖRÜNÜM 2: KIBLE PUSULASI (önce kalibrasyon, sonra pusula) -->
       <section id="viewQibla" class="hidden space-y-3 pb-8 pt-1">
-        
-        <!-- Üst Başlıklar: Vakitlere Dön, Sağ Sensör Rozeti -->
+
+        <!-- Üst Başlık: Vakitlere Dön, Sensör Rozeti -->
         <div class="flex items-center justify-between px-1">
           <button onclick="app.switchTab('prayer')" class="flex items-center gap-1.5 py-1.5 px-3 rounded-full bg-slate-900/80 border border-sky-400/30 text-sky-400 text-xs font-bold active:scale-95 transition-all cursor-pointer shadow-sm" title="Vakitler Ekranına Dön">
             <span>←</span> <span>Vakitler</span>
           </button>
           <div id="qiblaSensorBadge" class="bg-slate-900/80 text-sky-300 text-xs font-bold px-3 py-1.5 rounded-full border border-sky-400/30 flex items-center gap-1.5">
             <span class="inline-block w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
-            <span>Canlı Sensör</span>
+            <span>Sensör</span>
           </div>
           <span id="qiblaHeaderCity" class="hidden"></span>
         </div>
 
-        <!-- Mod Seçici: Pusula vs Harita -->
-        <div class="qibla-mode-toggle flex p-1 bg-sky-950/5 rounded-2xl mx-1 gap-1">
-          <button id="qiblaSubTab-compass" onclick="app.switchQiblaMode('compass')" class="qibla-mode-btn active flex-1 py-1.5 rounded-xl text-xs font-black transition-all">
-            🧭 Canlı Pusula
-          </button>
-          <button id="qiblaSubTab-map" onclick="app.switchQiblaMode('map')" class="qibla-mode-btn flex-1 py-1.5 rounded-xl text-xs font-bold text-slate-500 transition-all">
-            🗺️ Harita / Sokak Yönü
+        <!-- ADIM 1: KALİBRASYON -->
+        <div id="qiblaCalib" class="mihrab-frame qibla-panel text-center">
+          <div class="text-sm font-black text-sky-100">Pusulayı kalibre edin</div>
+          <svg class="qibla-calib-svg" viewBox="0 0 220 130" aria-hidden="true">
+            <path id="qiblaEightPath" d="M110 65 C 150 15, 205 15, 205 65 C 205 115, 150 115, 110 65 C 70 15, 15 15, 15 65 C 15 115, 70 115, 110 65 Z" fill="none" stroke="#38bdf8" stroke-opacity="0.35" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 8"/>
+            <g>
+              <rect x="-9" y="-15" width="18" height="30" rx="4" fill="#0d1527" stroke="#38bdf8" stroke-width="2"/>
+              <rect x="-5" y="-11" width="10" height="17" rx="1.5" fill="#38bdf8" fill-opacity="0.25"/>
+              <circle cx="0" cy="10" r="1.6" fill="#38bdf8"/>
+              <animateMotion dur="3.6s" repeatCount="indefinite" rotate="auto" calcMode="linear">
+                <mpath href="#qiblaEightPath"/>
+              </animateMotion>
+            </g>
+          </svg>
+          <div class="text-xs text-slate-300 leading-relaxed px-2">
+            Telefonu havada <span class="font-bold text-sky-300">8 şeklinde</span> birkaç kez hareket ettirin. Metal ve mıknatıslı kılıflardan uzak durun.
+          </div>
+
+          <div class="mt-3 flex items-center justify-center gap-3">
+            <div class="qibla-acc-bars" aria-hidden="true">
+              <span id="qiblaAccBar0"></span><span id="qiblaAccBar1"></span><span id="qiblaAccBar2"></span><span id="qiblaAccBar3"></span>
+            </div>
+            <div id="qiblaAccLabel" class="text-xs font-bold text-slate-400">Sensör bekleniyor…</div>
+          </div>
+          <div class="qibla-progress mt-2"><div id="qiblaCalibProgress"></div></div>
+
+          <div id="qiblaNoSensor" class="hidden mt-3 text-[11px] font-semibold text-slate-300 bg-slate-900/70 border border-slate-600/50 rounded-2xl p-2.5 leading-relaxed">
+            Pusula sensörü algılanamadı. Cihazınızda manyetik sensör yok ya da izin verilmemiş olabilir; kıble açısını yine de aşağıdan görebilirsiniz.
+          </div>
+          <div class="mt-2 text-[11px] text-slate-500">Kıble açısı: <span id="qiblaCalibAngle" class="font-mono font-bold text-sky-300">--°</span></div>
+
+          <button id="qiblaCalibSkip" onclick="app.compass && app.compass.skipCalibration()" class="hidden mt-3 py-2 px-4 rounded-full bg-slate-900/80 border border-sky-400/30 text-sky-300 text-xs font-bold active:scale-95 transition-all cursor-pointer">
+            Atla / yine de göster
           </button>
         </div>
 
-        <!-- 1. ALT MOD: CANLI PUSULA -->
-        <div id="qiblaModeContainer-compass" class="space-y-2.5">
-
-          <!-- Sensör Kalibrasyon Uyarısı -->
-          <div id="compassCalibAlert" class="hidden bg-amber-50 border border-amber-200/90 rounded-2xl p-2.5 flex items-center gap-2 text-amber-900 text-xs font-semibold shadow-2xs">
-            <span class="text-base">⚠️</span>
-            <span>Sensör doğruluğu düşük. Doğruluk için telefonu havada 8 çizerek sallayın.</span>
-          </div>
+        <!-- ADIM 2: PUSULA -->
+        <div id="qiblaCompass" class="hidden space-y-2.5">
 
           <!-- Eğim Uyarısı -->
-          <div id="compassTiltAlert" class="hidden bg-amber-50 border border-amber-200/90 rounded-2xl p-2 flex items-center justify-center gap-1.5 text-amber-900 text-[11px] font-semibold">
+          <div id="compassTiltAlert" class="hidden qibla-warn rounded-2xl p-2 flex items-center justify-center gap-1.5 text-[11px] font-semibold">
             <span>📱</span>
             <span>Telefon eğik tutuluyor. Doğruluk için telefonu yatay ve düz tutun.</span>
           </div>
 
-          <!-- Mihrap Kubbe Kartı İçinde Pusula -->
-          <div class="mihrab-frame text-center">
-            
+          <div class="mihrab-frame qibla-panel text-center">
+
             <!-- Derece ve Mesafe -->
-            <div class="mb-1.5">
+            <div class="mb-1">
               <div id="qiblaAngleBig" class="font-mono text-4xl font-black text-sky-300 tracking-tight">156°</div>
               <div id="qiblaDistanceSub" class="text-xs font-bold text-slate-500 mt-0.5">Kâbe'ye ≈ 2.022 km</div>
             </div>
 
             <!-- Pusula Kadranı -->
-            <div class="relative w-56 h-56 mx-auto flex items-center justify-center my-2">
-              
-              <!-- Dış Yeşil Çember (Hizalanınca Parlar) -->
-              <div id="qiblaOuterRing" class="absolute inset-0 rounded-full border-3 border-[#1d4e75] transition-all duration-300"></div>
+            <div id="qiblaOuterRing" class="qibla-dial-wrap relative mx-auto mt-7 mb-2">
+              <!-- Sabit alt katman: halka -->
+              <svg class="absolute inset-0 w-full h-full" viewBox="-110 -110 220 220" aria-hidden="true">
+                <circle class="qd-ring" r="104" fill="#0a1223" stroke="#1d4e75" stroke-width="3"/>
+                <circle r="76" fill="none" stroke="#38bdf8" stroke-opacity="0.08" stroke-width="1"/>
+              </svg>
 
-              <!-- Tepedeki Sabit Kâbe İkonu (12 Yönü Hedefi) -->
-              <div class="absolute -top-3.5 z-20 flex flex-col items-center">
-                <span class="text-2xl drop-shadow-sm select-none">🕋</span>
+              <!-- Dönen kadran (yalnızca transform: rotate) -->
+              <div id="compassDial" class="compass-dial absolute inset-0">
+                <svg class="w-full h-full" viewBox="-110 -110 220 220" aria-hidden="true">
+                  <g id="qiblaTicks"></g>
+                  <text x="0" y="-70" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="800" fill="#f43f5e" font-family="Plus Jakarta Sans, sans-serif">K</text>
+                  <text x="0" y="70" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#94a3b8" font-family="Plus Jakarta Sans, sans-serif">G</text>
+                  <text x="70" y="0" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#94a3b8" font-family="Plus Jakarta Sans, sans-serif">D</text>
+                  <text x="-70" y="0" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#94a3b8" font-family="Plus Jakarta Sans, sans-serif">B</text>
+                  <!-- Güneş yönü (gündüz) -->
+                  <g id="compassSunIndicator" class="hidden">
+                    <circle cx="0" cy="-90" r="5" fill="#fbbf24"/>
+                    <circle cx="0" cy="-90" r="8" fill="none" stroke="#fbbf24" stroke-opacity="0.45" stroke-width="1.5" stroke-dasharray="2 3"/>
+                  </g>
+                  <!-- Kıble ibresi (Kâbe doğrultusu) -->
+                  <g id="qiblaNeedle">
+                    <path d="M0 -62 L9 0 L-9 0 Z" fill="#38bdf8"/>
+                    <path d="M0 0 L7 40 L0 34 L-7 40 Z" fill="#475569" fill-opacity="0.8"/>
+                    <circle cx="0" cy="-74" r="3" fill="#e0f2fe"/>
+                  </g>
+                </svg>
               </div>
 
-              <!-- Dönen İç Kadran (Kuzey-Güney Çentikleri, Güneş İkonu ve Kıble İbresi) -->
-              <div id="compassDial" class="compass-dial w-full h-full flex items-center justify-center relative">
-                
-                <!-- Kadran Çentikleri -->
-                <div class="absolute inset-2 rounded-full border border-dashed border-slate-300/80 flex items-center justify-center pointer-events-none">
-                  <span class="absolute top-2 text-[11px] font-black text-rose-600">K</span>
-                  <span class="absolute bottom-2 text-[11px] font-bold text-slate-400">G</span>
-                  <span class="absolute right-2 text-[11px] font-bold text-slate-400">D</span>
-                  <span class="absolute left-2 text-[11px] font-bold text-slate-400">B</span>
-                </div>
-
-                <!-- Canlı Güneş İkonu (Gündüz güneşin anlık açısını gösterir) -->
-                <div id="compassSunIndicator" class="absolute z-15 hidden pointer-events-none" title="Anlık Güneş Yönü">
-                  <span class="text-lg drop-shadow-xs select-none">☀️</span>
-                </div>
-
-                <!-- Kıble İbresi (Kâbe Doğrultusu) -->
-                <div id="qiblaNeedle" class="qibla-needle-modern">
-                  <div class="qibla-needle-tip"></div>
-                  <div class="qibla-needle-center"></div>
-                  <div class="qibla-needle-tail"></div>
-                </div>
-
-                <!-- Merkezde Dijital Su Terazisi (Bubble Level) -->
-                <div class="bubble-target">
-                  <div id="compassBubbleDot" class="bubble-dot"></div>
-                </div>
-
-              </div>
-
+              <!-- Sabit üst katman: telefonun baktığı yön işareti + Kâbe + göbek -->
+              <svg class="absolute inset-0 w-full h-full pointer-events-none overflow-visible" viewBox="-110 -110 220 220" aria-hidden="true">
+                <path d="M0 -92 L7 -104 L-7 -104 Z" fill="#38bdf8"/>
+                <g transform="translate(0 -122)">
+                  <rect x="-9" y="-9" width="18" height="18" rx="2" fill="#0b0f1a" stroke="#fbbf24" stroke-width="1.2"/>
+                  <rect x="-9" y="-4" width="18" height="3.5" fill="#fbbf24"/>
+                </g>
+                <circle r="12" fill="#090e1a" stroke="#38bdf8" stroke-width="2"/>
+              </svg>
+              <div class="bubble-target"><div id="compassBubbleDot" class="bubble-dot"></div></div>
             </div>
 
-            <!-- Dinamik Yönlendirme Rozeti (Sağa/Sola Dön veya Hizalandın) -->
+            <!-- Yönlendirme Rozeti -->
             <div id="qiblaGuidePill" class="qibla-guide-pill guide-turn">
               <span>Telefonu çevirerek Kâbe'yi hedefleyin</span>
             </div>
 
-            <!-- Diyanet Kıble Saati Bilgi Kartı -->
+            <!-- Kıble Saati Kartı -->
             <div class="bg-sky-400/10 border border-sky-400/20 rounded-2xl p-2.5 text-xs text-sky-100 flex items-center justify-between mt-3 text-left">
               <div class="flex items-center gap-2">
                 <span class="text-lg">☀️</span>
@@ -318,33 +335,9 @@
               <div id="qiblaHourValue" class="font-mono font-black text-sm text-sky-200 bg-sky-400/15 px-2.5 py-1 rounded-xl">--:--</div>
             </div>
 
-            <!-- Eğim İpucu -->
             <div class="text-[10px] font-semibold text-slate-400 mt-2 flex items-center justify-center gap-1">
               <span>📱</span>
-              <span>Ortadaki su terazisi yeşil olana kadar telefonu düz tutun.</span>
-            </div>
-
-          </div>
-
-        </div>
-
-        <!-- 2. ALT MOD: HARİTA / SOKAK GÖRÜNÜMÜ (PUSULASIZ KESİN ÇÖZÜM) -->
-        <div id="qiblaModeContainer-map" class="hidden mihrab-frame p-3 space-y-2.5">
-          <div class="flex items-center justify-between text-xs px-1">
-            <div class="font-bold text-slate-800 flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-sky-600 inline-block animate-pulse"></span>
-              <span>Binanız & Kâbe Hattı</span>
-            </div>
-            <span class="text-[10px] bg-sky-400/15 text-sky-200 font-bold px-2 py-0.5 rounded-full">Manyetik Bozulmaz</span>
-          </div>
-
-          <!-- İnteraktif Harita Kapsayıcısı -->
-          <div id="qiblaMapContainer"></div>
-
-          <div class="text-[11px] text-slate-600 font-medium bg-slate-50 border border-slate-200/60 rounded-xl p-2.5 flex items-start gap-2">
-            <span class="text-base leading-none">💡</span>
-            <div class="leading-relaxed">
-              <strong>Pusulasız Kesin Çözüm:</strong> Haritayı yakınlaştırıp evinizi, balkonunuzu veya sokağınızı bulun. Yeşil Kâbe hattının binanızın hangi cephesine baktığını görerek kıbleyi şüpheye yer bırakmadan tayin edin.
+              <span>Ortadaki su terazisi camgöbeği olana kadar telefonu düz tutun.</span>
             </div>
           </div>
         </div>
@@ -459,7 +452,7 @@
         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
         <span>Ayarlar</span>
       </button>
-      <span class="text-xs font-mono font-bold bg-sky-400/15 text-sky-200 px-2.5 py-1 rounded-full">v2.5 • Şafak</span>
+      <span class="text-xs font-mono font-bold bg-sky-400/15 text-sky-200 px-2.5 py-1 rounded-full">v2.6 • Şafak</span>
     </div>
 
     <div class="max-w-md mx-auto px-4 py-4 space-y-6 pb-24">
@@ -714,7 +707,7 @@
           <img src="assets/icons/logo.svg" alt="Tam Vakti Logo" class="w-9 h-9 object-contain">
           <div class="text-left">
             <h3 class="font-extrabold text-base text-[#0f3e2e]">Tam Vakti</h3>
-            <span class="inline-block text-[11px] font-mono font-bold bg-sky-400/15 text-sky-200 px-2 py-0.5 rounded-full">v2.5 • Şafak</span>
+            <span class="inline-block text-[11px] font-mono font-bold bg-sky-400/15 text-sky-200 px-2 py-0.5 rounded-full">v2.6 • Şafak</span>
           </div>
         </div>
         <button onclick="app.closeAboutModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold leading-none">&times;</button>
@@ -737,7 +730,7 @@
             <span class="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
             Yeni Güncelleme!
           </span>
-          <span id="updateNewVersionTag" class="text-[10px] font-mono font-bold bg-sky-200/80 text-sky-900 px-2 py-0.5 rounded-full">v2.5 • Şafak</span>
+          <span id="updateNewVersionTag" class="text-[10px] font-mono font-bold bg-sky-200/80 text-sky-900 px-2 py-0.5 rounded-full">v2.6 • Şafak</span>
         </div>
         <p id="updateReleaseNotes" class="text-[11px] text-slate-600 leading-snug line-clamp-3">
           Yeni sürüm hazır.
@@ -772,7 +765,7 @@
       <details class="text-left text-[11px] text-slate-400 leading-relaxed">
         <summary class="cursor-pointer font-semibold text-slate-300 text-xs">Lisanslar ve teşekkürler</summary>
         <div class="pt-2 space-y-1.5">
-          <p><span class="font-semibold text-slate-300">Yazı tipleri:</span> Plus Jakarta Sans, JetBrains Mono, Amiri (SIL OFL). <span class="font-semibold text-slate-300">Harita:</span> Leaflet, © OpenStreetMap katkıcıları. <span class="font-semibold text-slate-300">Vakitler:</span> Aladhan API.</p>
+          <p><span class="font-semibold text-slate-300">Yazı tipleri:</span> Plus Jakarta Sans, JetBrains Mono, Amiri (SIL OFL). <span class="font-semibold text-slate-300">Vakitler:</span> Aladhan API.</p>
         </div>
       </details>
 
@@ -828,8 +821,8 @@
           <div>
             <h3 class="font-extrabold text-base text-[#0f3e2e] leading-tight">Yeni Güncelleme Mevcut!</h3>
             <div class="flex items-center gap-2 mt-1">
-              <span id="updateModalNewTag" class="text-[11px] font-mono font-bold bg-sky-700 text-white px-2.5 py-0.5 rounded-full">v2.5 • Şafak</span>
-              <span class="text-[10px] font-semibold text-slate-400">Mevcut: v2.5 • Şafak</span>
+              <span id="updateModalNewTag" class="text-[11px] font-mono font-bold bg-sky-700 text-white px-2.5 py-0.5 rounded-full">v2.6 • Şafak</span>
+              <span class="text-[10px] font-semibold text-slate-400">Mevcut: v2.6 • Şafak</span>
             </div>
           </div>
         </div>
@@ -880,7 +873,7 @@
         </svg>
       </button>
       <div class="flex items-center gap-2">
-        <span class="text-[11px] font-mono font-bold bg-sky-900/60 text-sky-300 px-2.5 py-0.5 rounded-full">v2.5 • Şafak</span>
+        <span class="text-[11px] font-mono font-bold bg-sky-900/60 text-sky-300 px-2.5 py-0.5 rounded-full">v2.6 • Şafak</span>
         <button id="onboardingSkipBtn" onclick="app.skipOnboarding()" class="text-xs font-bold text-slate-400 active:text-sky-300 px-2 py-1 transition-colors cursor-pointer">
           Atla
         </button>
@@ -1130,7 +1123,6 @@
   </div>
 
   <!-- Uygulama Scriptleri -->
-  <script src="lib/leaflet/leaflet.js"></script>
   <script src="js/cities.js"></script>
   <script src="js/prayer-engine.js"></script>
   <script src="js/compass.js"></script>

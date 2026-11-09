@@ -41,9 +41,9 @@ class TamVaktiApp {
     // Dağıtım: "play" (kendini güncelleme yok), "github" (APK güncelleyici var) veya "web"
     this.distribution = (window.AndroidBridge && window.AndroidBridge.getDistribution) ? window.AndroidBridge.getDistribution() : "web";
     this.canSelfUpdate = this.distribution !== "play";
-    this.currentVersion = "v2.5";
+    this.currentVersion = "v2.6";
     this.versionCodename = "Şafak";
-    this.versionDisplay = "v2.5 • Şafak";
+    this.versionDisplay = "v2.6 • Şafak";
     this.onboardingStep = 1;
     this.monthlyYear = null;
     this.monthlyMonth = null;
@@ -60,20 +60,13 @@ class TamVaktiApp {
     this.timeOffsetMin = parseInt(localStorage.getItem("tamvakti_time_offset"), 10) || 0;
     this._syncSeq = 0;
 
-    // Kıble Modu (compass: Canlı Pusula, map: Harita Görünümü)
-    this.qiblaMode = "compass";
-    this.qiblaMap = null;
-    this.qiblaMapLine = null;
-    this.qiblaMapUserMarker = null;
-    this.qiblaMapKaabaMarker = null;
-
     this.isFriday = false;
 
     this.init();
   }
 
   onNativeCompassUpdate(heading, accuracy, pitch, roll) {
-    if (this.compass && this.qiblaMode === "compass") {
+    if (this.compass) {
       this.compass.onNativeUpdate(heading, accuracy, pitch, roll);
     }
   }
@@ -225,9 +218,6 @@ class TamVaktiApp {
       const headerCityEl = document.getElementById("qiblaHeaderCity");
       if (headerCityEl) headerCityEl.textContent = displayName;
       this.compass.setTargetQibla(qiblaInfo.angle, this.currentLocation.lat, this.currentLocation.lon);
-      if (this.qiblaMode === "map" && this.qiblaMap) {
-        this.updateQiblaMap();
-      }
     }
 
     this.renderDayRibbon();
@@ -577,9 +567,8 @@ class TamVaktiApp {
     this.onOnboardingResume();
     const viewQibla = document.getElementById("viewQibla");
     const qiblaVisible = viewQibla && !viewQibla.classList.contains("hidden");
-    if (this.compass && qiblaVisible && this.qiblaMode === "compass") {
-      this.compass.isListening = false; // native taraf onPause'da durdu
-      this.compass.startCompass();
+    if (this.compass && qiblaVisible) {
+      this.compass.resumeCompass(); // native taraf onPause'da durdu
     }
   }
 
@@ -832,11 +821,7 @@ class TamVaktiApp {
       if (this.compass) {
         const qiblaInfo = this.engine.calculateQibla(this.currentLocation.lat, this.currentLocation.lon);
         this.compass.setTargetQibla(qiblaInfo.angle, this.currentLocation.lat, this.currentLocation.lon);
-        if (this.qiblaMode === "compass") {
-          this.compass.startCompass();
-        } else if (this.qiblaMode === "map") {
-          this.initQiblaMap();
-        }
+        this.compass.startCompass();
       }
     } else if (tab === "monthly") {
       this.openMonthlyModal();
@@ -890,8 +875,8 @@ class TamVaktiApp {
     if (isQiblaActive) {
       if (btnQibla) btnQibla.classList.add("active");
       if (btnPrayer) btnPrayer.classList.remove("active");
-      if (this.compass && this.qiblaMode === "compass") {
-        this.compass.startCompass();
+      if (this.compass) {
+        this.compass.resumeCompass();
       }
     } else {
       if (btnPrayer) btnPrayer.classList.add("active");
@@ -1000,105 +985,6 @@ class TamVaktiApp {
         tableBody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-rose-500 font-sans text-xs">Hesaplama yapılamadı: ${e.message}</td></tr>`;
       }
     }
-  }
-
-  // Kıble Alt Modu: Canlı Pusula vs Harita / Sokak Yönü
-  switchQiblaMode(mode) {
-    this.qiblaMode = mode;
-    const btnCompass = document.getElementById("qiblaSubTab-compass");
-    const btnMap = document.getElementById("qiblaSubTab-map");
-    const cCompass = document.getElementById("qiblaModeContainer-compass");
-    const cMap = document.getElementById("qiblaModeContainer-map");
-
-    if (mode === "compass") {
-      if (btnCompass) btnCompass.className = "qibla-mode-btn active flex-1 py-1.5 rounded-xl text-xs font-black transition-all";
-      if (btnMap) btnMap.className = "qibla-mode-btn flex-1 py-1.5 rounded-xl text-xs font-bold text-slate-500 transition-all";
-      if (cCompass) cCompass.classList.remove("hidden");
-      if (cMap) cMap.classList.add("hidden");
-      if (this.compass) {
-        this.compass.startCompass();
-      }
-    } else if (mode === "map") {
-      if (btnCompass) btnCompass.className = "qibla-mode-btn flex-1 py-1.5 rounded-xl text-xs font-bold text-slate-500 transition-all";
-      if (btnMap) btnMap.className = "qibla-mode-btn active flex-1 py-1.5 rounded-xl text-xs font-black transition-all";
-      if (cCompass) cCompass.classList.add("hidden");
-      if (cMap) cMap.classList.remove("hidden");
-      if (this.compass) {
-        this.compass.stopCompass();
-      }
-      this.initQiblaMap();
-    }
-  }
-
-  initQiblaMap() {
-    setTimeout(() => {
-      const mapContainer = document.getElementById("qiblaMapContainer");
-      if (!mapContainer || typeof L === 'undefined') return;
-
-      const userLat = this.currentLocation.lat;
-      const userLon = this.currentLocation.lon;
-      const kaabaLat = 21.4225;
-      const kaabaLon = 39.8262;
-
-      if (!this.qiblaMap) {
-        this.qiblaMap = L.map('qiblaMapContainer', {
-          zoomControl: true,
-          attributionControl: false
-        }).setView([userLat, userLon], 16);
-
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19
-        }).addTo(this.qiblaMap);
-
-        const kaabaIcon = L.divIcon({
-          className: 'kaaba-map-icon',
-          html: '<div style="font-size:24px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">🕋</div>',
-          iconSize: [30, 30],
-          iconAnchor: [15, 15]
-        });
-
-        const userIcon = L.divIcon({
-          className: 'user-map-icon',
-          html: '<div style="width:16px;height:16px;border-radius:50%;background:#10548b;border:3px solid #ffffff;box-shadow:0 0 10px rgba(16, 84, 139,0.9);"></div>',
-          iconSize: [16, 16],
-          iconAnchor: [8, 8]
-        });
-
-        this.qiblaMapUserMarker = L.marker([userLat, userLon], { icon: userIcon }).addTo(this.qiblaMap)
-          .bindPopup(`<b>Bulunduğunuz Yer</b><br>${this.currentLocation.name}`);
-
-        this.qiblaMapKaabaMarker = L.marker([kaabaLat, kaabaLon], { icon: kaabaIcon }).addTo(this.qiblaMap)
-          .bindPopup("<b>Mekke-i Mükerreme</b><br>Kâbe-i Muazzama");
-
-        this.qiblaMapLine = L.polyline([[userLat, userLon], [kaabaLat, kaabaLon]], {
-          color: '#10548b',
-          weight: 4,
-          opacity: 0.95,
-          dashArray: '8, 8'
-        }).addTo(this.qiblaMap);
-      } else {
-        this.updateQiblaMap();
-      }
-      this.qiblaMap.invalidateSize();
-    }, 150);
-  }
-
-  updateQiblaMap() {
-    if (!this.qiblaMap) return;
-    const userLat = this.currentLocation.lat;
-    const userLon = this.currentLocation.lon;
-    const kaabaLat = 21.4225;
-    const kaabaLon = 39.8262;
-
-    this.qiblaMap.setView([userLat, userLon], 16);
-    if (this.qiblaMapUserMarker) {
-      this.qiblaMapUserMarker.setLatLng([userLat, userLon]);
-      this.qiblaMapUserMarker.setPopupContent(`<b>Bulunduğunuz Yer</b><br>${this.currentLocation.name}`);
-    }
-    if (this.qiblaMapLine) {
-      this.qiblaMapLine.setLatLngs([[userLat, userLon], [kaabaLat, kaabaLon]]);
-    }
-    this.qiblaMap.invalidateSize();
   }
 
   // Şehir / Konum Seçimi
@@ -1406,8 +1292,8 @@ class TamVaktiApp {
     if (isQiblaActive) {
       if (btnQibla) btnQibla.classList.add("active");
       if (btnPrayer) btnPrayer.classList.remove("active");
-      if (this.compass && this.qiblaMode === "compass") {
-        this.compass.startCompass();
+      if (this.compass) {
+        this.compass.resumeCompass();
       }
     } else {
       if (btnPrayer) btnPrayer.classList.add("active");
