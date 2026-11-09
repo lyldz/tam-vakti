@@ -9,6 +9,8 @@
 const QIBLA_MIN_ACCURACY = 2;      // 2 = orta, 3 = yüksek
 const QIBLA_STABLE_MS = 1000;      // kalibrasyondan çıkmak için kararlı süre
 const QIBLA_RECALIB_MS = 1500;     // doğruluk bu kadar düşük kalırsa tekrar kalibrasyon
+const QIBLA_MOTION_DEG = 720;      // kalibrasyon için gereken toplam hareket (heading+eğim, derece)
+const QIBLA_MIN_CALIB_MS = 6000;   // kalibrasyon en az bu kadar sürer
 const QIBLA_SKIP_MS = 15000;       // "Atla" düğmesi gecikmesi
 const QIBLA_NO_SENSOR_MS = 3000;   // bu sürede hiç veri gelmezse sensör yok say
 const QIBLA_ALIGN_IN = 4;          // hizalanma eşiği (derece)
@@ -278,6 +280,14 @@ class QiblaCompass {
   // ---- Sensör girişi: yalnızca durumu günceller, çizim rAF'ta yapılır ----
   onNativeUpdate(heading, accuracy, pitch, roll) {
     if (!this.isListening) return;
+    if (this.phase === "calib" && this._hasData && typeof heading === "number" && !isNaN(heading)) {
+      // 8 çizme hareketini ölç: ani sıçramaları (gürültü) saymadan toplam açısal hareketi biriktir
+      let dh = Math.abs(heading - this._heading); if (dh > 180) dh = 360 - dh;
+      const dp = Math.abs((pitch || 0) - (this._pitch || 0));
+      const dr = Math.abs((roll || 0) - (this._roll || 0));
+      const d = Math.min(dh, 40) + Math.min(dp, 40) + Math.min(dr, 40);
+      this._motion = (this._motion || 0) + d;
+    }
     if (typeof heading === "number" && !isNaN(heading)) this._heading = heading;
     this._accuracy = typeof accuracy === "number" ? accuracy : 3;
     this._pitch = pitch || 0;
@@ -299,6 +309,7 @@ class QiblaCompass {
     this.phase = "calib";
     this._goodSince = 0;
     this._lowSince = 0;
+    this._motion = 0;
     this._hidden("qiblaCompass", true);
     this._hidden("qiblaCalib", false);
     this._hidden("qiblaCalibSkip", true);
@@ -357,16 +368,19 @@ class QiblaCompass {
     const elapsed = now - (this._calibStart || this._startTs);
     this._hidden("qiblaCalibSkip", !(noSensor || elapsed > QIBLA_SKIP_MS));
 
-    // Kararlılık ilerlemesi
+    // İlerleme: yeterli hareket + en az süre + yeterli doğruluk (kararlı)
     if (this._hasData && acc >= QIBLA_MIN_ACCURACY) {
       if (!this._goodSince) this._goodSince = now;
-      const p = Math.min(1, (now - this._goodSince) / QIBLA_STABLE_MS);
-      this._style("qiblaCalibProgress", "transform", `scaleX(${p.toFixed(2)})`);
-      if (p >= 1) this._enterCompass();
     } else {
       this._goodSince = 0;
-      this._style("qiblaCalibProgress", "transform", "scaleX(0)");
     }
+    const motionP = Math.min(1, (this._motion || 0) / QIBLA_MOTION_DEG);
+    const timeP = Math.min(1, elapsed / QIBLA_MIN_CALIB_MS);
+    const stableOk = this._goodSince && now - this._goodSince >= QIBLA_STABLE_MS;
+    let p = Math.min(motionP, timeP);
+    if (!stableOk) p = Math.min(p, 0.95);
+    this._style("qiblaCalibProgress", "transform", `scaleX(${p.toFixed(2)})`);
+    if (p >= 1 && stableOk) this._enterCompass();
   }
 
   _tickCompass(now, dt) {
