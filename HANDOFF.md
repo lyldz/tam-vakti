@@ -26,9 +26,9 @@ Sürüm: v2.6.4 (versionName "2.6.4", versionCode 21000), YAYINLANDI: v2.6.4 eti
 - Pusula testi: scratchpad'de playwright betikleri vardı (t.js, m.js, k.js); depoda yok. tools/ altındaki betiklere benzer şekilde yeniden yazılabilir.
 
 ## Seni bekleyen işler
-1. v2.6.4 APK'sını telefonda dene: kalibrasyon hareketle tamamlanıyor mu (720°/6 sn çok uzun ya da kısa ise QIBLA_MOTION_DEG ve QIBLA_MIN_CALIB_MS sabitleri compass.js başında), doğruluk hep 0 gelmiyor mu, yan çevirince yön, kerahat satırı sığıyor mu
+1. (Yapıldı, 2026-11-09) v2.6.4 telefonda denendi: pusula, kalibrasyon ve kerahat satırı sorunsuz, kayma yok. Kalibrasyon sabitleri gerekirse compass.js başında (QIBLA_MOTION_DEG, QIBLA_MIN_CALIB_MS).
 2. GitHub Pages bağlantısını (gizlilik politikası) tarayıcıdan doğrula
-3. TODO.md "Sıradakiler": eski kod temizliği, arka planda güncelleme bildirimi (rozet + 24 saat bekleme). Sıra = öncelik; her sabah otomatik görev en üstteki açık maddeyi yapıyor. Not: en üstteki "v2.6 sonrası kontroller" maddesi telefon testi gerektirdiği için otomatik yapılamaz, test sonrası [x] yap ya da sırayı değiştir.
+3. TODO.md "Sıradakiler": eski kod temizliği, arka planda güncelleme bildirimi (rozet + 24 saat bekleme). Sıra = öncelik; her sabah otomatik görev en üstteki açık maddeyi yapıyor.
 4. Play Console yükleme/formlar (store/PLAY_STORE.md)
 
 ## Dosyalar
