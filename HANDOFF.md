@@ -1,7 +1,7 @@
-# Tam Vakti: devir notu (güncel: 2026-11-09)
+# Tam Vakti: devir notu (güncel: 2026-11-09, v2.6.4)
 
-Depo: /root/projeler/tam-vakti  (github.com/lyldz/tam-vakti, dal: main, son uygulama commit'i 4ea3cb6)
-Sürüm: v2.5 (versionName "2.5", versionCode 20500), YAYINLANDI: v2.5 etiketi ve GitHub Release (Latest) 2026-11-09, v2.4 de yayınlandı (2026-11-08)
+Depo: /root/projeler/tam-vakti  (github.com/lyldz/tam-vakti, dal: main, son sürüm commit'i 7645f7c)
+Sürüm: v2.6.4 (versionName "2.6.4", versionCode 21000), YAYINLANDI: v2.6.4 etiketi + GitHub Release (APK'lar yüklü). Önceki: v2.6, v2.6.1, v2.6.3 (v2.6.2 etiketi var ama derlemesi iptal edildi, Release'i yok), v2.5, v2.4.
 
 ## tmux ile devam
     tmux new -s tamvakti          # Ctrl+b d ile ayrıl, tmux attach -t tamvakti ile dön
@@ -9,19 +9,26 @@ Sürüm: v2.5 (versionName "2.5", versionCode 20500), YAYINLANDI: v2.5 etiketi v
     claude --continue             # son oturum + hafıza notları yüklenir
 
 ## Şu an GitHub'daki durum
-- Kurulum sihirbazı v2.5'te yenilendi: docs/KURULUM.md şemasına göre, her izin adımında durum rozeti (Verildi / Reddedildi / Ayarlara git), pil muafiyeti ve Rahatsız Etmeyin adımları; ONBOARDING_VERSION = 2 (v2.4'ten güncelleyenlere bir kez açılır); Ayarlar'dan "Kurulumu yeniden başlat" ile tekrar açılır
-- Uygulama: koyu lacivert/camgöbeği tasarım, güneş yolu yayı, 3x2 büyük vakit kutuları, kaydırmasız ana sayfa
+- v2.6 serisinde yapılanlar: Kıble sekmesi yenilendi (harita modu ve Leaflet kalktı; her açılışta zorunlu kalibrasyon: 8 çizme hareketi ~720° + en az 6 sn + doğruluk >= orta; yumuşak rAF dönüşü; SVG kadran; yeni çizim Kâbe simgesi; hizalanınca titreşim). Native köprü (MainActivity.kt): doğruluk manyetometreden okunuyor, ~30 Hz sınırlama, ekran dönüşüne göre eksen remap. Kullanıcı Kıble'nin doğru çalıştığını ve 156° (Ilgın) değerinin doğru olduğunu teyit etti.
+- Ana sayfada kerahat süresi saat+dakika ("Kerahate 1 sa 36 dk"); 360/390 px'te tek satır, 320 px'te zaten sarıyordu.
+- Kurulum sihirbazı v2.5'ten: docs/KURULUM.md şeması, izin rozetleri, ONBOARDING_VERSION = 2. Sihirbazdaki cami emojileri v2.6.1'de kaldırıldı.
+- README baştan yazıldı (Major.Minor, lyldz, gerçek özellikler, başlıkta uygulama simgesi docs/logo.png).
 - Uyarılar: her vakit için "vakit girince" + "vakitten önce"; bildirim sesi telefonun sesi (ezan yok)
-- Ayarlar: Konum/İhtiyat, Bildirim, İzinler (durum + kısayol), Uygulama
 - İki dağıtım: github (APK, uygulama içi güncelleme) ve play (AAB, kendini güncelleme yok)
-- targetSdk/compileSdk 36 (AGP 8.9.1, Gradle 8.11.1, Kotlin 2.0.21), edge-to-edge insets MainActivity'de
-- Gizlilik politikası: docs/index.html (Pages AÇIK DEĞİL, aşağıya bak)
+- targetSdk/compileSdk 36 (AGP 8.9.1, Gradle 8.11.1, Kotlin 2.0.21)
+- Gizlilik politikası: docs/index.html. GitHub Pages derlemesi çalışıyor (pages-build-deployment başarılı), canlı bağlantı yine de kontrol edilmeli.
 - Mağaza metinleri/beyanlar: store/PLAY_STORE.md
 
+## Bu oturumdan dersler
+- Cami emojisi (🕌) hiçbir yerde istenmiyor; başlıkta gerçek uygulama simgesi kullan (hafıza: no-mosque-emoji).
+- release.sh: sürüm yazılarını (rozetler, Hakkında satırı, app.js currentVersion) üç haneli sürümlerle de güncelliyor (v2.6.3'te düzeltildi). Etiketi artık zorla itmiyor; hatalı etiket varsa yeni sürüm numarasıyla yeniden yayınla (zorla push ve Actions iptali izin sistemince engellenebiliyor).
+- Yerelde Gradle çalışmıyor (eklenti çevrimdışı önbellekte yok); Kotlin doğrulaması GitHub Actions derlemesiyle yapılıyor. `gh` oturumu açık (lyldz), push için token gerekmiyor.
+- Pusula testi: scratchpad'de playwright betikleri vardı (t.js, m.js, k.js); depoda yok. tools/ altındaki betiklere benzer şekilde yeniden yazılabilir.
+
 ## Seni bekleyen işler
-1. GitHub Pages aç (henüz doğrulanmadı, kontrol et): depo Settings > Pages > Deploy from a branch > main > /docs (gizlilik bağlantısı için şart)
-2. v2.5 APK'sını telefonda dene: yeni kurulum sihirbazı (temiz kurulum ve v2.4'ten güncelleme), izin rozetleri, sistem ayar yönlendirmeleri, edge-to-edge kenarlar
-3. TODO.md içindeki "Sıradakiler" maddeleri: eski kod temizliği, Kıble/pusula yenileme, arka planda güncelleme bildirimi, README güncelleme. Her sabah otomatik görev en üstteki açık maddeyi yapıyor; sıra = öncelik.
+1. v2.6.4 APK'sını telefonda dene: kalibrasyon hareketle tamamlanıyor mu (720°/6 sn çok uzun ya da kısa ise QIBLA_MOTION_DEG ve QIBLA_MIN_CALIB_MS sabitleri compass.js başında), doğruluk hep 0 gelmiyor mu, yan çevirince yön, kerahat satırı sığıyor mu
+2. GitHub Pages bağlantısını (gizlilik politikası) tarayıcıdan doğrula
+3. TODO.md "Sıradakiler": eski kod temizliği, arka planda güncelleme bildirimi (rozet + 24 saat bekleme). Sıra = öncelik; her sabah otomatik görev en üstteki açık maddeyi yapıyor. Not: en üstteki "v2.6 sonrası kontroller" maddesi telefon testi gerektirdiği için otomatik yapılamaz, test sonrası [x] yap ya da sırayı değiştir.
 4. Play Console yükleme/formlar (store/PLAY_STORE.md)
 
 ## Dosyalar
