@@ -61,8 +61,8 @@ git commit -m "$COMMIT_MSG" || echo "Değişiklik yok, devam ediliyor..."
 git push origin main
 
 # 5. Sürüm Etiketi At ve Push Et (GitHub Actions APK derlemesini başlatır)
-git tag -f "$TAG_NAME"
-git push -f origin "$TAG_NAME"
+git tag "$TAG_NAME"
+git push origin "$TAG_NAME"
 
 echo ""
 echo "🚀 $TAG_NAME başarıyla GitHub'a gönderildi!"
