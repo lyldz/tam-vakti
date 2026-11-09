@@ -45,9 +45,9 @@ sed -i "s/versionName = \"[^\"]*\"/versionName = \"$NEW_VER\"/" "$REPO_DIR/andro
 # 2. www içindeki sürüm etiketini güncelle
 # Yalnızca sürüm rozetlerini ("v2.3 • Kod Adı") ve app.js sürüm değişkenlerini değiştir;
 # SVG yol verileri gibi "v3.159" benzeri metinlere dokunma.
-sed -i "s/v[0-9]\+\.[0-9]\+\( • \)/$TAG_NAME\1/g" "$REPO_DIR/www/index.html"
+sed -i "s/v[0-9]\+\(\.[0-9]\+\)\+\( • \)/$TAG_NAME\2/g" "$REPO_DIR/www/index.html"
 # Ayarlar > Hakkında satırındaki yalın sürüm etiketi ("v2.6")
-sed -i "s/\(id=\"settingsAboutAction\">\)v[0-9]\+\.[0-9]\+</\1$TAG_NAME</" "$REPO_DIR/www/index.html"
+sed -i "s/\(id=\"settingsAboutAction\">\)v[0-9]\+\(\.[0-9]\+\)\+</\1$TAG_NAME</" "$REPO_DIR/www/index.html"
 sed -i "s/^ \* Sürüm: v[0-9.]*/ * Sürüm: $TAG_NAME/" "$REPO_DIR/www/js/app.js"
 sed -i "s/currentVersion = \"v[0-9.]*\"/currentVersion = \"$TAG_NAME\"/; s/versionDisplay = \"v[0-9.]*\( • \)/versionDisplay = \"$TAG_NAME\1/" "$REPO_DIR/www/js/app.js"
 
