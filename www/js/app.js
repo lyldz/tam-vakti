@@ -15,6 +15,9 @@ const PRAYER_LIST = [
 const POLICY_URL = "https://lyldz.github.io/tam-vakti/";
 
 class TamVaktiApp {
+  // Kurulum sihirbazı sürümü: artırılınca sihirbaz mevcut kullanıcılara bir kez daha açılır
+  static ONBOARDING_VERSION = 2;
+
   constructor() {
     window.app = this;
     window.onNativeCompassUpdate = (heading, accuracy, pitch, roll) => {
@@ -170,7 +173,9 @@ class TamVaktiApp {
     }
 
     // Kurulum sihirbazı: yalnızca ilk açılışta; konum kaybolduysa doğrudan konum adımından
-    const onboardingDone = localStorage.getItem("tamvakti_onboarding_completed") === "true";
+    // Sihirbaz sürümü: yeni adımlar eklenince (v2: izin adımları) eski kullanıcılara bir kez daha gösterilir
+    const onboardingDone = localStorage.getItem("tamvakti_onboarding_completed") === "true" &&
+      (parseInt(localStorage.getItem("tamvakti_onboarding_version"), 10) || 1) >= TamVaktiApp.ONBOARDING_VERSION;
     const hasSavedLocation = !!localStorage.getItem("tamvakti_active_location");
     if (!onboardingDone) {
       this.openOnboarding(1);
@@ -2074,6 +2079,7 @@ class TamVaktiApp {
   closeOnboarding(savePreference = true) {
     if (savePreference) {
       localStorage.setItem("tamvakti_onboarding_completed", "true");
+      localStorage.setItem("tamvakti_onboarding_version", String(TamVaktiApp.ONBOARDING_VERSION));
     }
     const modal = document.getElementById("onboardingModal");
     if (modal) modal.classList.add("hidden");

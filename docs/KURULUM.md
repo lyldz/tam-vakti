@@ -15,6 +15,7 @@ Belgenin sonunda mevcut sihirbazla farklar listelenmiştir.
 
 - Sihirbaz **yalnızca ilk açılışta** çıkar (`localStorage.tamvakti_onboarding_completed !== "true"`).
   Konum hiç seçilmemişse de açılır, ama doğrudan **Konum** adımından başlar.
+- Sihirbaza yeni adım eklenince `TamVaktiApp.ONBOARDING_VERSION` artırılır; eski sürümden güncelleyen kullanıcıya sihirbaz bir kez daha açılır (`tamvakti_onboarding_version`).
 - Ayarlar'da **"Kurulumu yeniden başlat"** satırı sihirbazı 1. adımdan tekrar açar (tercihler silinmez).
 - Her izin adımı aynı kalıbı izler:
   1. Neden gerektiğini anlatan kısa metin ve önizleme.
