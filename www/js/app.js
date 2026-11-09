@@ -721,14 +721,21 @@ class TamVaktiApp {
     const kBadge = document.getElementById("horizonKerahatBadge");
     const kRemain = document.getElementById("horizonKerahatRemainText");
     const fmtHM = (ms) => this.getKerahatTime(new Date(ms), 0);
+    // 60 dk ve üstü "1 sa 36 dk", altı "45 dk" olarak yazılır
+    const fmtDur = (ms) => {
+      const mins = Math.max(1, Math.ceil(ms / 60000));
+      if (mins < 60) return `${mins} dk`;
+      const h = Math.floor(mins / 60), m = mins % 60;
+      return m === 0 ? `${h} sa` : `${h} sa ${m} dk`;
+    };
     let badgeTxt = "", remainTxt = "", warn = false;
     if (kerahatEnd !== null) {
       badgeTxt = "Kerahat vakti";
-      remainTxt = `${Math.max(1, Math.ceil((kerahatEnd - nowMs) / 60000))} dk sonra biter`;
+      remainTxt = `${fmtDur(kerahatEnd - nowMs)} sonra biter`;
       warn = true;
     } else if (kerahatNextStart !== null) {
       badgeTxt = `Kerahat ${fmtHM(kerahatNextStart)}`;
-      remainTxt = `Kerahate ${Math.max(1, Math.ceil((kerahatNextStart - nowMs) / 60000))} dk`;
+      remainTxt = `Kerahate ${fmtDur(kerahatNextStart - nowMs)}`;
       warn = true;
     }
     // Kerahat yoksa hiçbir şey gösterme (sade)
