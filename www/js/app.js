@@ -38,9 +38,9 @@ class TamVaktiApp {
     // Dağıtım: "play" (kendini güncelleme yok), "github" (APK güncelleyici var) veya "web"
     this.distribution = (window.AndroidBridge && window.AndroidBridge.getDistribution) ? window.AndroidBridge.getDistribution() : "web";
     this.canSelfUpdate = this.distribution !== "play";
-    this.currentVersion = "v2.4";
+    this.currentVersion = "v2.5";
     this.versionCodename = "Şafak";
-    this.versionDisplay = "v2.4 • Şafak";
+    this.versionDisplay = "v2.5 • Şafak";
     this.onboardingStep = 1;
     this.monthlyYear = null;
     this.monthlyMonth = null;
