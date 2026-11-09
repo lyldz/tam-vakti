@@ -2254,7 +2254,7 @@ class TamVaktiApp {
   completeOnboarding() {
     this.scheduleSync();
     this.closeOnboarding(true);
-    this.showToast("Tam Vakti\x27ne Hoş Geldiniz! Hayırlı ibadetler dileriz.", "🕌", 3500);
+    this.showToast("Tam Vakti\x27ne Hoş Geldiniz! Hayırlı ibadetler dileriz.", "✓", 3500);
   }
 
   playAlertTone() {
