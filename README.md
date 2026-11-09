@@ -1,4 +1,8 @@
-# 🕌 Tam Vakti
+<p align="center">
+  <img src="docs/logo.png" alt="Tam Vakti simgesi" width="160" height="160">
+</p>
+
+<h1 align="center">Tam Vakti</h1>
 
 > **Reklamsız, sade ve çevrimdışı çalışabilen Android namaz vakti uygulaması.** Lacivert & camgöbeği "Arctic" koyu tema.
 
