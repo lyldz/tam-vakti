@@ -28,7 +28,7 @@ Sürüm: v2.6.4 (versionName "2.6.4", versionCode 21000), YAYINLANDI: v2.6.4 eti
 ## Seni bekleyen işler
 1. Yayınlanmamış (main'de, etiketsiz): eski kod temizliği (984a3dd) ve arka planda güncelleme bildirimi (025921d). Yeni sürüm olarak yayınlamak için release.sh; telefonda önce denenmeli (rozet nokta, "Sonra" 24 saat).
 2. GitHub Pages gizlilik politikası canlı (200, doğru başlık). Not: Pages API son iki derlemeyi "errored" gösteriyor ama iş akışı (build/deploy) başarılı; bir sonraki docs/ değişikliğinde tekrar bak.
-3. Birleşmiş dallar origin/modern-merge ve origin/target36 silinmeyi bekliyor (main'de olmayan commit yok): `git push origin --delete modern-merge target36`
+3. (Yapıldı, 2026-11-09) Birleşmiş dallar modern-merge ve target36 GitHub'dan silindi; yalnızca main var.
 4. Play Console yükleme/formlar (store/PLAY_STORE.md)
 5. TODO.md "Sıradakiler" boş; yeni madde eklenebilir.
 
