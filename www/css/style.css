@@ -106,6 +106,20 @@ html, body {
   backdrop-filter: blur(6px);
 }
 
+/* Yeni sürüm rozeti (Ayarlar düğmesi) */
+.update-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: #38bdf8;
+  border: 2px solid #090e1a;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.7);
+  pointer-events: none;
+}
+
 /* Kıble Pusulası (Arctic koyu) */
 .qibla-panel { border-radius: 32px !important; padding: 18px 14px 16px !important; }
 .qibla-dial-wrap {

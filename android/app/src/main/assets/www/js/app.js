@@ -185,8 +185,11 @@ class TamVaktiApp {
       }
     }, 5000);
 
-    // Arka planda sessizce yeni GitHub sürümünü denetle
-    if (this.canSelfUpdate) setTimeout(() => this.checkForUpdates(true), 2500);
+    // Arka planda sessizce yeni GitHub sürümünü denetle (bilinen sürüm için rozet hemen görünür)
+    if (this.canSelfUpdate) {
+      this.loadCachedUpdate();
+      setTimeout(() => this.checkForUpdates(true), 2500);
+    }
   }
 
   async updatePrayers() {
@@ -1712,9 +1715,58 @@ class TamVaktiApp {
     }
   }
 
+  // "Sonra" / kapat: aynı sürüm için 24 saat boyunca pencere tekrar açılmaz (rozet kalır)
   closeUpdateFoundModal() {
     const modal = document.getElementById("updateFoundModal");
     if (modal) modal.classList.add("hidden");
+    if (this.updateInfo && !this.isDownloadingUpdate) {
+      try {
+        localStorage.setItem("tamvakti_update_dismissed", JSON.stringify({ version: this.updateInfo.version, ts: Date.now() }));
+      } catch (e) {}
+    }
+  }
+
+  // Bu sürüm için pencere gösterilmeli mi? (daha yeni sürüm çıktıysa ya da 24 saat dolduysa evet)
+  shouldShowUpdatePrompt() {
+    if (!this.updateInfo) return false;
+    try {
+      const d = JSON.parse(localStorage.getItem("tamvakti_update_dismissed"));
+      if (d && d.version === this.updateInfo.version && Date.now() - d.ts < 24 * 60 * 60 * 1000) return false;
+    } catch (e) {}
+    const ob = document.getElementById("onboardingModal");
+    if (ob && !ob.classList.contains("hidden")) return false; // kurulum sırasında rahatsız etme
+    return true;
+  }
+
+  // Rozet nokta + Ayarlar'daki "Yeni sürüm" işareti (güncelleme yapılana kadar görünür)
+  renderUpdateIndicators() {
+    const dot = document.getElementById("updateBadgeDot");
+    const statusEl = document.getElementById("updateCheckStatus");
+    const aboutDesc = document.getElementById("settingsAboutDesc");
+    const has = !!this.updateInfo;
+    if (dot) dot.classList.toggle("hidden", !has);
+    if (statusEl && has) statusEl.textContent = `🚀 Yeni sürüm ${this.updateInfo.version}`;
+    if (aboutDesc) {
+      aboutDesc.textContent = has ? `Yeni sürüm ${this.updateInfo.version}` : "Sürüm, güncelleme, lisanslar";
+      aboutDesc.classList.toggle("text-sky-300", has);
+      aboutDesc.classList.toggle("font-semibold", has);
+      aboutDesc.classList.toggle("text-slate-400", !has);
+    }
+    this.renderUpdateCard();
+  }
+
+  // Son bulunan sürümü sakla: internet yokken de rozet görünsün
+  loadCachedUpdate() {
+    if (!this.canSelfUpdate) return;
+    try {
+      const c = JSON.parse(localStorage.getItem("tamvakti_update_info"));
+      if (c && c.version && this.compareVersions(c.version, this.currentVersion) > 0) {
+        this.updateInfo = c;
+        this.renderUpdateIndicators();
+      } else if (c) {
+        localStorage.removeItem("tamvakti_update_info");
+      }
+    } catch (e) {}
   }
 
   startUpdateDownloadFromModal() {
@@ -1731,7 +1783,6 @@ class TamVaktiApp {
   async checkForUpdates(silent = true) {
     if (!this.canSelfUpdate) return;
     const statusEl = document.getElementById("updateCheckStatus");
-    const badgeDot = document.getElementById("updateBadgeDot");
 
     if (!silent && statusEl) {
       statusEl.textContent = "Denetleniyor...";
@@ -1763,27 +1814,30 @@ class TamVaktiApp {
           downloadUrl: apkUrl
         };
 
-        if (badgeDot) badgeDot.classList.remove("hidden");
-        if (statusEl) statusEl.textContent = `🚀 Yeni: ${latestTag}`;
-        this.renderUpdateCard();
+        try { localStorage.setItem("tamvakti_update_info", JSON.stringify(this.updateInfo)); } catch (e) {}
+        this.renderUpdateIndicators();
 
-        // Otomatik olarak yeni güncelleme ekranını ve değişiklik listesini aç!
-        this.openUpdateFoundModal();
+        // Elle denetimde her zaman, sessiz denetimde "Sonra" süresi dolduysa pencere açılır
+        if (!silent || this.shouldShowUpdatePrompt()) this.openUpdateFoundModal();
       } else {
         // Güncel
         this.updateInfo = null;
-        if (badgeDot) badgeDot.classList.add("hidden");
+        try {
+          localStorage.removeItem("tamvakti_update_info");
+          localStorage.removeItem("tamvakti_update_dismissed");
+        } catch (e) {}
+        this.renderUpdateIndicators();
         if (statusEl) statusEl.textContent = "✓ Sürüm güncel";
-        this.renderUpdateCard();
 
         if (!silent) {
           this.showToast("Uygulamanız zaten en güncel sürümde (" + this.currentVersion + ").", "✓");
         }
       }
     } catch (e) {
-      console.warn("Update check failed:", e);
-      if (statusEl) statusEl.textContent = "Denetlenemedi";
+      // İnternet yoksa / hata varsa sessizce geç (bilinen güncelleme rozeti kalır)
       if (!silent) {
+        if (this.updateInfo) this.renderUpdateIndicators();
+        else if (statusEl) statusEl.textContent = "Denetlenemedi";
         this.showToast("Güncelleme kontrolü yapılamadı. İnternet bağlantınızı kontrol ediniz.", "⚠️");
       }
     }
