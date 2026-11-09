@@ -15,8 +15,8 @@ android {
         targetSdk = 36
         
         // Sürüm Yapılandırması: v2.4 "Şafak"
-        versionCode = 20900
-        versionName = "2.6.3"
+        versionCode = 21000
+        versionName = "2.6.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
