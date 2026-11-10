@@ -14,9 +14,9 @@ android {
         minSdk = 24
         targetSdk = 36
         
-        // Sürüm Yapılandırması: v2.8.0 "Zeval"
-        versionCode = 22400
-        versionName = "2.8.0"
+        // Sürüm Yapılandırması: v2.8.1 "Zeval"
+        versionCode = 22500
+        versionName = "2.8.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
