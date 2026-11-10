@@ -126,7 +126,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val settings: WebSettings = webView.settings
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
-        settings.databaseEnabled = true
         // Güvenlik: sayfa yalnızca paket içi dosyalardan (android_asset) yüklenir; cihaz dosyalarına/içerik sağlayıcılarına erişim kapalı
         settings.allowFileAccess = false
         settings.allowContentAccess = false
@@ -673,30 +672,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             }
         }
 
-        /** Tam ekran bildirim izni var mı? (Android 14+ kullanıcı iznine bağlı) */
-        @JavascriptInterface
-        fun canUseFullScreenIntent(): Boolean = Notifs.canUseFullScreen(activity)
-
-        /** Android 14+: uygulamanın tam ekran bildirim izin sayfasını açar. */
-        @JavascriptInterface
-        fun openFullScreenIntentSettings() {
-            activity.runOnUiThread {
-                try {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                        activity.startActivity(Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
-                            data = Uri.parse("package:${activity.packageName}")
-                        })
-                    } else {
-                        activity.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                            data = Uri.parse("package:${activity.packageName}")
-                        })
-                    }
-                } catch (e: Exception) {
-                }
-            }
-        }
-
-        /** Tam ekran bildirimi dene: 0 = hemen göster, >0 = o kadar saniye sonra (ekranı kilitleyip bekleyin). */
         @JavascriptInterface
         fun testFullScreenAlert(delaySec: Int) {
             val time = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault()).format(java.util.Date(System.currentTimeMillis() + delaySec * 1000L))
@@ -896,6 +871,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             }
         }
 
+        @Suppress("DEPRECATION")
         @JavascriptInterface
         fun vibrateDevice(durationMs: Long) {
             activity.runOnUiThread {
