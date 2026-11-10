@@ -14,9 +14,9 @@ android {
         minSdk = 24
         targetSdk = 36
         
-        // Sürüm Yapılandırması: v2.7.1 "Duha"
-        versionCode = 22000
-        versionName = "2.7.1"
+        // Sürüm Yapılandırması: v2.7.2 "Duha"
+        versionCode = 22100
+        versionName = "2.7.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
