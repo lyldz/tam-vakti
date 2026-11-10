@@ -1,7 +1,7 @@
-# Tam Vakti: devir notu (güncel: 2026-11-10, v2.6.5 + yayınlanmamış imsakiye düzeltmesi)
+# Tam Vakti: devir notu (güncel: 2026-11-10, v2.6.7)
 
 Depo: /root/tam-vakti  (github.com/lyldz/tam-vakti, dal: main, son sürüm commit'i 7645f7c)
-Sürüm: v2.6.5 (versionCode 21100), YAYINLANDI: v2.6.5 etiketi + GitHub Release (APK'lar yüklü). Önceki: v2.6.4. Önceki: v2.6, v2.6.1, v2.6.3 (v2.6.2 etiketi var ama derlemesi iptal edildi, Release'i yok), v2.5, v2.4.
+Sürüm: v2.6.7 (versionCode 21300), YAYINLANDI: v2.6.7 etiketi + GitHub Release (APK'lar yüklü). Önceki: v2.6.4. Önceki: v2.6, v2.6.1, v2.6.3 (v2.6.2 etiketi var ama derlemesi iptal edildi, Release'i yok), v2.5, v2.4.
 
 ## tmux ile devam
     tmux new -s tamvakti          # Ctrl+b d ile ayrıl, tmux attach -t tamvakti ile dön
@@ -26,7 +26,7 @@ Sürüm: v2.6.5 (versionCode 21100), YAYINLANDI: v2.6.5 etiketi + GitHub Release
 - Pusula testi: scratchpad'de playwright betikleri vardı (t.js, m.js, k.js); depoda yok. (tools/ klasörü depoda yok) betiklere benzer şekilde yeniden yazılabilir.
 
 ## Seni bekleyen işler
-1. v2.6.5 yayında (kod temizliği + güncelleme bildirimi rozeti). Telefonda denenmedi: rozet nokta, "Sonra" 24 saat. Yayından sonra main'e girdi ama yayınlanmadı: imsakiye tablosu 320/360 px'te sığıyor (Yatsı sütunu kesiliyordu); sıradaki sürümle (v2.6.6) çıkar. Bilinen: 320x568 gibi çok küçük ekranda ana ekran 12 px taşıyor (tools/fit.js).
+1. v2.6.7 yayında; TELEFONDA DENENMEDİ: (a) tam ekran vakit bildirimi (Ayarlar > Bildirim; "Diğer uygulamaların üzerinde göster" izni gerekir; "Tam ekranı dene" düğmesi), (b) bildirim güvenilirliği (30 gün alarm ufku, kayan 120'lik pencere, "Alarmları yeniden kur", kanal/üretici uyarıları), (c) hesaplama yöntemi (Ayarlar > Hesaplama yöntemi, varsayılan otomatik), (d) v2.6.5'teki güncelleme rozeti ve "Sonra" 24 saat. Play'de tam ekran/yer paylaşımı izinleri risklidir (store/PLAY_STORE.md).
 2. GitHub Pages gizlilik politikası canlı (200, doğru başlık). Not: Pages API son iki derlemeyi "errored" gösteriyor ama iş akışı (build/deploy) başarılı; bir sonraki docs/ değişikliğinde tekrar bak.
 3. (Yapıldı, 2026-11-09) Birleşmiş dallar modern-merge ve target36 GitHub'dan silindi; yalnızca main var.
 4. Play Console yükleme/formlar (store/PLAY_STORE.md). Acele yok, uygulama olgunlaşsın. Mağaza görselleri hazır: tools/store/ (yeniden üretme: cd tools && npm i && node store/make.js).
