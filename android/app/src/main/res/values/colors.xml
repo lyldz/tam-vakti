@@ -14,5 +14,5 @@
     <color name="alert_btn">#0284C7</color>
     <color name="alert_btn_text">#FFFFFF</color>
     <color name="notif_bar">#0284C7</color>
-    <color name="notif_track">#26607080</color>
+    <color name="notif_track">#55808080</color>
 </resources>

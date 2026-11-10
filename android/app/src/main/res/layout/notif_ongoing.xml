@@ -29,7 +29,7 @@
             android:ellipsize="end"
             android:gravity="end"
             android:maxLines="1"
-            android:textColor="?android:attr/textColorPrimary"
+            android:textAppearance="@android:style/TextAppearance.Material.Notification.Title"
             android:textSize="15sp"
             android:textStyle="bold" />
     </LinearLayout>
@@ -54,7 +54,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:maxLines="1"
-            android:textColor="?android:attr/textColorSecondary"
+            android:textAppearance="@android:style/TextAppearance.Material.Notification"
             android:textSize="12sp" />
         <Chronometer
             android:id="@+id/nv_remain"
@@ -63,7 +63,7 @@
             android:layout_weight="1"
             android:gravity="end"
             android:maxLines="1"
-            android:textColor="?android:attr/textColorPrimary"
+            android:textAppearance="@android:style/TextAppearance.Material.Notification.Title"
             android:textSize="12sp"
             android:textStyle="bold" />
     </LinearLayout>
