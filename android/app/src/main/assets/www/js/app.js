@@ -1959,7 +1959,7 @@ class TamVaktiApp {
     const aboutDesc = document.getElementById("settingsAboutDesc");
     const has = !!this.updateInfo;
     if (dot) dot.classList.toggle("hidden", !has);
-    if (statusEl && has) statusEl.textContent = `🚀 Yeni sürüm ${this.updateInfo.version}`;
+    if (statusEl && has) statusEl.textContent = `Yeni sürüm ${this.updateInfo.version}`;
     if (aboutDesc) {
       aboutDesc.textContent = has ? `Yeni sürüm ${this.updateInfo.version}` : "Sürüm, güncelleme, lisanslar";
       aboutDesc.classList.toggle("text-sky-300", has);
