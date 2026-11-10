@@ -1,0 +1,11 @@
+{
+  "name": "tam-vakti-tools",
+  "private": true,
+  "description": "Tam Vakti test ve mağaza görseli araçları (uygulamaya dahil değil)",
+  "scripts": {
+    "smoke": "node smoke.js",
+    "fit": "node fit.js",
+    "store": "node store/make.js"
+  },
+  "devDependencies": { "playwright-core": "^1.52.0" }
+}

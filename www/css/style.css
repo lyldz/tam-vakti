@@ -551,3 +551,19 @@ main:has(#viewQibla:not(.hidden)) {
 @media (max-width: 380px) {
   #horizonKerahatBadge { font-size: 12px; padding-left: 0.5rem; padding-right: 0.5rem; }
 }
+
+/* Dar ekranlarda (≤380 px) imsakiye tablosu yatay kaydırmasız sığsın */
+@media (max-width: 380px) {
+  #monthlyModal table th,
+  #monthlyModal table td { padding-left: 2px; padding-right: 2px; }
+  #monthlyModal table th:first-child,
+  #monthlyModal table td:first-child { padding-left: 10px; }
+  #monthlyModal table th:last-child,
+  #monthlyModal table td:last-child { padding-right: 8px; }
+  #monthlyModal table th { letter-spacing: 0; font-size: 10px; }
+  #monthlyTableBody { font-size: 11px; }
+}
+@media (max-width: 340px) {
+  #monthlyModal table th { font-size: 9px; }
+  #monthlyTableBody { font-size: 10px; }
+}

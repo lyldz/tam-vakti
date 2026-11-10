@@ -11,12 +11,12 @@ Paket: `com.tamvakti.app` • AAB: GitHub Actions > Artifacts > **TamVakti-Play-
   • İsteğe göre her vakit için "vakit girince" ve "vakitten önce" uyarısı
   • Kerahat vakitlerinde haber verme
   • Namaz vaktinde telefonu geçici olarak titreşime alma (isteğe bağlı)
-  • Kıble pusulası ve harita görünümü
+  • Kıble pusulası (her açılışta kalibrasyonlu, kıbleye hizalanınca titreşir)
   • 81 il ve 1002 ilçe, aylık imsakiye çizelgesi
   • Ana ekran widget'ı
   • İnternet yokken yerleşik hesapla çalışır; hesap, reklam ve izleme yoktur
 - **Kategori:** Yaşam tarzı (Lifestyle) • **Etiket önerisi:** namaz vakitleri, kıble, imsakiye
-- **İkon:** `/root/projeler/tools/icons/play-store-icon-512.png` • **Öne çıkan görsel:** 1024×500 (hazırlanacak) • **Ekran görüntüsü:** en az 2 adet (telefon)
+- **İkon:** `tools/icons/play-store-icon-512.png (üretici: tools/icons/make-icons.sh)` • **Öne çıkan görsel:** tools/store/feature-graphic-1024x500.png • **Ekran görüntüsü:** en az 2 adet (telefon)
 
 ## Uygulama içeriği
 - **Reklam:** Yok • **Hedef kitle:** 13+ ya da "Tüm yaşlar" (çocuklara özel değil) • **İçerik derecelendirme:** anket sonucu "Herkes"
@@ -43,4 +43,4 @@ Paket: `com.tamvakti.app` • AAB: GitHub Actions > Artifacts > **TamVakti-Play-
 ## Teknik not
 - `targetSdk` / `compileSdk` **36** (AGP 8.9.1, Gradle 8.11.1, Kotlin 2.0.21). Android 15+ ekranı kenardan kenara çizdiği için sistem çubuğu ve klavye boşlukları `MainActivity` içinde `WindowInsets` ile yönetilir. **Gerçek telefonda durum çubuğu/gezinme çubuğu çevresini ve klavye açılışını (şehir arama kutusu) kontrol edin.**
 - Play App Signing: yükleme anahtarı olarak mevcut anahtar kullanılabilir.
-- Görseller: `/root/projeler/tools/store/` (öne çıkan görsel 1024×500, 5 ekran görüntüsü 1080×2400); ikon 512: `/root/projeler/tools/icons/play-store-icon-512.png`.
+- Görseller: `tools/store/` (öne çıkan görsel 1024×500, 5 ekran görüntüsü 1080×2400); ikon 512: `tools/icons/play-store-icon-512.png`.
