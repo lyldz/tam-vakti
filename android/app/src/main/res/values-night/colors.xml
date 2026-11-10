@@ -1,0 +1,13 @@
+<resources>
+    <color name="alert_bg">#090E1A</color>
+    <color name="alert_surface">#0D1527</color>
+    <color name="alert_stroke">#4038BDF8</color>
+    <color name="alert_accent">#38BDF8</color>
+    <color name="alert_text">#F8FAFC</color>
+    <color name="alert_text2">#CBD5E1</color>
+    <color name="alert_muted">#94A3B8</color>
+    <color name="alert_btn">#0EA5E9</color>
+    <color name="alert_btn_text">#04111F</color>
+    <color name="notif_bar">#38BDF8</color>
+    <color name="notif_track">#33FFFFFF</color>
+</resources>

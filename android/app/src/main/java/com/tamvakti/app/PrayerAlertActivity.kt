@@ -39,6 +39,16 @@ class PrayerAlertActivity : AppCompatActivity() {
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
             WindowInsetsCompat.CONSUMED
         }
+        // Sistem açık/koyu temasını izle: çubuk renkleri ve simge tonu
+        val bg = androidx.core.content.ContextCompat.getColor(this, R.color.alert_bg)
+        @Suppress("DEPRECATION")
+        run { window.statusBarColor = bg; window.navigationBarColor = bg }
+        val night = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+            android.content.res.Configuration.UI_MODE_NIGHT_YES
+        androidx.core.view.WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = !night
+            isAppearanceLightNavigationBars = !night
+        }
         bind(intent)
         findViewById<Button>(R.id.alertClose).setOnClickListener { finishAndRemoveTask() }
         findViewById<Button>(R.id.alertOpen).setOnClickListener {

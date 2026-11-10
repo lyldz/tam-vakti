@@ -1590,7 +1590,7 @@ class TamVaktiApp {
     const MIN = 60000;
     const start = new Date();
 
-    for (let i = 0; i < DAYS; i++) {
+    for (let i = -1; i < DAYS; i++) { // -1: dünün vakitleri yalnız bildirimdeki ilerleme çubuğu (önceki vakit) için
       const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
       const y = d.getFullYear(), m = d.getMonth() + 1;
       const k = `${y}-${m}`;
@@ -1614,6 +1614,7 @@ class TamVaktiApp {
         const name = (p.key === "ogle" && isFri) ? "Cuma (Öğle)" : p.name;
         prayers.push({ key: p.key, name, time: str, t: dt.getTime() });
       });
+      if (i < 0) continue; // dünün alarmı kurulmaz
 
       PRAYER_LIST.forEach(p => {
         const x = at[p.key];

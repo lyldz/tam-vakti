@@ -28,6 +28,7 @@ class AlarmReceiver : BroadcastReceiver() {
             name: String = "", time: String = "", info: String = "", forceFullScreen: Boolean = false
         ) {
             val app = ctx.applicationContext
+            if (type == "ongoing_tick") { Notifs.refreshOngoing(app); return }
             when (type) {
                 "reminder" -> Notifs.postAlert(app, id, title, body, quiet = mode == "sessiz")
                 "vakit" -> {

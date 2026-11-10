@@ -33,6 +33,21 @@ object Store {
         return best
     }
 
+    /** Kayıtlı listeden şu andan önceki son vakit (ilerleme çubuğunun başlangıcı). */
+    fun prevPrayer(ctx: Context): NextPrayer? {
+        val arr = schedule(ctx)?.optJSONArray("prayers") ?: return null
+        val now = System.currentTimeMillis()
+        var best: NextPrayer? = null
+        for (i in 0 until arr.length()) {
+            val o = arr.optJSONObject(i) ?: continue
+            val t = o.optLong("t", 0L)
+            if (t in 1..now && (best == null || t > best.millis)) {
+                best = NextPrayer(o.optString("name"), o.optString("time"), t)
+            }
+        }
+        return best
+    }
+
     fun city(ctx: Context): String = schedule(ctx)?.optString("city", "Tam Vakti") ?: "Tam Vakti"
     /** Seçili vakit bildirim sesi: "telefon" (varsayılan) ya da raw kaynağı adı (cagri, billur, seher, damla). */
     fun tone(ctx: Context): String {

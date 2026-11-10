@@ -2,4 +2,17 @@
     <color name="primary">#38BDF8</color>
     <color name="primary_dark">#0EA5E9</color>
     <color name="background_dark">#090E1A</color>
+
+    <!-- Tam ekran bildirim + sabit bildirim: açık tema -->
+    <color name="alert_bg">#F4F8FC</color>
+    <color name="alert_surface">#FFFFFF</color>
+    <color name="alert_stroke">#3338BDF8</color>
+    <color name="alert_accent">#0369A1</color>
+    <color name="alert_text">#0F172A</color>
+    <color name="alert_text2">#334155</color>
+    <color name="alert_muted">#64748B</color>
+    <color name="alert_btn">#0284C7</color>
+    <color name="alert_btn_text">#FFFFFF</color>
+    <color name="notif_bar">#0284C7</color>
+    <color name="notif_track">#26607080</color>
 </resources>

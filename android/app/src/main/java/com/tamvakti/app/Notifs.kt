@@ -11,6 +11,9 @@ import android.graphics.BitmapFactory
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.os.Build
+import android.os.SystemClock
+import android.view.View
+import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 
@@ -177,29 +180,66 @@ object Notifs {
         return nm.canUseFullScreenIntent()
     }
 
-    /** Durum çubuğundaki sabit, geri sayımlı bildirim. */
+    /** Durum çubuğundaki sabit bildirim: geçen vakit, sıradaki vakit, ilerleme çubuğu ve geri sayım. */
     fun postOngoing(ctx: Context, city: String, nextName: String, nextTime: String, targetMillis: Long) {
         if (!hasPermission(ctx)) return
         createChannels(ctx)
-        val icon = try { BitmapFactory.decodeResource(ctx.resources, R.mipmap.ic_launcher) } catch (e: Exception) { null }
+        val now = System.currentTimeMillis()
+        val prev = Store.prevPrayer(ctx)
+        val rv = RemoteViews(ctx.packageName, R.layout.notif_ongoing)
+        rv.setTextViewText(R.id.nv_next, "$nextName $nextTime")
+        val base = SystemClock.elapsedRealtime()
+        val hasTarget = targetMillis > now
+        if (prev != null && hasTarget && targetMillis > prev.millis) {
+            rv.setTextViewText(R.id.nv_cur, "${prev.name} ${prev.time}")
+            val frac = ((now - prev.millis).toDouble() / (targetMillis - prev.millis)).coerceIn(0.0, 1.0)
+            rv.setProgressBar(R.id.nv_bar, 1000, (frac * 1000).toInt(), false)
+            rv.setViewVisibility(R.id.nv_bar, View.VISIBLE)
+            rv.setChronometer(R.id.nv_elapsed, base - (now - prev.millis), "Geçen süre %s", true)
+        } else {
+            rv.setTextViewText(R.id.nv_cur, city)
+            rv.setViewVisibility(R.id.nv_bar, View.GONE)
+            rv.setTextViewText(R.id.nv_elapsed, "")
+        }
+        if (hasTarget) {
+            rv.setChronometer(R.id.nv_remain, base + (targetMillis - now), "Kalan %s", true)
+            rv.setChronometerCountDown(R.id.nv_remain, true)
+        } else {
+            rv.setTextViewText(R.id.nv_remain, "")
+        }
         val builder = NotificationCompat.Builder(ctx, CH_ONGOING)
             .setSmallIcon(R.drawable.ic_stat_tamvakti)
             .setColor(ContextCompat.getColor(ctx, R.color.primary))
             .setContentTitle("Tam Vakti • $city")
             .setContentText("Sıradaki: $nextName ($nextTime)")
+            .setSubText(city)
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            .setCustomContentView(rv)
+            .setCustomBigContentView(rv)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setContentIntent(openAppIntent(ctx))
             .setPriority(NotificationCompat.PRIORITY_LOW)
-        if (icon != null) builder.setLargeIcon(icon)
-        if (targetMillis > System.currentTimeMillis()) {
-            builder.setUsesChronometer(true)
-            builder.setChronometerCountDown(true)
-            builder.setWhen(targetMillis)
-            builder.setShowWhen(true)
-        }
         val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.notify(ID_ONGOING, builder.build())
+        scheduleTick(ctx)
+    }
+
+    /** İlerleme çubuğu geri sayım gibi kendiliğinden akmaz; birkaç dakikada bir yeniden çizilir. */
+    private fun scheduleTick(ctx: Context) {
+        try {
+            val am = ctx.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+            val i = Intent(ctx, AlarmReceiver::class.java).apply {
+                action = "com.tamvakti.app.ONGOING_TICK"
+                putExtra("type", "ongoing_tick")
+            }
+            val pi = PendingIntent.getBroadcast(
+                ctx, 7771, i, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            am.setAndAllowWhileIdle(
+                android.app.AlarmManager.RTC, System.currentTimeMillis() + 3 * 60_000L, pi
+            )
+        } catch (e: Exception) {}
     }
 
     /** Uygulama kapalıyken bile sabit bildirimi sıradaki vakte günceller. */
