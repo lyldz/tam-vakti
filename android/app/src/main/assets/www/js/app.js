@@ -14,6 +14,8 @@ const PRAYER_LIST = [
 
 const POLICY_URL = "https://lyldz.github.io/tam-vakti/";
 
+const DOWNLOAD_BTN_HTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v12m0 0l-5-5m5 5l5-5M5 20h14"/></svg><span>İndir</span>`;
+
 class TamVaktiApp {
   // Kurulum sihirbazı sürümü: artırılınca sihirbaz mevcut kullanıcılara bir kez daha açılır
   static ONBOARDING_VERSION = 2;
@@ -1417,22 +1419,26 @@ class TamVaktiApp {
     const m = String(mfr || "");
     if (/xiaomi|redmi|poco/.test(m)) return { name: "Xiaomi / Redmi / POCO", steps: [
       "“Otomatik başlat”: Ayarlar > Uygulamalar > İzinler > Otomatik başlat listesinde Tam Vakti'ni açın (düğme bu listeyi doğrudan açar; açılmazsa bu yolu elle izleyin).",
+      "UYGULAMAYI KİLİTLEYİN (en önemlisi): Güvenlik > Hız artır > ⚙ > “Uygulamaları kilitle” listesinde Tam Vakti'ni açın (düğme Güvenlik uygulamasını açar, oradan bu yolu izleyin). Ya da son uygulamalar ekranında Tam Vakti kartına basılı tutup kilit simgesine dokunun.",
       "“İzin sayfası”: “Kilit ekranında göster” ve “Arka planda açılır pencere” anahtarlarını açın (tam ekran bildirim için).",
       "“Pil ayarı”: “Kısıtlama yok” seçin (Pil tasarrufu kapalı).",
-      "“Bildirim kanalı”: Vakit bildirimlerinde “Kilit ekranında göster” ve “Yüzen bildirim” açık olsun.",
-      "UYGULAMAYI KİLİTLEYİN (en önemlisi): Son uygulamalar ekranını açın (alttan yukarı kaydırıp tutun ya da ▢ tuşu), Tam Vakti kartına basılı tutun, kilit simgesine dokunun. Kilitlenmezse Xiaomi uygulamayı temizleyip alarmları öldürür."] };
+      "“Bildirim kanalı”: Vakit bildirimlerinde “Kilit ekranında göster” ve “Yüzen bildirim” açık olsun."] };
     if (/samsung/.test(m)) return { name: "Samsung", steps: [
+      "Son uygulamalar ekranında Tam Vakti simgesine dokunup “Açık tut”u seçin (cihazınızda varsa).",
       "Pil > Arka plan kullanım sınırları sayfasında “Kullanılmayan uygulamaları uyut”u kapatın.",
       "“Uyutulmayacak uygulamalar” listesine Tam Vakti'ni ekleyin.",
       "Uygulama bilgisi > Pil > “Sınırlandırılmamış” seçin."] };
     if (/huawei|honor/.test(m)) return { name: "Huawei / Honor", steps: [
+      "Son görevler ekranında Tam Vakti kartını aşağı kaydırıp kilit simgesine dokunarak kilitleyin.",
       "Açılan listede Tam Vakti'ni bulun, “Otomatik yönet”i kapatın.",
       "Açılan pencerede “Otomatik başlat”, “İkincil başlatma” ve “Arka planda çalış” anahtarlarının üçünü de açın."] };
     if (/oppo|realme|oneplus/.test(m)) return { name: "Oppo / Realme / OnePlus", steps: [
+      "Son uygulamalar ekranında Tam Vakti kartına basılı tutup (OnePlus'ta sağ üstteki) kilit simgesine dokunarak kilitleyin.",
       "Açılan listede Tam Vakti için “Otomatik başlat”ı açın.",
       "Uygulama bilgisi > Pil kullanımı > “Arka planda çalışmaya izin ver”i açın.",
       "İsteğe bağlı: son uygulamalar ekranında Tam Vakti kartını kilitleyin."] };
     if (/vivo|iqoo/.test(m)) return { name: "Vivo / iQOO", steps: [
+      "Son uygulamalar ekranında Tam Vakti kartının menüsünden “Kilitle”yi seçin.",
       "Açılan listede Tam Vakti için arka planda başlatmaya izin verin (Otomatik başlat).",
       "Uygulama bilgisi > Pil > “Arka plan güç tüketimi”: “Kısıtlama yok” seçin."] };
     return null;
@@ -1447,9 +1453,10 @@ class TamVaktiApp {
     const xiaomi = /xiaomi|redmi|poco/.test(String(mfr));
     const opts = [];
     if (xiaomi) opts.push({ value: "auto", label: "1. Otomatik başlat", desc: "Uygulama listesinde Tam Vakti'ni açın" });
-    opts.push({ value: "perm", label: xiaomi ? "2. İzin sayfası" : "Ayarları aç", desc: xiaomi ? "Kilit ekranında göster, arka planda açılır pencere" : "Otomatik başlatma / izin sayfası" });
-    if (xiaomi) opts.push({ value: "batt", label: "3. Pil ayarı (Kısıtlama yok)", desc: "Xiaomi pil tasarrufu sayfası" });
-    if (xiaomi) opts.push({ value: "chan", label: "4. Bildirim kanalı ayarı", desc: "Kilit ekranı ve yüzen bildirim" });
+    if (xiaomi) opts.push({ value: "lock", label: "2. Uygulamayı kilitle", desc: "Güvenlik uygulaması: Hız artır > ⚙ > Uygulamaları kilitle" });
+    opts.push({ value: "perm", label: xiaomi ? "3. İzin sayfası" : "Ayarları aç", desc: xiaomi ? "Kilit ekranında göster, arka planda açılır pencere" : "Otomatik başlatma / izin sayfası" });
+    if (xiaomi) opts.push({ value: "batt", label: "4. Pil ayarı (Kısıtlama yok)", desc: "Xiaomi pil tasarrufu sayfası" });
+    if (xiaomi) opts.push({ value: "chan", label: "5. Bildirim kanalı ayarı", desc: "Kilit ekranı ve yüzen bildirim" });
     opts.push({ value: "ign", label: "Pil muafiyeti isteği", desc: "Android'in pil optimizasyonu penceresi" });
     opts.push({ value: "app", label: "Uygulama bilgisi", desc: "Genel sistem sayfası (yedek yol)" });
     this.openChoice(info ? `${info.name}: arka planda çalışma` : "Arka planda çalışma", steps, opts, null, (v) => {
@@ -1459,6 +1466,12 @@ class TamVaktiApp {
       if (v === "ign") return void (b.requestIgnoreBatteryOptimizations ? b.requestIgnoreBatteryOptimizations() : (b.openBatteryOptimizationSettings && b.openBatteryOptimizationSettings()));
       if (v === "perm") ok = !!(b.openOemSettings && b.openOemSettings(0));
       else if (v === "auto") ok = !!(b.openOemSettings && b.openOemSettings(2));
+      else if (v === "lock") {
+        ok = !!(b.openOemSettings && b.openOemSettings(3));
+        if (ok) { this.showToast("Hız artır > ⚙ > Uygulamaları kilitle: Tam Vakti'ni açın", "🔒", 6000); return; }
+        this.showToast("Güvenlik uygulaması açılamadı: Son uygulamalar ekranında Tam Vakti kartını kilitleyin", "🔒", 6000);
+        return;
+      }
       else if (v === "batt") ok = !!(b.openOemSettings && b.openOemSettings(1));
       if (v === "perm" || v === "batt" || v === "auto") {
         if (ok) return;
@@ -1921,7 +1934,7 @@ class TamVaktiApp {
     if (progressArea) progressArea.classList.add("hidden");
     if (btn) {
       btn.classList.remove("opacity-50", "pointer-events-none");
-      btn.innerHTML = `<span>⚡</span><span>Şimdi Güncelle</span>`;
+      btn.innerHTML = DOWNLOAD_BTN_HTML;
     }
 
     if (modal) {
@@ -1989,7 +2002,7 @@ class TamVaktiApp {
     if (progressArea) progressArea.classList.remove("hidden");
     if (btn) {
       btn.classList.add("opacity-50", "pointer-events-none");
-      btn.innerHTML = `<span>⏳</span><span>İndirme Başlatılıyor...</span>`;
+      btn.innerHTML = `<span>İndiriliyor…</span>`;
     }
     this.startUpdateDownload();
   }
@@ -2089,7 +2102,7 @@ class TamVaktiApp {
     if (progressArea) progressArea.classList.remove("hidden");
     if (btn) {
       btn.classList.add("opacity-50", "pointer-events-none");
-      btn.innerHTML = `<span>⏳</span><span>İndirme Başlatılıyor...</span>`;
+      btn.innerHTML = `<span>İndiriliyor…</span>`;
     }
 
     if (window.AndroidBridge && window.AndroidBridge.downloadAndInstallApk) {
@@ -2099,7 +2112,7 @@ class TamVaktiApp {
       this.isDownloadingUpdate = false;
       if (btn) {
         btn.classList.remove("opacity-50", "pointer-events-none");
-        btn.innerHTML = `<span>⚡</span><span>Şimdi Güncelle ve İndir</span>`;
+        btn.innerHTML = `<span>İndir</span>`;
       }
     }
   }
@@ -2142,7 +2155,7 @@ class TamVaktiApp {
     }
     if (modalBtn) {
       modalBtn.classList.remove("opacity-50", "pointer-events-none");
-      modalBtn.innerHTML = `<span>⚡</span><span>Şimdi Güncelle</span>`;
+      modalBtn.innerHTML = DOWNLOAD_BTN_HTML;
     }
 
     this.showToast("İndirme sırasında hata oluştu: " + errorMsg, "⚠️", 4000);
