@@ -206,15 +206,6 @@ object Notifs {
         } else {
             rv.setTextViewText(R.id.nv_remain, "")
         }
-        // Android 16+: sistemin "Canlı Güncelleme" bildirimi (durum çubuğunda geri sayım etiketi, kilit ekranında ilerleme)
-        if (Build.VERSION.SDK_INT >= 36 && prev != null && hasTarget && targetMillis > prev.millis) {
-            try {
-                val nm0 = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                nm0.notify(ID_ONGOING, buildLive(ctx, city, prev, nextName, nextTime, targetMillis, now))
-                scheduleTick(ctx)
-                return
-            } catch (e: Throwable) { /* özel görünüme düş */ }
-        }
         val builder = NotificationCompat.Builder(ctx, CH_ONGOING)
             .setSmallIcon(R.drawable.ic_stat_tamvakti)
             .setColor(ContextCompat.getColor(ctx, R.color.primary))
@@ -231,36 +222,6 @@ object Notifs {
         val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.notify(ID_ONGOING, builder.build())
         scheduleTick(ctx)
-    }
-
-    @androidx.annotation.RequiresApi(36)
-    private fun buildLive(
-        ctx: Context, city: String, prev: Store.NextPrayer,
-        nextName: String, nextTime: String, targetMillis: Long, now: Long
-    ): android.app.Notification {
-        val totalMin = ((targetMillis - prev.millis) / 60_000L).toInt().coerceAtLeast(1)
-        val doneMin = ((now - prev.millis) / 60_000L).toInt().coerceIn(0, totalMin)
-        val style = android.app.Notification.ProgressStyle()
-            .setStyledByProgress(false)
-            .setProgressSegments(listOf(android.app.Notification.ProgressStyle.Segment(totalMin)
-                .setColor(ContextCompat.getColor(ctx, R.color.primary))))
-            .setProgress(doneMin)
-        return android.app.Notification.Builder(ctx, CH_ONGOING)
-            .setSmallIcon(R.drawable.ic_stat_tamvakti)
-            .setColor(ContextCompat.getColor(ctx, R.color.primary))
-            .setContentTitle("$nextName $nextTime'e kadar")
-            .setContentText("${prev.name} ${prev.time} • $city")
-            .setSubText(city)
-            .setStyle(style)
-            .setOngoing(true)
-            .setOnlyAlertOnce(true)
-            .setWhen(targetMillis)
-            .setShowWhen(true)
-            .setUsesChronometer(true)
-            .setChronometerCountDown(true)
-            .addExtras(android.os.Bundle().apply { putBoolean("android.requestPromotedOngoing", true) })
-            .setContentIntent(openAppIntent(ctx))
-            .build()
     }
 
     /** İlerleme çubuğu geri sayım gibi kendiliğinden akmaz; birkaç dakikada bir yeniden çizilir. */
