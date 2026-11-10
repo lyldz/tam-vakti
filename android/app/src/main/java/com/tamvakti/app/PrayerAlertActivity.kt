@@ -12,6 +12,8 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 
 /**
  * Tam ekran vakit bildirimi. Kilit ekranının üstünde açılır, ekranı uyandırır.
@@ -29,6 +31,14 @@ class PrayerAlertActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         showOverLockscreen()
         setContentView(R.layout.activity_prayer_alert)
+        // Android 15+ kenardan kenara çizer: durum/navigasyon çubuğu ve çentik boşluklarını uygula
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.alertRoot)) { v, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            WindowInsetsCompat.CONSUMED
+        }
         bind(intent)
         findViewById<Button>(R.id.alertClose).setOnClickListener { finishAndRemoveTask() }
         findViewById<Button>(R.id.alertOpen).setOnClickListener {
