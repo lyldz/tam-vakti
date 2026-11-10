@@ -241,6 +241,7 @@ class TamVaktiApp {
 
     this.renderDayRibbon();
     this.evaluateCurrentPrayer();
+    this.updateSolarTransitCurve(); // güneş yayı etiketleri yöntem/ihtiyat/konum değişince hemen yenilensin
     this.scheduleSync();
   }
 
@@ -1687,8 +1688,16 @@ class TamVaktiApp {
   openCalcMethodModal() {
     const loc = this.currentLocation;
     const auto = (loc && loc.lat != null) ? CALC_METHODS[this.engine.methodForLocation(loc.lat, loc.lon)] : CALC_METHODS.diyanet;
+    // Her yöntemin bugünkü yaklaşık İmsak / Yatsı saati: farkı seçmeden görebilmek için
+    const prev = (k) => {
+      try {
+        if (!loc || loc.lat == null) return "";
+        const t = this.engine.previewTimes(k, new Date(), loc.lat, loc.lon);
+        return `İmsak ${t.imsak} • Yatsı ${t.yatsi}`;
+      } catch (e) { return ""; }
+    };
     const opts = [{ value: "auto", label: "Otomatik (önerilen)", desc: `Konumunuza göre: ${auto.name}` }]
-      .concat(Object.keys(CALC_METHODS).map(k => ({ value: k, label: CALC_METHODS[k].name, desc: CALC_METHODS[k].region })));
+      .concat(Object.keys(CALC_METHODS).map(k => ({ value: k, label: CALC_METHODS[k].name, desc: `${CALC_METHODS[k].region}${prev(k) ? " • " + prev(k) : ""}` })));
     this.openChoice("Hesaplama yöntemi", "Vakitler seçilen yönteme göre hesaplanır. Türkiye'de Diyanet kullanılır.", opts, this.calcMethodPref, (v) => {
       this.calcMethodPref = String(v);
       localStorage.setItem("tamvakti_calc_method", this.calcMethodPref);

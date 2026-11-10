@@ -52,6 +52,12 @@ class PrayerEngine {
 
   setMethod(key) { if (CALC_METHODS[key]) this.method = key; }
   methodInfo() { return CALC_METHODS[this.method] || CALC_METHODS.diyanet; }
+  // Yöntemi geçici değiştirip o günün çevrimdışı hesabını döndürür (seçim listesindeki önizleme için)
+  previewTimes(key, date, lat, lon) {
+    const old = this.method;
+    this.setMethod(key);
+    try { return this.calculateTimesOffline(date, lat, lon); } finally { this.method = old; }
+  }
   methodForLocation(lat, lon) { return methodForLocation(lat, lon); }
   // Önbellek anahtarı eki: Diyanet için boş (eski önbellek geçerli kalır)
   _mk() { return this.method === 'diyanet' ? '' : `_${this.method}`; }
