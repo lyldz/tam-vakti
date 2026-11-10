@@ -57,6 +57,8 @@ class TamVaktiApp {
     this.notifMode = localStorage.getItem("tamvakti_notif_mode") === "sessiz" ? "sessiz" : "bip";
     this.kerahatAlert = localStorage.getItem("tamvakti_kerahat_alert") !== "false";
     this.fullScreenAlert = localStorage.getItem("tamvakti_fullscreen_alert") === "true"; // varsayılan kapalı
+    // Hesaplama yöntemi: "auto" = konuma göre en sık kullanılan yöntem; ya da CALC_METHODS anahtarı
+    this.calcMethodPref = localStorage.getItem("tamvakti_calc_method") || "auto";
     // İhtiyat: tüm vakitlere eklenen dakika (Diyanet ± ayarı)
     this.timeOffsetMin = parseInt(localStorage.getItem("tamvakti_time_offset"), 10) || 0;
     this._syncSeq = 0;
@@ -193,7 +195,20 @@ class TamVaktiApp {
     }
   }
 
+  // Aktif hesaplama yöntemini (otomatik ya da seçilen) motora uygula; değiştiyse true döner
+  applyCalcMethod() {
+    const loc = this.currentLocation;
+    let key = this.calcMethodPref;
+    if (key === "auto" || !CALC_METHODS[key]) {
+      key = (loc && loc.lat != null) ? this.engine.methodForLocation(loc.lat, loc.lon) : "diyanet";
+    }
+    const changed = this.engine.method !== key;
+    this.engine.setMethod(key);
+    return changed;
+  }
+
   async updatePrayers() {
+    this.applyCalcMethod();
     const now = new Date();
     
     // Şehir Rozeti
@@ -919,6 +934,7 @@ class TamVaktiApp {
   }
 
   async loadMonthlyData(autoScroll = true) {
+    this.applyCalcMethod();
     const titleEl = document.getElementById("monthlyTitleText");
     const hijriEl = document.getElementById("monthlyHijriText");
     const cityEl = document.getElementById("monthlyCityName");
@@ -952,7 +968,14 @@ class TamVaktiApp {
       }
 
       if (sourceEl) {
-        sourceEl.textContent = data.source === 'diyanet-api' ? 'Diyanet Çevrimiçi' : 'Diyanet Çevrimdışı';
+        const mi = this.engine.methodInfo();
+        sourceEl.textContent = `${mi.short} ${data.source === 'offline-astronomical' ? 'Çevrimdışı' : 'Çevrimiçi'}`;
+      }
+      const noteEl = document.getElementById("monthlyMethodNote");
+      if (noteEl) {
+        noteEl.textContent = this.engine.method === "diyanet"
+          ? "Vakitler Diyanet İşleri Başkanlığı takvim ve astronomik kriterlerine tam uyumludur."
+          : `Vakitler "${this.engine.methodInfo().name}" yöntemiyle hesaplanır.`;
       }
 
       if (!tableBody || !data.days) return;
@@ -1284,6 +1307,10 @@ class TamVaktiApp {
     set("settingsAlertsSummary", nOn === 0 ? "Kapalı" : `${nOn} vakit açık`);
     set("settingsNotifMode", modeNames[this.notifMode] || "Telefon sesi");
     set("settingsCalcMethod", this.timeOffsetMin === 0 ? "Yok" : this.offsetLabel());
+    this.applyCalcMethod();
+    const mi = this.engine.methodInfo();
+    set("settingsMethodValue", this.calcMethodPref === "auto" ? "Otomatik" : mi.short);
+    set("settingsMethodDesc", this.calcMethodPref === "auto" ? `Konuma göre: ${mi.name}` : mi.name);
     const k = document.getElementById("kerahatToggle");
     if (k) k.checked = this.kerahatAlert;
     const fs = document.getElementById("fullScreenToggle");
@@ -1351,7 +1378,8 @@ class TamVaktiApp {
       const i = JSON.parse(window.AndroidBridge.getScheduleInfo());
       if (i.nextT) {
         const hm = new Date(i.nextT).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
-        el.textContent = `Sıradaki uyarı: ${hm}`;
+        const days = i.lastT ? Math.max(0, Math.floor((i.lastT - Date.now()) / 86400000)) : 0;
+        el.textContent = `Sıradaki uyarı: ${hm}` + (days >= 1 ? ` • ${days} gün kurulu` : " • yakında bitiyor, uygulamayı açın");
       }
     } catch (e) {}
   }
@@ -1370,7 +1398,12 @@ class TamVaktiApp {
       el.textContent = ok ? okTxt : badTxt;
       el.className = "text-[13px] font-semibold " + (ok ? "text-sky-300" : "text-amber-300");
     };
-    chip("permChipNotif", p.notif, "Açık", "Kapalı");
+    // Bildirim izni var ama vakit bildirim kanalı sistem ayarından kapatılmış olabilir
+    if (p.notif && p.chan === false) chip("permChipNotif", false, "Açık", "Kanal kapalı");
+    else chip("permChipNotif", p.notif, "Açık", "Kapalı");
+    // Uygulamayı arka planda öldüren üreticiler için ek ipucu satırı
+    const oemRow = document.getElementById("permRowOem");
+    if (oemRow) oemRow.hidden = !this.oemHint(p.mfr);
     chip("permChipExact", p.exact, "Açık", "Kapalı");
     chip("permChipDnd", p.dnd, "Açık", "Kapalı");
     chip("permChipBattery", p.battery, "Serbest", "Kısıtlı");
@@ -1378,13 +1411,50 @@ class TamVaktiApp {
     if (dndRow) dndRow.classList.toggle("hidden", !this.autoSilent);
   }
 
+  // Üreticiye özel kısa yönerge (yalnızca bilinen agresif pil yönetimli markalarda gösterilir)
+  oemHint(mfr) {
+    const m = String(mfr || "");
+    if (/xiaomi|redmi|poco/.test(m)) return "Xiaomi/Redmi: Uygulama bilgisi > Otomatik başlat'ı açın, Pil tasarrufu > Kısıtlama yok seçin.";
+    if (/huawei|honor/.test(m)) return "Huawei/Honor: Uygulama başlatma > Tam Vakti'ni elle yönet, üç seçeneği de açın.";
+    if (/samsung/.test(m)) return "Samsung: Pil > Arka plan kullanım sınırları > Uyutulmayacak uygulamalar'a Tam Vakti'ni ekleyin.";
+    if (/oppo|realme|oneplus/.test(m)) return "Oppo/Realme/OnePlus: Uygulama bilgisi > Pil > Arka planda çalışmaya izin ver ve Otomatik başlat'ı açın.";
+    if (/vivo|iqoo/.test(m)) return "Vivo: Uygulama bilgisi > Pil > Arka plan güç tüketimi: Kısıtlama yok; Otomatik başlat'ı açın.";
+    return "";
+  }
+
+  // Alarmları baştan kur ve sonucu göster (uyarılar gelmiyorsa ilk deneme)
+  async resyncAlarms() {
+    if (!window.AndroidBridge || !window.AndroidBridge.syncSchedule) {
+      return this.showToast("Alarmlar yalnızca Android uygulamasında kurulur.", "ℹ️");
+    }
+    this.showToast("Alarmlar yeniden kuruluyor…", "⏰", 1500);
+    clearTimeout(this._syncTimer);
+    await this.syncNativeSchedule();
+    this.refreshAlarmInfo();
+    try {
+      const i = JSON.parse(window.AndroidBridge.getScheduleInfo());
+      const days = i.lastT ? Math.max(0, Math.floor((i.lastT - Date.now()) / 86400000)) : 0;
+      this.showToast(`${i.count} alarm kuruldu (${days} gün ilerisi)` + (i.exact ? "" : " • tam zamanlı izin kapalı"), "✓", 3500);
+    } catch (e) {
+      this.showToast("Alarmlar kuruldu", "✓", 2500);
+    }
+  }
+
   fixPermission(kind) {
     const b = window.AndroidBridge;
     const p = this.getPermissionState();
     if (!b || !p) return;
     if (kind === "notif") {
+      if (p.notif && p.chan === false) {
+        this.showToast("Vakit bildirimlerini açın (kanal kapalı)", "🔔", 3500);
+        setTimeout(() => (b.openSoundSettings || b.openAppNotificationSettings) && (b.openSoundSettings ? b.openSoundSettings() : b.openAppNotificationSettings()), 700);
+        return;
+      }
       if (p.notif) return this.showToast("Bildirimler açık", "✓", 1800);
       b.openAppNotificationSettings && b.openAppNotificationSettings();
+    } else if (kind === "oem") {
+      this.showToast(this.oemHint(p.mfr) || "Uygulama ayarlarından arka plan kısıtlamasını kaldırın", "🔋", 7000);
+      setTimeout(() => b.openAppDetailsSettings && b.openAppDetailsSettings(), 900);
     } else if (kind === "exact") {
       if (p.exact) return this.showToast("Tam zamanlı uyarı açık", "✓", 1800);
       this.showToast("“Alarmlar ve hatırlatıcılar” iznini açın", "⏰", 3000);
@@ -1416,11 +1486,12 @@ class TamVaktiApp {
   async syncNativeSchedule() {
     if (!window.AndroidBridge || !window.AndroidBridge.syncSchedule) return;
     if (!this.currentLocation || this.currentLocation.isPlaceholder) return;
+    this.applyCalcMethod();
     const seq = ++this._syncSeq;
     const { lat, lon } = this.currentLocation;
     const city = this.shortPlaceName();
 
-    const DAYS = 7;
+    const DAYS = 30; // uygulama günlerce açılmasa da alarmlar sürsün (native taraf en yakın 120 olayı kurar, kendini yeniler)
     const monthCache = {};
     const prayers = [];
     const events = [];
@@ -1511,7 +1582,7 @@ class TamVaktiApp {
         ongoing: !!this.ongoingNotifEnabled,
         fullscreen: !!this.fullScreenAlert,
         prayers,
-        events: events.slice(0, 400)
+        events: events.slice(0, 1500)
       }));
     } catch (e) {
       console.warn("Alarm senkronizasyonu başarısız:", e);
@@ -1571,10 +1642,29 @@ class TamVaktiApp {
     });
   }
 
+  // Hesaplama yöntemi seçimi: otomatik (konuma göre) ya da elle
+  openCalcMethodModal() {
+    const loc = this.currentLocation;
+    const auto = (loc && loc.lat != null) ? CALC_METHODS[this.engine.methodForLocation(loc.lat, loc.lon)] : CALC_METHODS.diyanet;
+    const opts = [{ value: "auto", label: "Otomatik (önerilen)", desc: `Konumunuza göre: ${auto.name}` }]
+      .concat(Object.keys(CALC_METHODS).map(k => ({ value: k, label: CALC_METHODS[k].name, desc: CALC_METHODS[k].region })));
+    this.openChoice("Hesaplama yöntemi", "Vakitler seçilen yönteme göre hesaplanır. Türkiye'de Diyanet kullanılır.", opts, this.calcMethodPref, (v) => {
+      this.calcMethodPref = String(v);
+      localStorage.setItem("tamvakti_calc_method", this.calcMethodPref);
+      this.applyCalcMethod();
+      this.updateSettingsLabels();
+      this.updatePrayers();
+      this.scheduleSync();
+      const monthly = document.getElementById("monthlyModal");
+      if (monthly && !monthly.classList.contains("hidden")) this.loadMonthlyData(false);
+      this.showToast(`Yöntem: ${this.engine.methodInfo().short}`, "🧮", 2200);
+    });
+  }
+
   openIhtiyatModal() {
     const opts = [-3, -2, -1, 0, 1, 2, 3, 5].map(m => ({
       value: m,
-      label: m === 0 ? "Yok (Diyanet vakti aynen)" : `${m > 0 ? "+" : "−"}${Math.abs(m)} dk`
+      label: m === 0 ? "Yok (hesaplanan vakit aynen)" : `${m > 0 ? "+" : "−"}${Math.abs(m)} dk`
     }));
     this.openChoice("İhtiyat", "Seçilen dakika tüm vakitlere eklenir.", opts, this.timeOffsetMin, (v) => {
       this.timeOffsetMin = Number(v);

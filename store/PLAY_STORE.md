@@ -9,6 +9,8 @@ Paket: `com.tamvakti.app` • AAB: GitHub Actions > Artifacts > **TamVakti-Play-
   Tam Vakti, namaz vakitlerini sade ve reklamsız gösteren bir uygulamadır.
   • Gün boyu güneşin yolu üzerinde altı vakit, canlı geri sayım ve ilerleme çubuğu
   • İsteğe göre her vakit için "vakit girince" ve "vakitten önce" uyarısı
+  • Hesaplama yöntemi seçimi: Diyanet, MWL, ISNA, Ümmü'l-Kurâ, Mısır, Karaçi, Singapur (konuma göre otomatik)
+  • İsteğe bağlı tam ekran vakit bildirimi
   • Kerahat vakitlerinde haber verme
   • Namaz vaktinde telefonu geçici olarak titreşime alma (isteğe bağlı)
   • Kıble pusulası (her açılışta kalibrasyonlu, kıbleye hizalanınca titreşir)

@@ -689,6 +689,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 ",\"exact\":" + Scheduler.canScheduleExact(app) +
                 ",\"dnd\":" + Silencer.hasPolicyAccess(app) +
                 ",\"battery\":" + battery +
+                ",\"chan\":" + Notifs.alertChannelOk(app) +
+                ",\"mfr\":\"" + Build.MANUFACTURER.lowercase().replace("\"", "") + "\"" +
                 ",\"loc\":" + activity.hasLocationPermission() +
                 ",\"sdk\":" + Build.VERSION.SDK_INT + "}"
         }

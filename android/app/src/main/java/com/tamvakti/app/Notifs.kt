@@ -53,6 +53,18 @@ object Notifs {
         )
     }
 
+    /** Kullanıcı vakit bildirim kanalını (ya da tüm bildirimleri) sistem ayarlarından kapatmış mı? */
+    fun alertChannelOk(ctx: Context): Boolean {
+        val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (!nm.areNotificationsEnabled()) return false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createChannels(ctx)
+            val ch = nm.getNotificationChannel(CH_ALERT)
+            if (ch != null && ch.importance == NotificationManager.IMPORTANCE_NONE) return false
+        }
+        return true
+    }
+
     fun hasPermission(ctx: Context): Boolean =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
             ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) ==

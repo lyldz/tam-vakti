@@ -10,6 +10,8 @@ import android.os.Build
 object Scheduler {
     private const val ACTION = "com.tamvakti.app.ALARM"
     private const val BASE_CODE = 5000
+    /** AlarmManager uygulama başına ~500 alarmla sınırlı: yalnızca en yakın 120 olay kurulur, her alarmdan sonra pencere yenilenir. */
+    private const val WINDOW = 120
 
     fun canScheduleExact(ctx: Context): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true
@@ -61,8 +63,16 @@ object Scheduler {
                 }
             }
         }
+        var lastT = 0L
+        if (events != null) {
+            for (i in 0 until events.length()) {
+                val t = events.optJSONObject(i)?.optLong("t", 0L) ?: 0L
+                if (t > lastT) lastT = t
+            }
+        }
         val o = org.json.JSONObject()
         o.put("count", count)
+        o.put("lastT", lastT)
         o.put("exact", canScheduleExact(app))
         if (bestT != Long.MAX_VALUE) {
             o.put("nextT", bestT)
@@ -83,11 +93,19 @@ object Scheduler {
         val now = System.currentTimeMillis()
         val exact = canScheduleExact(app)
 
+        // Gelecekteki olayları zamana göre sırala, en yakın WINDOW tanesini kur
+        val upcoming = ArrayList<org.json.JSONObject>()
         if (events != null) {
             for (i in 0 until events.length()) {
                 val e = events.optJSONObject(i) ?: continue
+                if (e.optLong("t", 0L) > now) upcoming.add(e)
+            }
+            upcoming.sortBy { it.optLong("t", 0L) }
+        }
+
+        run {
+            for (e in upcoming.take(WINDOW)) {
                 val t = e.optLong("t", 0L)
-                if (t <= now) continue
                 val type = e.optString("type")
                 if (type == "silent_end") hasSilentEnd = true
 

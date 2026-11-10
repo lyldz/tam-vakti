@@ -53,6 +53,8 @@ class AlarmReceiver : BroadcastReceiver() {
             // Her alarmdan sonra widget ve sabit bildirim sıradaki vakte geçsin
             PrayerWidget.updateAll(app)
             Notifs.refreshOngoing(app)
+            // Kayan pencere: uygulama günlerce açılmasa da sıradaki alarmlar kurulu kalsın
+            if (type != "silent_start") Scheduler.reschedule(app)
         }
     }
 }

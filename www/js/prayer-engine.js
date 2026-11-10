@@ -10,6 +10,30 @@ const HIJRI_MONTHS_TR = [
   'Ramazan', 'Şevval', 'Zilkade', 'Zilhicce'
 ];
 
+// Hesaplama yöntemleri (id = Aladhan API yöntem numarası). temkin: dakika cinsinden eklenen paylar (yalnızca Diyanet).
+const CALC_METHODS = {
+  diyanet:   { id: 13, name: 'Diyanet (Türkiye)', short: 'Diyanet', region: 'Türkiye', fajr: 18, isha: 17, temkin: { imsak: -2, gunes: -3, ogle: 6, ikindi: 5, aksam: 7, yatsi: 1 } },
+  mwl:       { id: 3,  name: 'Dünya İslam Birliği (MWL)', short: 'MWL', region: 'Avrupa, Afrika, Orta ve Doğu Asya, diğer', fajr: 18, isha: 17 },
+  isna:      { id: 2,  name: 'ISNA (Kuzey Amerika)', short: 'ISNA', region: 'ABD, Kanada', fajr: 15, isha: 15 },
+  makkah:    { id: 4,  name: 'Ümmü\'l-Kurâ (Mekke)', short: 'Ümmü\'l-Kurâ', region: 'Arap Yarımadası, Körfez', fajr: 18.5, ishaMin: 90 },
+  egypt:     { id: 5,  name: 'Mısır Genel Otoritesi', short: 'Mısır', region: 'Mısır', fajr: 19.5, isha: 17.5 },
+  karachi:   { id: 1,  name: 'Karaçi İslami Bilimler Üniv.', short: 'Karaçi', region: 'Pakistan, Hindistan, Bangladeş, Afganistan', fajr: 18, isha: 18 },
+  singapore: { id: 11, name: 'Singapur / Malezya (MUIS, JAKIM)', short: 'Singapur', region: 'Malezya, Endonezya, Singapur, Brunei', fajr: 20, isha: 18 }
+};
+
+// Konuma göre en sık kullanılan yöntem (kaba bölge kutuları; kullanıcı Ayarlar'dan değiştirebilir)
+function methodForLocation(lat, lon) {
+  const inBox = (la0, la1, lo0, lo1) => lat >= la0 && lat <= la1 && lon >= lo0 && lon <= lo1;
+  if (inBox(35.8, 42.2, 25.6, 44.9)) return 'diyanet';   // Türkiye
+  if (inBox(34.9, 35.75, 32.2, 34.7)) return 'diyanet';  // KKTC (Kıbrıs)
+  if (inBox(24, 72, -170, -50)) return 'isna';           // ABD, Kanada
+  if (inBox(21.5, 31.8, 24.5, 36.0)) return 'egypt';     // Mısır
+  if (inBox(12, 32.5, 34.5, 60)) return 'makkah';        // Arap Yarımadası, Körfez
+  if (inBox(5, 37, 60.5, 93)) return 'karachi';          // Pakistan, Hindistan, Bangladeş, Afganistan
+  if (inBox(-11, 8, 95, 141)) return 'singapore';        // Malezya, Endonezya, Singapur
+  return 'mwl';                                          // Avrupa ve diğer
+}
+
 function hijriMonthTr(h) {
   if (!h || !h.month) return '';
   const n = parseInt(h.month.number, 10);
@@ -23,7 +47,14 @@ class PrayerEngine {
     this.FAJR_ANGLE = 18.0;   // Diyanet İmsak açısı
     this.ISHA_ANGLE = 17.0;   // Diyanet Yatsı açısı
     this.DEFAULT_TZ = 3.0;    // Türkiye UTC+3 sabit saat
+    this.method = 'diyanet';  // aktif hesaplama yöntemi (CALC_METHODS anahtarı)
   }
+
+  setMethod(key) { if (CALC_METHODS[key]) this.method = key; }
+  methodInfo() { return CALC_METHODS[this.method] || CALC_METHODS.diyanet; }
+  methodForLocation(lat, lon) { return methodForLocation(lat, lon); }
+  // Önbellek anahtarı eki: Diyanet için boş (eski önbellek geçerli kalır)
+  _mk() { return this.method === 'diyanet' ? '' : `_${this.method}`; }
 
   // Derece / Radyan Dönüşümleri
   d2r(deg) { return (deg * Math.PI) / 180.0; }
@@ -181,6 +212,10 @@ class PrayerEngine {
 
   // Tam Diyanet Modeliyle Çevrimdışı Vakit Hesaplama
   calculateTimesOffline(date, lat, lon, tz = 3.0) {
+    const M = this.methodInfo();
+    // Diyanet: Türkiye saati (UTC+3). Diğer yöntemler yurt dışında da kullanılabilir: cihazın saat dilimi esas alınır.
+    if (this.method !== 'diyanet') tz = -date.getTimezoneOffset() / 60;
+    const tk = M.temkin || { imsak: 0, gunes: 0, ogle: 0, ikindi: 0, aksam: 0, yatsi: 0 };
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
@@ -193,18 +228,19 @@ class PrayerEngine {
 
     // Saat Açıları
     const haSunrise = this.getHourAngle(lat, declination, -0.8333); // Ufuk kırılması
-    const haFajr = this.getHourAngle(lat, declination, -this.FAJR_ANGLE);
-    const haIsha = this.getHourAngle(lat, declination, -this.ISHA_ANGLE);
+    const haFajr = this.getHourAngle(lat, declination, -M.fajr);
+    const haIsha = M.ishaMin ? null : this.getHourAngle(lat, declination, -M.isha);
     const haAsr = this.getAsrHourAngle(lat, declination, 1);
 
     // Temkin Payları (Diyanet Standart Temkini)
     // Öğle: +6 dk temkin, İkindi: +5 dk temkin, Akşam: +7 dk temkin, Yatsı: +1 dk temkin
-    const imsak = solarNoon - (haFajr || 6) - (2 / 60);
-    const gunes = solarNoon - (haSunrise || 6) - (3 / 60);
-    const ogle = solarNoon + (6 / 60);
-    const ikindi = solarNoon + (haAsr || 3) + (5 / 60);
-    const aksam = solarNoon + (haSunrise || 6) + (7 / 60);
-    const yatsi = solarNoon + (haIsha || 7) + (1 / 60);
+    const imsak = solarNoon - (haFajr || 6) + (tk.imsak / 60);
+    const gunes = solarNoon - (haSunrise || 6) + (tk.gunes / 60);
+    const ogle = solarNoon + (tk.ogle / 60);
+    const ikindi = solarNoon + (haAsr || 3) + (tk.ikindi / 60);
+    const aksam = solarNoon + (haSunrise || 6) + (tk.aksam / 60);
+    // Ümmü'l-Kurâ: yatsı = akşam + 90 dk; diğerleri açıya göre
+    const yatsi = M.ishaMin ? aksam + (M.ishaMin / 60) : solarNoon + (haIsha || 7) + (tk.yatsi / 60);
 
     return {
       date: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
@@ -221,7 +257,7 @@ class PrayerEngine {
   // Çevrimiçi Diyanet API'den Çekme ve Yerel Önbelleğe (Cache) Alma
   async getPrayerTimes(date, lat, lon, tz = 3.0) {
     const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    const cacheKey = `tamvakti_v2_${lat.toFixed(2)}_${lon.toFixed(2)}_${dateStr}`;
+    const cacheKey = `tamvakti_v2_${lat.toFixed(2)}_${lon.toFixed(2)}_${dateStr}${this._mk()}`;
 
     // Önbellek kontrolü
     const cached = typeof localStorage !== "undefined" ? localStorage.getItem(cacheKey) : null;
@@ -239,7 +275,7 @@ class PrayerEngine {
       const d = String(date.getDate()).padStart(2, '0');
       const m = String(date.getMonth() + 1).padStart(2, '0');
       const y = date.getFullYear();
-      const url = `https://api.aladhan.com/v1/timings/${d}-${m}-${y}?latitude=${lat}&longitude=${lon}&method=13`;
+      const url = `https://api.aladhan.com/v1/timings/${d}-${m}-${y}?latitude=${lat}&longitude=${lon}&method=${this.methodInfo().id}`;
       
       const res = await fetch(url, { cache: "force-cache" });
       if (res.ok) {
@@ -256,7 +292,7 @@ class PrayerEngine {
             yatsi: t.Isha.substring(0, 5),
             hijri: json.data.date.hijri ? `${json.data.date.hijri.day} ${hijriMonthTr(json.data.date.hijri)} ${json.data.date.hijri.year}` : null,
             hijriDay: json.data.date.hijri ? `${parseInt(json.data.date.hijri.day, 10)} ${hijriMonthTr(json.data.date.hijri)}` : null,
-            source: 'diyanet-api'
+            source: this.method === 'diyanet' ? 'diyanet-api' : 'api'
           };
           try { localStorage.setItem(cacheKey, JSON.stringify(apiTimes)); } catch (e) {}
           return apiTimes;
@@ -272,7 +308,7 @@ class PrayerEngine {
   // Aylık Namaz Vakitleri (Çevrimiçi Diyanet API veya %100 Çevrimdışı Astronomik Hesaplama)
   async getMonthlyPrayerTimes(year, month, lat, lon, tz = 3.0) {
     const monthPadded = String(month).padStart(2, '0');
-    const cacheKey = `tamvakti_monthly_v2_${lat.toFixed(2)}_${lon.toFixed(2)}_${year}_${monthPadded}`;
+    const cacheKey = `tamvakti_monthly_v2_${lat.toFixed(2)}_${lon.toFixed(2)}_${year}_${monthPadded}${this._mk()}`;
 
     const trMonths = [
       '', 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
@@ -301,7 +337,7 @@ class PrayerEngine {
 
     // 2. Çevrimiçi Aladhan Diyanet Calendar API (Method 13)
     try {
-      const url = `https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${lat}&longitude=${lon}&method=13`;
+      const url = `https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${lat}&longitude=${lon}&method=${this.methodInfo().id}`;
       const res = await fetch(url);
       if (res.ok) {
         const json = await res.json();
@@ -342,7 +378,7 @@ class PrayerEngine {
             monthName: trMonths[month] || '',
             hijriSummary: hijriSummary || '',
             days,
-            source: 'diyanet-api'
+            source: this.method === 'diyanet' ? 'diyanet-api' : 'api'
           };
           try {
             if (typeof localStorage !== "undefined") { localStorage.setItem(cacheKey, JSON.stringify(result)); }
@@ -415,5 +451,5 @@ class PrayerEngine {
 
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { PrayerEngine, hijriMonthTr };
+  module.exports = { PrayerEngine, hijriMonthTr, CALC_METHODS, methodForLocation };
 }
