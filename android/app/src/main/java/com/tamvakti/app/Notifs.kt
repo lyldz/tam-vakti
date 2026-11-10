@@ -259,7 +259,7 @@ object Notifs {
             .setShowWhen(true)
             .setUsesChronometer(true)
             .setChronometerCountDown(true)
-            .setRequestPromotedOngoing(true)
+            .addExtras(android.os.Bundle().apply { putBoolean("android.requestPromotedOngoing", true) })
             .setContentIntent(openAppIntent(ctx))
             .build()
     }
