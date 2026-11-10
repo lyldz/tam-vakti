@@ -217,6 +217,9 @@ html, body {
 }
 
 /* In-App Toast Bildirimi */
+/* Tailwind'de z-70/z-60 tanımlı değil: toast ve güncelleme penceresi Ayarlar/İmsakiye modallarının altında kalıyordu */
+#appToast { z-index: 100010; }
+#updateFoundModal { z-index: 100003; }
 #appToast.toast-visible {
   opacity: 1 !important;
   transform: translate(-50%, 0) !important;

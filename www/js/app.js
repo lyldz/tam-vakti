@@ -1415,10 +1415,10 @@ class TamVaktiApp {
   oemInfo(mfr) {
     const m = String(mfr || "");
     if (/xiaomi|redmi|poco/.test(m)) return { name: "Xiaomi / Redmi / POCO", steps: [
-      "Açılan izin sayfasında “Otomatik başlat”ı açın.",
-      "“Kilit ekranında göster” ve “Arka planda açılır pencere” izinlerini açın (tam ekran bildirim için gerekir).",
-      "Sonra “Pil ayarı”na dokunup “Kısıtlama yok” seçin.",
-      "İsteğe bağlı: son uygulamalar ekranında Tam Vakti kartını aşağı çekip kilitleyin."] };
+      "“İzinler ve Otomatik başlat”: “Otomatik başlat”, “Kilit ekranında göster” ve “Arka planda açılır pencere” anahtarlarını açın.",
+      "“Pil ayarı”: “Kısıtlama yok” seçin (Pil tasarrufu kapalı).",
+      "“Bildirim kanalı”: Vakit bildirimlerinde “Kilit ekranında göster” ve “Yüzen bildirim” açık olsun.",
+      "UYGULAMAYI KİLİTLEYİN (en önemlisi): Son uygulamalar ekranını açın (alttan yukarı kaydırıp tutun ya da ▢ tuşu), Tam Vakti kartına basılı tutun, kilit simgesine dokunun. Kilitlenmezse Xiaomi uygulamayı temizleyip alarmları öldürür."] };
     if (/samsung/.test(m)) return { name: "Samsung", steps: [
       "Pil > Arka plan kullanım sınırları sayfasında “Kullanılmayan uygulamaları uyut”u kapatın.",
       "“Uyutulmayacak uygulamalar” listesine Tam Vakti'ni ekleyin.",
@@ -1442,12 +1442,17 @@ class TamVaktiApp {
     const b = window.AndroidBridge;
     const info = this.oemInfo(mfr);
     const steps = info ? info.steps.map((t, i) => `${i + 1}) ${t}`).join("\n") : "Uygulama bilgisinden arka plan kısıtlamasını kaldırın.";
-    const opts = [{ value: "perm", label: "Ayarları aç", desc: "Otomatik başlatma / izin sayfası" }];
-    if (/xiaomi|redmi|poco/.test(String(mfr))) opts.push({ value: "batt", label: "Pil ayarı (Kısıtlama yok)", desc: "Xiaomi pil tasarrufu sayfası" });
+    const xiaomi = /xiaomi|redmi|poco/.test(String(mfr));
+    const opts = [{ value: "perm", label: xiaomi ? "1. İzinler ve Otomatik başlat" : "Ayarları aç", desc: xiaomi ? "Otomatik başlat, kilit ekranı, açılır pencere" : "Otomatik başlatma / izin sayfası" }];
+    if (xiaomi) opts.push({ value: "batt", label: "2. Pil ayarı (Kısıtlama yok)", desc: "Xiaomi pil tasarrufu sayfası" });
+    if (xiaomi) opts.push({ value: "chan", label: "3. Bildirim kanalı ayarı", desc: "Kilit ekranı ve yüzen bildirim" });
+    opts.push({ value: "ign", label: "Pil muafiyeti isteği", desc: "Android'in pil optimizasyonu penceresi" });
     opts.push({ value: "app", label: "Uygulama bilgisi", desc: "Genel sistem sayfası (yedek yol)" });
     this.openChoice(info ? `${info.name}: arka planda çalışma` : "Arka planda çalışma", steps, opts, null, (v) => {
       if (!b) return;
       let ok = false;
+      if (v === "chan") return void (b.openSoundSettings ? b.openSoundSettings() : (b.openAppNotificationSettings && b.openAppNotificationSettings()));
+      if (v === "ign") return void (b.requestIgnoreBatteryOptimizations ? b.requestIgnoreBatteryOptimizations() : (b.openBatteryOptimizationSettings && b.openBatteryOptimizationSettings()));
       if (v === "perm") ok = !!(b.openOemSettings && b.openOemSettings(0));
       else if (v === "batt") ok = !!(b.openOemSettings && b.openOemSettings(1));
       if (v === "perm" || v === "batt") {
