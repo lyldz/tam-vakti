@@ -1,0 +1,6 @@
+sabah_cani | Sabah Çanı | Cam çan, dört notalı
+su_damlasi | Su Damlası | Üç yumuşak damla
+ney_nefesi | Ney Nefesi | Yumuşak, nefesli melodi
+ud_teli | Ud Teli | Tel çalgı, dört notalı arpej
+kanun_ciseleyisi | Kanun Çiseleyişi | Parlak, inen tel dizisi
+yumusak_akor | Yumuşak Akor | Sıcak, yavaş açılan akor

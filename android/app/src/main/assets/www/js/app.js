@@ -25,7 +25,13 @@ class TamVaktiApp {
     { id: "cagri", label: "Çağrı", desc: "İki notalı yumuşak zil" },
     { id: "billur", label: "Billur", desc: "Tek, berrak çan" },
     { id: "seher", label: "Seher", desc: "Yükselen üç nota" },
-    { id: "damla", label: "Damla", desc: "İki kısa yumuşak vuruş" }
+    { id: "damla", label: "Damla", desc: "İki kısa yumuşak vuruş" },
+    { id: "sabahcani", label: "Sabah Çanı", desc: "Cam çan, dört notalı" },
+    { id: "sudamlasi", label: "Su Damlası", desc: "Üç yumuşak damla" },
+    { id: "neynefesi", label: "Ney Nefesi", desc: "Nefesli, hicaz havasında" },
+    { id: "udteli", label: "Ud Teli", desc: "Hicaz arpej, ud teli" },
+    { id: "kanun", label: "Kanun Çiseleyişi", desc: "Hızlı inen kanun notaları" },
+    { id: "akor", label: "Yumuşak Akor", desc: "Sakin, uzun sönümlü akor" }
   ];
 
   constructor() {

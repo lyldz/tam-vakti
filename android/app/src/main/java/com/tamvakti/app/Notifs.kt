@@ -67,6 +67,13 @@ object Notifs {
         return true
     }
 
+    /** Kanal adında görünen ses adları. */
+    private val TONE_LABELS = mapOf(
+        "cagri" to "Çağrı", "billur" to "Billur", "seher" to "Seher", "damla" to "Damla",
+        "sabahcani" to "Sabah Çanı", "sudamlasi" to "Su Damlası", "neynefesi" to "Ney Nefesi",
+        "udteli" to "Ud Teli", "kanun" to "Kanun Çiseleyişi", "akor" to "Yumuşak Akor"
+    )
+
     /** res/raw/tone_<ad> kaynak kimliği (yoksa 0). */
     fun toneRawId(ctx: Context, tone: String): Int =
         if (Regex("[a-z]{1,20}").matches(tone)) ctx.resources.getIdentifier("tone_$tone", "raw", ctx.packageName) else 0
@@ -79,7 +86,7 @@ object Notifs {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             if (nm.getNotificationChannel(id) == null) {
-                val label = tone.replaceFirstChar { it.uppercase() }
+                val label = TONE_LABELS[tone] ?: tone.replaceFirstChar { it.uppercase() }
                 nm.createNotificationChannel(
                     NotificationChannel(id, "Vakit bildirimleri ($label)", NotificationManager.IMPORTANCE_HIGH).apply {
                         description = "Tam Vakti $label sesiyle vakit bildirimleri"
