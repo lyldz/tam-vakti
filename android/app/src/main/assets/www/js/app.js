@@ -1411,15 +1411,52 @@ class TamVaktiApp {
     if (dndRow) dndRow.classList.toggle("hidden", !this.autoSilent);
   }
 
-  // Üreticiye özel kısa yönerge (yalnızca bilinen agresif pil yönetimli markalarda gösterilir)
-  oemHint(mfr) {
+  // Üreticiye özel adımlar (yalnızca arka planda uygulama öldürmesiyle bilinen markalarda gösterilir)
+  oemInfo(mfr) {
     const m = String(mfr || "");
-    if (/xiaomi|redmi|poco/.test(m)) return "Xiaomi/Redmi: Uygulama bilgisi > Otomatik başlat'ı açın, Pil tasarrufu > Kısıtlama yok seçin.";
-    if (/huawei|honor/.test(m)) return "Huawei/Honor: Uygulama başlatma > Tam Vakti'ni elle yönet, üç seçeneği de açın.";
-    if (/samsung/.test(m)) return "Samsung: Pil > Arka plan kullanım sınırları > Uyutulmayacak uygulamalar'a Tam Vakti'ni ekleyin.";
-    if (/oppo|realme|oneplus/.test(m)) return "Oppo/Realme/OnePlus: Uygulama bilgisi > Pil > Arka planda çalışmaya izin ver ve Otomatik başlat'ı açın.";
-    if (/vivo|iqoo/.test(m)) return "Vivo: Uygulama bilgisi > Pil > Arka plan güç tüketimi: Kısıtlama yok; Otomatik başlat'ı açın.";
-    return "";
+    if (/xiaomi|redmi|poco/.test(m)) return { name: "Xiaomi / Redmi / POCO", steps: [
+      "Açılan izin sayfasında “Otomatik başlat”ı açın.",
+      "“Kilit ekranında göster” ve “Arka planda açılır pencere” izinlerini açın (tam ekran bildirim için gerekir).",
+      "Sonra “Pil ayarı”na dokunup “Kısıtlama yok” seçin.",
+      "İsteğe bağlı: son uygulamalar ekranında Tam Vakti kartını aşağı çekip kilitleyin."] };
+    if (/samsung/.test(m)) return { name: "Samsung", steps: [
+      "Pil > Arka plan kullanım sınırları sayfasında “Kullanılmayan uygulamaları uyut”u kapatın.",
+      "“Uyutulmayacak uygulamalar” listesine Tam Vakti'ni ekleyin.",
+      "Uygulama bilgisi > Pil > “Sınırlandırılmamış” seçin."] };
+    if (/huawei|honor/.test(m)) return { name: "Huawei / Honor", steps: [
+      "Açılan listede Tam Vakti'ni bulun, “Otomatik yönet”i kapatın.",
+      "Açılan pencerede “Otomatik başlat”, “İkincil başlatma” ve “Arka planda çalış” anahtarlarının üçünü de açın."] };
+    if (/oppo|realme|oneplus/.test(m)) return { name: "Oppo / Realme / OnePlus", steps: [
+      "Açılan listede Tam Vakti için “Otomatik başlat”ı açın.",
+      "Uygulama bilgisi > Pil kullanımı > “Arka planda çalışmaya izin ver”i açın.",
+      "İsteğe bağlı: son uygulamalar ekranında Tam Vakti kartını kilitleyin."] };
+    if (/vivo|iqoo/.test(m)) return { name: "Vivo / iQOO", steps: [
+      "Açılan listede Tam Vakti için arka planda başlatmaya izin verin (Otomatik başlat).",
+      "Uygulama bilgisi > Pil > “Arka plan güç tüketimi”: “Kısıtlama yok” seçin."] };
+    return null;
+  }
+  oemHint(mfr) { const i = this.oemInfo(mfr); return i ? i.name : ""; }
+
+  // Markaya özel arka plan ayar rehberi: adımlar + doğrudan ayar sayfalarını açan düğmeler
+  openOemGuide(mfr) {
+    const b = window.AndroidBridge;
+    const info = this.oemInfo(mfr);
+    const steps = info ? info.steps.map((t, i) => `${i + 1}) ${t}`).join("\n") : "Uygulama bilgisinden arka plan kısıtlamasını kaldırın.";
+    const opts = [{ value: "perm", label: "Ayarları aç", desc: "Otomatik başlatma / izin sayfası" }];
+    if (/xiaomi|redmi|poco/.test(String(mfr))) opts.push({ value: "batt", label: "Pil ayarı (Kısıtlama yok)", desc: "Xiaomi pil tasarrufu sayfası" });
+    opts.push({ value: "app", label: "Uygulama bilgisi", desc: "Genel sistem sayfası (yedek yol)" });
+    this.openChoice(info ? `${info.name}: arka planda çalışma` : "Arka planda çalışma", steps, opts, null, (v) => {
+      if (!b) return;
+      let ok = false;
+      if (v === "perm") ok = !!(b.openOemSettings && b.openOemSettings(0));
+      else if (v === "batt") ok = !!(b.openOemSettings && b.openOemSettings(1));
+      if (v === "perm" || v === "batt") {
+        if (ok) return;
+        this.showToast("Bu telefonda doğrudan açılamadı: Uygulama bilgisi açılıyor", "ℹ️", 3500);
+        if (v === "batt" && b.openBatteryOptimizationSettings) return setTimeout(() => b.openBatteryOptimizationSettings(), 800);
+      }
+      setTimeout(() => b.openAppDetailsSettings && b.openAppDetailsSettings(), 800);
+    });
   }
 
   // Alarmları baştan kur ve sonucu göster (uyarılar gelmiyorsa ilk deneme)
@@ -1453,8 +1490,7 @@ class TamVaktiApp {
       if (p.notif) return this.showToast("Bildirimler açık", "✓", 1800);
       b.openAppNotificationSettings && b.openAppNotificationSettings();
     } else if (kind === "oem") {
-      this.showToast(this.oemHint(p.mfr) || "Uygulama ayarlarından arka plan kısıtlamasını kaldırın", "🔋", 7000);
-      setTimeout(() => b.openAppDetailsSettings && b.openAppDetailsSettings(), 900);
+      this.openOemGuide(p.mfr);
     } else if (kind === "exact") {
       if (p.exact) return this.showToast("Tam zamanlı uyarı açık", "✓", 1800);
       this.showToast("“Alarmlar ve hatırlatıcılar” iznini açın", "⏰", 3000);

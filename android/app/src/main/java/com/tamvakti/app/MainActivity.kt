@@ -575,6 +575,65 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         @JavascriptInterface
         fun getDistribution(): String = if (BuildConfig.IS_PLAY) "play" else "github"
 
+        /**
+         * Üreticiye özel arka plan ayar sayfasını açar. kind 0 = izinler/otomatik başlatma, 1 = pil/arka plan sınırı.
+         * Doğrudan açılamazsa false döner (JS genel uygulama bilgisine düşer). Paket görünürlüğü
+         * kısıtı yüzünden resolveActivity yerine doğrudan startActivity denenir.
+         */
+        @JavascriptInterface
+        fun openOemSettings(kind: Int): Boolean {
+            val pkg = activity.packageName
+            val mfr = Build.MANUFACTURER.lowercase()
+            val label = try { activity.applicationInfo.loadLabel(activity.packageManager).toString() } catch (e: Exception) { "Tam Vakti" }
+            fun c(p: String, cls: String) = Intent().setClassName(p, cls)
+            val list = ArrayList<Intent>()
+            when {
+                mfr.contains("xiaomi") || mfr.contains("redmi") || mfr.contains("poco") -> {
+                    if (kind == 0) {
+                        // Uygulama izin sayfası: Otomatik başlat, Kilit ekranında göster, Arka planda açılır pencere
+                        list.add(c("com.miui.securitycenter", "com.miui.permcenter.permissions.PermissionsEditorActivity").putExtra("extra_pkgname", pkg))
+                        list.add(Intent("miui.intent.action.APP_PERM_EDITOR").setClassName("com.miui.securitycenter", "com.miui.permcenter.permissions.PermissionsEditorActivity").putExtra("extra_pkgname", pkg))
+                        list.add(c("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"))
+                    } else {
+                        // Uygulamaya özel pil tasarrufu (Kısıtlama yok)
+                        list.add(c("com.miui.powerkeeper", "com.miui.powerkeeper.ui.HiddenAppsConfigActivity")
+                            .putExtra("package_name", pkg).putExtra("package_label", label))
+                    }
+                }
+                mfr.contains("huawei") || mfr.contains("honor") -> {
+                    list.add(c("com.huawei.systemmanager", "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"))
+                    list.add(c("com.huawei.systemmanager", "com.huawei.systemmanager.optimize.process.ProtectActivity"))
+                    list.add(c("com.huawei.systemmanager", "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity"))
+                }
+                mfr.contains("samsung") -> {
+                    list.add(c("com.samsung.android.lool", "com.samsung.android.sm.ui.battery.BatteryActivity"))
+                    list.add(c("com.samsung.android.sm_cn", "com.samsung.android.sm.ui.battery.BatteryActivity"))
+                    list.add(Intent(Settings.ACTION_BATTERY_SAVER_SETTINGS))
+                }
+                mfr.contains("oppo") || mfr.contains("realme") || mfr.contains("oneplus") -> {
+                    list.add(c("com.coloros.safecenter", "com.coloros.safecenter.permission.startup.StartupAppListActivity"))
+                    list.add(c("com.coloros.safecenter", "com.coloros.safecenter.startupapp.StartupAppListActivity"))
+                    list.add(c("com.oppo.safe", "com.oppo.safe.permission.startup.StartupAppListActivity"))
+                    list.add(c("com.oneplus.security", "com.oneplus.security.chainlaunch.view.ChainLaunchAppListActivity"))
+                }
+                mfr.contains("vivo") || mfr.contains("iqoo") -> {
+                    list.add(c("com.vivo.permissionmanager", "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"))
+                    list.add(c("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity"))
+                    list.add(c("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.BgStartUpManager"))
+                }
+            }
+            for (i in list) {
+                try {
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    activity.startActivity(i)
+                    return true
+                } catch (e: Exception) {
+                    // sıradaki adayı dene
+                }
+            }
+            return false
+        }
+
         /** "Diğer uygulamaların üzerinde göster" izni (telefon açıkken tam ekranı doğrudan açmak için) */
         @JavascriptInterface
         fun canDrawOverlays(): Boolean = Settings.canDrawOverlays(activity)
