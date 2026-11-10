@@ -14,9 +14,9 @@ android {
         minSdk = 24
         targetSdk = 36
         
-        // Sürüm Yapılandırması: v2.6.11 "Şafak"
-        versionCode = 21700
-        versionName = "2.6.11"
+        // Sürüm Yapılandırması: v2.6.12 "Şafak"
+        versionCode = 21800
+        versionName = "2.6.12"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
