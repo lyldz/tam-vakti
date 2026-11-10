@@ -130,12 +130,31 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
         settings.databaseEnabled = true
-        settings.allowFileAccess = true
-        settings.allowContentAccess = true
+        // Güvenlik: sayfa yalnızca paket içi dosyalardan (android_asset) yüklenir; cihaz dosyalarına/içerik sağlayıcılarına erişim kapalı
+        settings.allowFileAccess = false
+        settings.allowContentAccess = false
+        @Suppress("DEPRECATION")
+        run {
+            settings.allowFileAccessFromFileURLs = false
+            settings.allowUniversalAccessFromFileURLs = false
+        }
+        settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
         settings.setGeolocationEnabled(true)
         settings.cacheMode = WebSettings.LOAD_DEFAULT
 
-        webView.webViewClient = WebViewClient()
+        // Güvenlik: köprü (AndroidBridge) yalnızca uygulamanın kendi sayfasına açıktır; dış bağlantılar tarayıcıda açılır
+        webView.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView, request: android.webkit.WebResourceRequest): Boolean {
+                val u = request.url
+                if (u.scheme == "file" && (u.path ?: "").startsWith("/android_asset/")) return false
+                if (u.scheme == "https" || u.scheme == "http") {
+                    try {
+                        startActivity(Intent(Intent.ACTION_VIEW, u).addCategory(Intent.CATEGORY_BROWSABLE))
+                    } catch (e: Exception) {}
+                }
+                return true
+            }
+        }
         webView.webChromeClient = object : WebChromeClient() {
             override fun onGeolocationPermissionsShowPrompt(
                 origin: String?,
@@ -925,6 +944,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                         connection.responseCode == HttpURLConnection.HTTP_SEE_OTHER) && redirectCount < 5) {
                     val newUrl = connection.getHeaderField("Location")
                     connection.disconnect()
+                    val nu = Uri.parse(newUrl ?: "")
+                    val h = nu.host ?: ""
+                    if (nu.scheme != "https" || !(h == "github.com" || h.endsWith(".githubusercontent.com"))) {
+                        runOnUiThread {
+                            webView.evaluateJavascript("window.app && window.app.onUpdateDownloadError('Güvenli olmayan yönlendirme engellendi');", null)
+                        }
+                        return@thread
+                    }
                     connection = URL(newUrl).openConnection() as HttpURLConnection
                     connection.connectTimeout = 15000
                     connection.readTimeout = 30000

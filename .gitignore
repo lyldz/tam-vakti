@@ -26,3 +26,12 @@ android/keystore.properties
 *.log
 local.properties
 .gemini/
+
+# Gizli bilgiler (ek güvenlik)
+*.p12
+*.pem
+*.pfx
+.env
+.env.*
+KEYSTORE_BASE64*
+*PASSWORD*.txt
