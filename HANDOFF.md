@@ -1,7 +1,7 @@
-# Tam Vakti: devir notu (güncel: 2026-11-09, v2.6.4 + yayınlanmamış değişiklikler)
+# Tam Vakti: devir notu (güncel: 2026-11-10, v2.6.5 + yayınlanmamış imsakiye düzeltmesi)
 
 Depo: /root/tam-vakti  (github.com/lyldz/tam-vakti, dal: main, son sürüm commit'i 7645f7c)
-Sürüm: v2.6.4 (versionName "2.6.4", versionCode 21000), YAYINLANDI: v2.6.4 etiketi + GitHub Release (APK'lar yüklü). Önceki: v2.6, v2.6.1, v2.6.3 (v2.6.2 etiketi var ama derlemesi iptal edildi, Release'i yok), v2.5, v2.4.
+Sürüm: v2.6.5 (versionCode 21100), YAYINLANDI: v2.6.5 etiketi + GitHub Release (APK'lar yüklü). Önceki: v2.6.4. Önceki: v2.6, v2.6.1, v2.6.3 (v2.6.2 etiketi var ama derlemesi iptal edildi, Release'i yok), v2.5, v2.4.
 
 ## tmux ile devam
     tmux new -s tamvakti          # Ctrl+b d ile ayrıl, tmux attach -t tamvakti ile dön
@@ -26,16 +26,16 @@ Sürüm: v2.6.4 (versionName "2.6.4", versionCode 21000), YAYINLANDI: v2.6.4 eti
 - Pusula testi: scratchpad'de playwright betikleri vardı (t.js, m.js, k.js); depoda yok. (tools/ klasörü depoda yok) betiklere benzer şekilde yeniden yazılabilir.
 
 ## Seni bekleyen işler
-1. Yayınlanmamış (main'de, etiketsiz): eski kod temizliği (984a3dd) ve arka planda güncelleme bildirimi (025921d). Yeni sürüm olarak yayınlamak için release.sh; telefonda önce denenmeli (rozet nokta, "Sonra" 24 saat).
+1. v2.6.5 yayında (kod temizliği + güncelleme bildirimi rozeti). Telefonda denenmedi: rozet nokta, "Sonra" 24 saat. Yayından sonra main'e girdi ama yayınlanmadı: imsakiye tablosu 320/360 px'te sığıyor (Yatsı sütunu kesiliyordu); sıradaki sürümle (v2.6.6) çıkar. Bilinen: 320x568 gibi çok küçük ekranda ana ekran 12 px taşıyor (tools/fit.js).
 2. GitHub Pages gizlilik politikası canlı (200, doğru başlık). Not: Pages API son iki derlemeyi "errored" gösteriyor ama iş akışı (build/deploy) başarılı; bir sonraki docs/ değişikliğinde tekrar bak.
 3. (Yapıldı, 2026-11-09) Birleşmiş dallar modern-merge ve target36 GitHub'dan silindi; yalnızca main var.
-4. Play Console yükleme/formlar (store/PLAY_STORE.md)
+4. Play Console yükleme/formlar (store/PLAY_STORE.md). Acele yok, uygulama olgunlaşsın. Mağaza görselleri hazır: tools/store/ (yeniden üretme: cd tools && npm i && node store/make.js).
 5. TODO.md "Sıradakiler" boş; yeni madde eklenebilir.
 
 ## Dosyalar
 - Anahtar + şifre: /root/anahtarlar/ ve /root/.tamvakti-keys/ (YEDEKLE, silme/taşıma). GitHub Secrets'ta 4 secret var.
-- İkonlar/kaynaklar: tools/icons (A3.svg, play-store-icon-512.png)  [UYARI: tools/ şu an diskte yok; /root/projeler ile birlikte kaybolmuş. docs/logo.png ve android/ simge kaynaklarından yeniden üretilebilir]
-- Mağaza görselleri: tools/store (öne çıkan görsel 1024x500 + 5 ekran görüntüsü, make.js)  [UYARI: tools/ şu an diskte yok; /root/projeler ile birlikte kaybolmuş. docs/logo.png ve android/ simge kaynaklarından yeniden üretilebilir]
-- Test araçları: tools (shot.js ekranlar, flow.js etkileşim, fit.js kaydırmasız kontrol, place.js bildirim yer adı, audit.js renk, sim.js alarm listesi). Önce playwright-core kurulmalı (hafıza notunda yazılı).  [UYARI: tools/ şu an diskte yok; /root/projeler ile birlikte kaybolmuş. docs/logo.png ve android/ simge kaynaklarından yeniden üretilebilir]
+- İkonlar/kaynaklar: tools/icons (A3.svg, play-store-icon-512.png)
+- Mağaza görselleri: tools/store (öne çıkan görsel 1024x500 + 5 ekran görüntüsü, make.js)
+- Test araçları: tools (smoke.js hata/taşma, fit.js kaydırmasız, shot.js, lib.js; eski: shot.js ekranlar, flow.js etkileşim, fit.js kaydırmasız kontrol, place.js bildirim yer adı, audit.js renk, sim.js alarm listesi). Önce playwright-core kurulmalı (hafıza notunda yazılı).
 - Push için kayıtlı token yok: yeni token iste, iş bitince iptal ettir. Bu konuşmada yapıştırılan token'ları iptal et.
 - Hafıza: /root/.claude/projects/-root-tam-vakti/memory/ (taşındıysa /root/.claude/projects/ altında ara)
