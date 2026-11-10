@@ -825,6 +825,21 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             }
         }
 
+        /** Seçilen vakit bildirim sesinin kısa önizlemesi ("telefon" için telefonun varsayılan bildirim sesi). */
+        @JavascriptInterface
+        fun playTone(tone: String) {
+            if (tone == "telefon") {
+                activity.runOnUiThread {
+                    try {
+                        val r = android.media.RingtoneManager.getRingtone(activity, android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION))
+                        r?.play()
+                    } catch (e: Exception) {}
+                }
+            } else {
+                Notifs.playTone(activity.applicationContext, tone)
+            }
+        }
+
         /** Vakit bildirimi kanalının ayar ekranını açar; kullanıcı telefondaki istediği sesi seçer. */
         @JavascriptInterface
         fun openSoundSettings() {
@@ -832,7 +847,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 try {
                     val intent = Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS).apply {
                         putExtra(Settings.EXTRA_APP_PACKAGE, activity.packageName)
-                        putExtra(Settings.EXTRA_CHANNEL_ID, Notifs.CH_ALERT)
+                        putExtra(Settings.EXTRA_CHANNEL_ID, Notifs.alertChannelId(activity))
                     }
                     activity.startActivity(intent)
                 } catch (e: Exception) {

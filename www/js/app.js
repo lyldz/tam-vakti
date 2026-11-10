@@ -19,6 +19,14 @@ const DOWNLOAD_BTN_HTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor
 class TamVaktiApp {
   // Kurulum sihirbazı sürümü: artırılınca sihirbaz mevcut kullanıcılara bir kez daha açılır
   static ONBOARDING_VERSION = 2;
+  // Özgün, sentezlenmiş sade hatırlatma sesleri (tools/sounds/make-tones.py; ezan değildir)
+  static TONES = [
+    { id: "telefon", label: "Telefon sesi", desc: "Telefonun kendi bildirim sesi" },
+    { id: "cagri", label: "Çağrı", desc: "İki notalı yumuşak zil" },
+    { id: "billur", label: "Billur", desc: "Tek, berrak çan" },
+    { id: "seher", label: "Seher", desc: "Yükselen üç nota" },
+    { id: "damla", label: "Damla", desc: "İki kısa yumuşak vuruş" }
+  ];
 
   constructor() {
     window.app = this;
@@ -59,6 +67,9 @@ class TamVaktiApp {
     this.notifMode = localStorage.getItem("tamvakti_notif_mode") === "sessiz" ? "sessiz" : "bip";
     this.kerahatAlert = localStorage.getItem("tamvakti_kerahat_alert") !== "false";
     this.fullScreenAlert = localStorage.getItem("tamvakti_fullscreen_alert") === "true"; // varsayılan kapalı
+    // Vakit bildirim sesi: "telefon" = telefonun bildirim sesi, ya da Tam Vakti'nin özgün sade tonlarından biri
+    this.alertTone = localStorage.getItem("tamvakti_alert_tone") || "telefon";
+    if (!TamVaktiApp.TONES.some(t => t.id === this.alertTone)) this.alertTone = "telefon";
     // Hesaplama yöntemi: "auto" = konuma göre en sık kullanılan yöntem; ya da CALC_METHODS anahtarı
     this.calcMethodPref = localStorage.getItem("tamvakti_calc_method") || "auto";
     // İhtiyat: tüm vakitlere eklenen dakika (Diyanet ± ayarı)
@@ -514,7 +525,7 @@ class TamVaktiApp {
     const before = document.getElementById("detailBeforeValue");
     if (before) before.textContent = a.before > 0 ? `${a.before} dk önce` : "Kapalı";
     const how = document.getElementById("detailAtHint");
-    if (how) how.textContent = this.notifMode === "sessiz" ? "Sessiz bildirim gelir" : "Telefonun bildirim sesiyle bildirim gelir";
+    if (how) how.textContent = this.notifMode === "sessiz" ? "Sessiz bildirim gelir" : "Seçtiğiniz sesle bildirim gelir";
   }
 
   setPrayerAlertAt(checked) {
@@ -1304,11 +1315,14 @@ class TamVaktiApp {
   }
 
   updateSettingsLabels() {
-    const modeNames = { bip: "Telefon sesi", sessiz: "Sessiz" };
+    const modeNames = { bip: "Sesli", sessiz: "Sessiz" };
     const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
     const nOn = ["imsak", "gunes", "ogle", "ikindi", "aksam", "yatsi"].filter(k => this.isAlertOn(k)).length;
     set("settingsAlertsSummary", nOn === 0 ? "Kapalı" : `${nOn} vakit açık`);
-    set("settingsNotifMode", modeNames[this.notifMode] || "Telefon sesi");
+    set("settingsNotifMode", modeNames[this.notifMode] || "Sesli");
+    const tone = TamVaktiApp.TONES.find(t => t.id === this.alertTone) || TamVaktiApp.TONES[0];
+    set("settingsSoundAction", tone.label);
+    set("settingsSoundDesc", "Seçince kısa önizleme çalar");
     set("settingsCalcMethod", this.timeOffsetMin === 0 ? "Yok" : this.offsetLabel());
     this.applyCalcMethod();
     const mi = this.engine.methodInfo();
@@ -1361,6 +1375,24 @@ class TamVaktiApp {
   }
 
   // Bildirim sesi: telefonun kendi kanal ayarı açılır, istediğiniz sesi seçersiniz
+  // Vakit bildirim sesi seçimi (seçince kısa önizleme çalar); sistem ses ayarına da kısayol
+  openToneModal() {
+    const opts = TamVaktiApp.TONES.map(t => ({ value: t.id, label: t.label, desc: t.desc }))
+      .concat([{ value: "__sys", label: "Telefon ses ayarları", desc: "Ses düzeyi, titreşim ve kanal ayarı" }]);
+    this.openChoice("Bildirim sesi", "Bir sese dokununca seçilir ve kısa bir önizleme çalar. Vakit bildirimi “Sessiz” ise ses çalmaz.", opts, this.alertTone, (v) => {
+      if (v === "__sys") return this.openSoundSettings();
+      this.alertTone = v;
+      localStorage.setItem("tamvakti_alert_tone", v);
+      this.updateSettingsLabels();
+      this.scheduleSync();
+      const b = window.AndroidBridge;
+      if (b && b.playTone) b.playTone(v);
+      else this.playAlertTone();
+      const t = TamVaktiApp.TONES.find(x => x.id === v);
+      this.showToast(`Bildirim sesi: ${t ? t.label : v}`, "🔔", 2200);
+    });
+  }
+
   openSoundSettings() {
     if (window.AndroidBridge && window.AndroidBridge.openSoundSettings) {
       window.AndroidBridge.openSoundSettings();
@@ -1640,6 +1672,7 @@ class TamVaktiApp {
         city,
         ongoing: !!this.ongoingNotifEnabled,
         fullscreen: !!this.fullScreenAlert,
+        tone: this.alertTone,
         prayers,
         events: events.slice(0, 1500)
       }));
@@ -1691,7 +1724,7 @@ class TamVaktiApp {
 
   openPrayerModesModal() {
     this.openChoice("Vakit bildirimi", "Vakit girince ne olsun?", [
-      { value: "bip", label: "Telefonun bildirim sesi", desc: "Sesi Bildirim sesi satırından değiştirebilirsiniz" },
+      { value: "bip", label: "Sesli bildirim", desc: "Sesi Bildirim sesi satırından seçebilirsiniz" },
       { value: "sessiz", label: "Sessiz", desc: "Yalnızca bildirim yazısı gösterilir" }
     ], this.notifMode, (v) => {
       this.notifMode = v;

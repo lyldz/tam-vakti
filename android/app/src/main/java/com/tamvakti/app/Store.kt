@@ -34,6 +34,11 @@ object Store {
     }
 
     fun city(ctx: Context): String = schedule(ctx)?.optString("city", "Tam Vakti") ?: "Tam Vakti"
+    /** Seçili vakit bildirim sesi: "telefon" (varsayılan) ya da raw kaynağı adı (cagri, billur, seher, damla). */
+    fun tone(ctx: Context): String {
+        val t = schedule(ctx)?.optString("tone", "telefon") ?: "telefon"
+        return if (Regex("[a-z]{1,20}").matches(t)) t else "telefon"
+    }
     fun fullScreenEnabled(ctx: Context): Boolean = schedule(ctx)?.optBoolean("fullscreen", false) ?: false
     fun ongoingEnabled(ctx: Context): Boolean = schedule(ctx)?.optBoolean("ongoing", false) ?: false
 }

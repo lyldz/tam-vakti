@@ -59,10 +59,73 @@ object Notifs {
         if (!nm.areNotificationsEnabled()) return false
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createChannels(ctx)
-            val ch = nm.getNotificationChannel(CH_ALERT)
+            val ch = nm.getNotificationChannel(alertChannelId(ctx))
             if (ch != null && ch.importance == NotificationManager.IMPORTANCE_NONE) return false
         }
         return true
+    }
+
+    /** res/raw/tone_<ad> kaynak kimliği (yoksa 0). */
+    fun toneRawId(ctx: Context, tone: String): Int =
+        if (Regex("[a-z]{1,20}").matches(tone)) ctx.resources.getIdentifier("tone_$tone", "raw", ctx.packageName) else 0
+
+    /** Seçili ses için vakit kanalı: "telefon" = varsayılan kanal, diğerleri kendi sesli kanalı (kanal sesi sonradan değişmez). */
+    fun alertChannelId(ctx: Context): String {
+        val tone = Store.tone(ctx)
+        if (tone == "telefon" || toneRawId(ctx, tone) == 0) return CH_ALERT
+        val id = "tamvakti_alert_$tone"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            if (nm.getNotificationChannel(id) == null) {
+                val label = tone.replaceFirstChar { it.uppercase() }
+                nm.createNotificationChannel(
+                    NotificationChannel(id, "Vakit bildirimleri ($label)", NotificationManager.IMPORTANCE_HIGH).apply {
+                        description = "Tam Vakti $label sesiyle vakit bildirimleri"
+                        setSound(
+                            android.net.Uri.parse("android.resource://${ctx.packageName}/${toneRawId(ctx, tone)}"),
+                            AudioAttributes.Builder()
+                                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                .build()
+                        )
+                        enableVibration(true)
+                    }
+                )
+            }
+        }
+        return id
+    }
+
+    private var tonePlayer: android.media.MediaPlayer? = null
+
+    /** Ayarlardaki ses önizlemesi (yaklaşık 2 sn). */
+    fun playTone(ctx: Context, tone: String) {
+        stopTone()
+        val raw = toneRawId(ctx, tone)
+        if (raw == 0) return
+        try {
+            tonePlayer = android.media.MediaPlayer().apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+                val afd = ctx.resources.openRawResourceFd(raw)
+                setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                afd.close()
+                setOnCompletionListener { stopTone() }
+                prepare()
+                start()
+            }
+        } catch (e: Exception) {
+            stopTone()
+        }
+    }
+
+    fun stopTone() {
+        try { tonePlayer?.release() } catch (e: Exception) {}
+        tonePlayer = null
     }
 
     fun hasPermission(ctx: Context): Boolean =
@@ -86,7 +149,7 @@ object Notifs {
     ) {
         if (!hasPermission(ctx)) return
         createChannels(ctx)
-        val builder = NotificationCompat.Builder(ctx, if (quiet) CH_QUIET else CH_ALERT)
+        val builder = NotificationCompat.Builder(ctx, if (quiet) CH_QUIET else alertChannelId(ctx))
             .setSmallIcon(R.drawable.ic_stat_tamvakti)
             .setColor(ContextCompat.getColor(ctx, R.color.primary))
             .setContentTitle(title)
