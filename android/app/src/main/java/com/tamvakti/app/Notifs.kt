@@ -68,7 +68,10 @@ object Notifs {
     }
 
     /** Vakit girişi / hatırlatma / kerahat bildirimi. */
-    fun postAlert(ctx: Context, id: Int, title: String, body: String, quiet: Boolean) {
+    fun postAlert(
+        ctx: Context, id: Int, title: String, body: String, quiet: Boolean,
+        fullScreen: Intent? = null
+    ) {
         if (!hasPermission(ctx)) return
         createChannels(ctx)
         val builder = NotificationCompat.Builder(ctx, if (quiet) CH_QUIET else CH_ALERT)
@@ -80,8 +83,23 @@ object Notifs {
             .setContentIntent(openAppIntent(ctx))
             .setPriority(if (quiet) NotificationCompat.PRIORITY_DEFAULT else NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
+        // Tam ekran bildirim (kilit ekranı / ekran kapalıyken tüm ekranı kaplar; açıkken yukarıdan kayan bildirim olur)
+        if (fullScreen != null && !quiet && canUseFullScreen(ctx)) {
+            val pi = PendingIntent.getActivity(
+                ctx, id, fullScreen, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            builder.setFullScreenIntent(pi, true)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
+        }
         val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.notify(id, builder.build())
+    }
+
+    /** Android 14+ tam ekran niyeti kullanıcı iznine bağlıdır; öncesinde manifest izni yeter. */
+    fun canUseFullScreen(ctx: Context): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return true
+        val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        return nm.canUseFullScreenIntent()
     }
 
     /** Durum çubuğundaki sabit, geri sayımlı bildirim. */

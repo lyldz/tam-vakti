@@ -96,6 +96,9 @@ object Scheduler {
                     putExtra("title", e.optString("title"))
                     putExtra("body", e.optString("body"))
                     putExtra("mode", e.optString("mode"))
+                    putExtra("name", e.optString("name"))
+                    putExtra("time", e.optString("time"))
+                    putExtra("info", e.optString("info"))
                     putExtra("id", BASE_CODE + n)
                 }
                 val pi = PendingIntent.getBroadcast(

@@ -12,16 +12,30 @@ class AlarmReceiver : BroadcastReceiver() {
             intent.getStringExtra("title") ?: "Tam Vakti",
             intent.getStringExtra("body") ?: "",
             intent.getStringExtra("mode") ?: "bip",
-            intent.getIntExtra("id", 1)
+            intent.getIntExtra("id", 1),
+            intent.getStringExtra("name") ?: "",
+            intent.getStringExtra("time") ?: "",
+            intent.getStringExtra("info") ?: "",
+            intent.getBooleanExtra("force_fs", false)
         )
     }
 
     companion object {
         /** mode: "bip" = telefonun bildirim sesi, "sessiz" = sessiz bildirim. */
-        fun handle(ctx: Context, type: String, title: String, body: String, mode: String, id: Int) {
+        fun handle(
+            ctx: Context, type: String, title: String, body: String, mode: String, id: Int,
+            name: String = "", time: String = "", info: String = "", forceFullScreen: Boolean = false
+        ) {
             val app = ctx.applicationContext
             when (type) {
-                "reminder", "vakit" -> Notifs.postAlert(app, id, title, body, quiet = mode == "sessiz")
+                "reminder" -> Notifs.postAlert(app, id, title, body, quiet = mode == "sessiz")
+                "vakit" -> {
+                    // Vakit girişinde (ve ayar açıksa) tam ekran bildirim
+                    val fs = if (forceFullScreen || Store.fullScreenEnabled(app))
+                        PrayerAlertActivity.intent(app, name.ifBlank { title.removeSuffix(" vakti girdi") }, time, Store.city(app), info)
+                    else null
+                    Notifs.postAlert(app, id, title, body, quiet = mode == "sessiz", fullScreen = fs)
+                }
                 "kerahat" -> Notifs.postAlert(app, id, title, body, quiet = true)
                 "silent_start" -> Silencer.start(app)
                 "silent_end" -> Silencer.end(app)

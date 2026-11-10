@@ -2,6 +2,7 @@ package com.tamvakti.app
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -573,6 +574,58 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         @JavascriptInterface
         fun getDistribution(): String = if (BuildConfig.IS_PLAY) "play" else "github"
+
+        /** Tam ekran bildirim izni var mı? (Android 14+ kullanıcı iznine bağlı) */
+        @JavascriptInterface
+        fun canUseFullScreenIntent(): Boolean = Notifs.canUseFullScreen(activity)
+
+        /** Android 14+: uygulamanın tam ekran bildirim izin sayfasını açar. */
+        @JavascriptInterface
+        fun openFullScreenIntentSettings() {
+            activity.runOnUiThread {
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                        activity.startActivity(Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
+                            data = Uri.parse("package:${activity.packageName}")
+                        })
+                    } else {
+                        activity.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.parse("package:${activity.packageName}")
+                        })
+                    }
+                } catch (e: Exception) {
+                }
+            }
+        }
+
+        /** Tam ekran bildirimi dene: 0 = hemen göster, >0 = o kadar saniye sonra (ekranı kilitleyip bekleyin). */
+        @JavascriptInterface
+        fun testFullScreenAlert(delaySec: Int) {
+            val time = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault()).format(java.util.Date(System.currentTimeMillis() + delaySec * 1000L))
+            val info = "Örnek bildirim: giren vakte ait kısa bilgi burada görünür."
+            if (delaySec <= 0) {
+                activity.runOnUiThread {
+                    activity.startActivity(PrayerAlertActivity.intent(activity, "Öğle", time, Store.city(activity), info))
+                }
+                return
+            }
+            val am = activity.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val intent = Intent(activity, AlarmReceiver::class.java).apply {
+                action = "com.tamvakti.app.ALARM_TEST"
+                putExtra("type", "vakit"); putExtra("title", "Öğle vakti girdi")
+                putExtra("body", "${Store.city(activity)} • $time"); putExtra("mode", "bip")
+                putExtra("id", 4999); putExtra("name", "Öğle"); putExtra("time", time)
+                putExtra("info", info); putExtra("force_fs", true)
+            }
+            val pi = PendingIntent.getBroadcast(activity, 4999, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            val at = System.currentTimeMillis() + delaySec * 1000L
+            try {
+                if (Scheduler.canScheduleExact(activity)) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+                else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+            } catch (e: SecurityException) {
+                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+            }
+        }
 
         /** Yalnızca projenin gizlilik sayfası ve GitHub deposu tarayıcıda açılır. */
         @JavascriptInterface

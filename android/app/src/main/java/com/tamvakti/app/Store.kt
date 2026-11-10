@@ -34,5 +34,6 @@ object Store {
     }
 
     fun city(ctx: Context): String = schedule(ctx)?.optString("city", "Tam Vakti") ?: "Tam Vakti"
+    fun fullScreenEnabled(ctx: Context): Boolean = schedule(ctx)?.optBoolean("fullscreen", false) ?: false
     fun ongoingEnabled(ctx: Context): Boolean = schedule(ctx)?.optBoolean("ongoing", false) ?: false
 }

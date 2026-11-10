@@ -56,6 +56,7 @@ class TamVaktiApp {
     // bip = telefonun kendi bildirim sesi, sessiz = yalnızca yazı (eski "ezan" ayarı bip'e taşınır)
     this.notifMode = localStorage.getItem("tamvakti_notif_mode") === "sessiz" ? "sessiz" : "bip";
     this.kerahatAlert = localStorage.getItem("tamvakti_kerahat_alert") !== "false";
+    this.fullScreenAlert = localStorage.getItem("tamvakti_fullscreen_alert") === "true"; // varsayılan kapalı
     // İhtiyat: tüm vakitlere eklenen dakika (Diyanet ± ayarı)
     this.timeOffsetMin = parseInt(localStorage.getItem("tamvakti_time_offset"), 10) || 0;
     this._syncSeq = 0;
@@ -1285,6 +1286,10 @@ class TamVaktiApp {
     set("settingsCalcMethod", this.timeOffsetMin === 0 ? "Yok" : this.offsetLabel());
     const k = document.getElementById("kerahatToggle");
     if (k) k.checked = this.kerahatAlert;
+    const fs = document.getElementById("fullScreenToggle");
+    if (fs) fs.checked = this.fullScreenAlert;
+    const fsRow = document.getElementById("fsTestRow");
+    if (fsRow) fsRow.classList.toggle("hidden", !(window.AndroidBridge && window.AndroidBridge.testFullScreenAlert));
     this.refreshPermissionStatus();
   }
 
@@ -1470,7 +1475,10 @@ class TamVaktiApp {
             t, type: "vakit",
             title: `${name} vakti girdi`,
             body: `${city} • ${x.str}`,
-            mode: mode
+            mode: mode,
+            name: (p.key === "ogle" && isFri) ? "Cuma" : p.name,
+            time: x.str,
+            info: this.prayerInfoText(p.key, isFri)
           });
         }
 
@@ -1501,6 +1509,7 @@ class TamVaktiApp {
       window.AndroidBridge.syncSchedule(JSON.stringify({
         city,
         ongoing: !!this.ongoingNotifEnabled,
+        fullscreen: !!this.fullScreenAlert,
         prayers,
         events: events.slice(0, 400)
       }));
@@ -1575,6 +1584,53 @@ class TamVaktiApp {
       const monthly = document.getElementById("monthlyModal");
       if (monthly && !monthly.classList.contains("hidden")) this.loadMonthlyData(false);
     });
+  }
+
+  // Tam ekran bildirim: yalnızca Android uygulamasında; Android 14+ için ayrı izin gerekir
+  toggleFullScreenAlert(checked) {
+    const b = window.AndroidBridge;
+    if (!b || !b.testFullScreenAlert) {
+      this.fullScreenAlert = false;
+      const cb = document.getElementById("fullScreenToggle");
+      if (cb) cb.checked = false;
+      this.showToast("Tam ekran bildirim yalnızca Android uygulamasında vardır.", "ℹ️");
+      return;
+    }
+    this.fullScreenAlert = !!checked;
+    localStorage.setItem("tamvakti_fullscreen_alert", this.fullScreenAlert ? "true" : "false");
+    if (this.fullScreenAlert && b.canUseFullScreenIntent && !b.canUseFullScreenIntent()) {
+      this.showToast("Tam ekran için açılan sayfada izni verin", "🔔", 3500);
+      if (b.openFullScreenIntentSettings) setTimeout(() => b.openFullScreenIntentSettings(), 600);
+    } else {
+      this.showToast(this.fullScreenAlert ? "Vakit girince tam ekran bildirim gelecek" : "Tam ekran bildirim kapatıldı", "🔔", 2500);
+    }
+    this.scheduleSync();
+  }
+
+  testFullScreenAlert() {
+    const b = window.AndroidBridge;
+    if (!b || !b.testFullScreenAlert) return;
+    if (b.canUseFullScreenIntent && !b.canUseFullScreenIntent()) {
+      this.showToast("Önce tam ekran izni verin", "🔔", 3000);
+      if (b.openFullScreenIntentSettings) setTimeout(() => b.openFullScreenIntentSettings(), 600);
+      return;
+    }
+    b.testFullScreenAlert(10);
+    this.showToast("10 sn sonra gelecek: ekranı kilitleyip bekleyin", "🔔", 4000);
+  }
+
+  // Giren vakte ait kısa bilgi (tam ekran bildirimde gösterilir; Hanefi/Diyanet rekât düzeni)
+  prayerInfoText(key, isFri) {
+    const t = {
+      imsak: "Sabah namazı: 2 rekât sünnet, 2 rekât farz.",
+      gunes: "Sabah vakti çıktı. Güneşin doğuşundan itibaren yaklaşık 45 dk kerahat vaktidir; nafile namaz kılınmaz.",
+      ogle: "Öğle namazı: 4 rekât ilk sünnet, 4 rekât farz, 2 rekât son sünnet.",
+      ikindi: "İkindi namazı: 4 rekât sünnet, 4 rekât farz.",
+      aksam: "Akşam namazı: 3 rekât farz, 2 rekât sünnet.",
+      yatsi: "Yatsı namazı: 4 rekât ilk sünnet, 4 rekât farz, 2 rekât son sünnet, 3 rekât vitir."
+    };
+    if (key === "ogle" && isFri) return "Cuma namazı: 4 rekât ilk sünnet, 2 rekât farz, 4 rekât son sünnet, 2 rekât sünnet.";
+    return t[key] || "";
   }
 
   toggleKerahatAlert(checked) {
