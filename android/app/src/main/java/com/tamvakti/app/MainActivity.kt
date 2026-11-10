@@ -3,13 +3,11 @@ package com.tamvakti.app
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlarmManager
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -31,7 +29,6 @@ import android.hardware.GeomagneticField
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
@@ -740,16 +737,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     activity.startActivity(Intent(Intent.ACTION_VIEW, uri))
                 } catch (e: Exception) {
                 }
-            }
-        }
-
-        @JavascriptInterface
-        fun getAppVersion(): String {
-            return try {
-                val pInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
-                pInfo.versionName ?: "2.4"
-            } catch (e: Exception) {
-                "2.4"
             }
         }
 

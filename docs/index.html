@@ -40,7 +40,6 @@
 <tr><th>Hizmet</th><th>Ne zaman</th><th>Gönderilen</th></tr>
 <tr><td>Aladhan API (api.aladhan.com)</td><td>Vakitleri almak için</td><td>Enlem, boylam ve tarih</td></tr>
 <tr><td>BigDataCloud (api.bigdatacloud.net)</td><td>Yalnızca “GPS ile Otomatik Bul” kullanıldığında ilçe adını bulmak için</td><td>Enlem ve boylam</td></tr>
-<tr><td>OpenStreetMap harita karoları (tile.openstreetmap.org)</td><td>Yalnızca Kıble “Harita” görünümünü açtığınızda</td><td>Görüntülenen harita bölgesi ve IP adresiniz</td></tr>
 <tr><td>GitHub (api.github.com) — <em>yalnızca GitHub’dan indirilen sürüm</em></td><td>Yeni sürüm denetimi için</td><td>IP adresiniz</td></tr>
 </table>
 <p class="mut">Bu hizmetlerin kendi gizlilik politikaları geçerlidir. Google Play sürümünde GitHub güncelleme denetimi bulunmaz.</p>
@@ -51,6 +50,7 @@
 <li><strong>Bildirimler:</strong> vakit girişi, vakit öncesi hatırlatma ve kerahat uyarıları ile sabit sayaç bildirimi.</li>
 <li><strong>Tam zamanlı alarm:</strong> bildirimlerin vaktinde, dakikasında gelmesi için.</li>
 <li><strong>Rahatsız Etme erişimi:</strong> yalnızca isteğe bağlı “Namazda sessize al” özelliği için telefonu geçici olarak titreşime almak ve geri döndürmek amacıyla. Bildirimlerinizin içeriği okunmaz.</li>
+<li><strong>Tam ekran bildirim / diğer uygulamaların üzerinde gösterme:</strong> yalnızca isteğe bağlı “Tam ekran bildirim” özelliği için, vakit girdiğinde vakit bilgisini kilit ekranında ve telefon açıkken tam ekran göstermek amacıyla. Varsayılan kapalıdır; ekrandaki içerik okunmaz.</li>
 <li><strong>Cihaz açılışında çalış:</strong> telefon yeniden başladığında vakit alarmlarını yeniden kurmak için.</li>
 <li><strong>Titreşim, İnternet:</strong> kıble hizalama titreşimi ve yukarıdaki ağ istekleri için.</li>
 </ul>
@@ -82,13 +82,12 @@
 <ul>
 <li><strong>Aladhan API</strong> — latitude, longitude and date, to fetch prayer times.</li>
 <li><strong>BigDataCloud</strong> — latitude and longitude, only when you use “find with GPS”, to name your district.</li>
-<li><strong>OpenStreetMap tile servers</strong> — the viewed map area and your IP address, only when you open the Qibla map view.</li>
 <li><strong>GitHub</strong> — your IP address, only in the version downloaded from GitHub, to check for updates.</li>
 </ul>
 <p>Offline, prayer times are computed on-device and nothing is sent. These services are governed by their own privacy policies.</p>
 
 <h2>Permissions</h2>
-<p>Approximate location (optional), notifications (prayer alerts and reminders), exact alarms (so alerts arrive on time), Do Not Disturb access (only for the optional “silence during prayer” feature; notification content is never read), boot completed (to reschedule alarms after a restart), vibration and internet.</p>
+<p>Approximate location (optional), notifications (prayer alerts and reminders), exact alarms (so alerts arrive on time), Do Not Disturb access (only for the optional “silence during prayer” feature; notification content is never read), full-screen notification and “display over other apps” (only for the optional full-screen prayer alert, off by default; screen content is never read), boot completed (to reschedule alarms after a restart), vibration and internet.</p>
 
 <h2>Children, deletion, contact</h2>
 <p>The app collects no personal data. All data lives on your device; uninstall the app or clear its storage to delete it. Questions: <a href="https://github.com/lyldz/tam-vakti/issues">github.com/lyldz/tam-vakti/issues</a>.</p>

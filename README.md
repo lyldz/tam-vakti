@@ -44,21 +44,22 @@ Paket adı: `com.tamvakti.app`
 
 ---
 
-## 🏷️ Sürümleme (Major.Minor)
+## 🏷️ Sürümleme (SemVer)
 
-- **`versionName`:** `2.5`, `2.6`, ... (Git etiketi: `v2.5`)
-- **`versionCode`:** her sürümde +100 (örn. `20500`)
-- Etiket (`vX.Y`) push edildiğinde **GitHub Actions** APK'yı bulutta derler ve Releases sayfasına ekler.
+- **`versionName`:** `MAJOR.MINOR.PATCH` (ör. `2.7.2`, Git etiketi: `v2.7.2`); her minor sürümün bir kod adı vardır (`CODENAMES`)
+- **`versionCode`:** her sürümde +100
+- Etiket (`vX.Y.Z`) push edildiğinde **GitHub Actions** APK'yı bulutta derler ve Releases sayfasına ekler.
 - Uygulama içi güncelleme denetimi etiketleri bu şemayla karşılaştırır.
 
 Yeni sürüm çıkarmak için:
 
 ```bash
-./release.sh          # sürümü otomatik artırır, commit atar, etiketler ve push eder
-./release.sh 2.6      # ya da sürümü kendiniz verin
+./release.sh feature   # yeni minor (2.7.2 -> 2.8.0, yeni kod adı)
+./release.sh fix       # yalnızca düzeltme (2.7.2 -> 2.7.3)
+./release.sh 2.7.3     # ya da sürümü kendiniz verin (--dry: denemeyi göster)
 ```
 
-Betik `android/app/build.gradle.kts` içindeki sürümü günceller. `www/index.html` içindeki sürüm rozetini ayrıca kontrol edin.
+Betik `build.gradle.kts`, `www/index.html` rozetleri ve `app.js` sürümünü günceller, `notes/<etiket>.md` dosyasını sürüm notu olarak kullanır.
 
 ---
 
