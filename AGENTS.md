@@ -13,12 +13,13 @@ Bu dosya, "Tam Vakti" projesinin mimari kurallarını, sürümleme standartları
 
 ---
 
-## 2. Sürümleme Mantığı (Major.Minor)
-Projenin fiilen kullandığı şema budur (CalVer'den vazgeçildi):
-- **`versionName`:** `2.4`, `2.5`, ... (kod adıyla: "v2.4 • Şafak")
-- **`versionCode`:** her sürümde +100 (örn. `20300`)
-- **Git Tag:** `v2.4`
-- `release.sh` bu şemaya göre otomatik artırır; uygulama içi güncelleme denetimi tag'leri bu şemayla karşılaştırır.
+## 2. Sürümleme Mantığı (Katı SemVer: MAJOR.MINOR.PATCH)
+- **PATCH** (`2.6.9` → `2.6.10`): yalnızca hata düzeltmesi; yeni özellik yok. Kod adı değişmez.
+- **MINOR** (`2.6.9` → `2.7.0`): yeni özellik/izin/ayar; PATCH sıfırlanır; **her minor sürümün kendi kod adı vardır** (`CODENAMES` dosyası: 2.6 Şafak, 2.7 Duha, 2.8 Zeval, ...).
+- **MAJOR** (`2.x` → `3.0.0`): büyük/uyumsuz değişiklik (örn. veri düzeni, minSdk).
+- **`versionName`:** `2.7.0`; **`versionCode`:** her sürümde +100 (Play'de asla azalmaz); **Git Tag:** `v2.7.0`; uygulamada "v2.7.0 • Duha".
+- Yayın: `./release.sh feature` | `fix` | `major` | `X.Y.Z` (+ isteğe bağlı commit mesajı). `--dry` ile önce ne yapacağını gösterir. Kod adı `CODENAMES` dosyasında yoksa betik durur; önce satır ekle.
+- Uygulama içi güncelleme denetimi tag'leri sayısal olarak karşılaştırır (`2.6.10 > 2.6.9`).
 
 ---
 

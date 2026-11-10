@@ -1,7 +1,7 @@
-# Tam Vakti: devir notu (güncel: 2026-11-10, v2.6.7)
+# Tam Vakti: devir notu (güncel: 2026-11-10, v2.6.9)
 
 Depo: /root/tam-vakti  (github.com/lyldz/tam-vakti, dal: main, son sürüm commit'i 7645f7c)
-Sürüm: v2.6.7 (versionCode 21300), YAYINLANDI: v2.6.7 etiketi + GitHub Release (APK'lar yüklü). Önceki: v2.6.4. Önceki: v2.6, v2.6.1, v2.6.3 (v2.6.2 etiketi var ama derlemesi iptal edildi, Release'i yok), v2.5, v2.4.
+Sürüm: v2.6.9 (versionCode 21500), YAYINLANDI: v2.6.9 etiketi + GitHub Release (APK'lar yüklü). Önceki: v2.6.4. Önceki: v2.6, v2.6.1, v2.6.3 (v2.6.2 etiketi var ama derlemesi iptal edildi, Release'i yok), v2.5, v2.4.
 
 ## tmux ile devam
     tmux new -s tamvakti          # Ctrl+b d ile ayrıl, tmux attach -t tamvakti ile dön
@@ -24,6 +24,9 @@ Sürüm: v2.6.7 (versionCode 21300), YAYINLANDI: v2.6.7 etiketi + GitHub Release
 - release.sh: sürüm yazılarını (rozetler, Hakkında satırı, app.js currentVersion) üç haneli sürümlerle de güncelliyor (v2.6.3'te düzeltildi). Etiketi artık zorla itmiyor; hatalı etiket varsa yeni sürüm numarasıyla yeniden yayınla (zorla push ve Actions iptali izin sistemince engellenebiliyor).
 - Yerelde Gradle çalışmıyor (eklenti çevrimdışı önbellekte yok); Kotlin doğrulaması GitHub Actions derlemesiyle yapılıyor. `gh` oturumu açık (lyldz), push için token gerekmiyor.
 - Pusula testi: scratchpad'de playwright betikleri vardı (t.js, m.js, k.js); depoda yok. (tools/ klasörü depoda yok) betiklere benzer şekilde yeniden yazılabilir.
+
+## Sürümleme (v2.6.9'dan sonra)
+Katı SemVer + her minor için kod adı (CODENAMES). `./release.sh feature` (2.7.0 "Duha") / `fix` (2.6.10) / `major`; `--dry` ile dene. Ayrıntı: AGENTS.md bölüm 2.
 
 ## Seni bekleyen işler
 1. v2.6.7 yayında; TELEFONDA DENENMEDİ: (a) tam ekran vakit bildirimi (Ayarlar > Bildirim; "Diğer uygulamaların üzerinde göster" izni gerekir; "Tam ekranı dene" düğmesi), (b) bildirim güvenilirliği (30 gün alarm ufku, kayan 120'lik pencere, "Alarmları yeniden kur", kanal/üretici uyarıları), (c) hesaplama yöntemi (Ayarlar > Hesaplama yöntemi, varsayılan otomatik), (d) v2.6.5'teki güncelleme rozeti ve "Sonra" 24 saat. Play'de tam ekran/yer paylaşımı izinleri risklidir (store/PLAY_STORE.md).
