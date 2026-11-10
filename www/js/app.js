@@ -1416,7 +1416,8 @@ class TamVaktiApp {
   oemInfo(mfr) {
     const m = String(mfr || "");
     if (/xiaomi|redmi|poco/.test(m)) return { name: "Xiaomi / Redmi / POCO", steps: [
-      "“İzinler ve Otomatik başlat”: “Otomatik başlat”, “Kilit ekranında göster” ve “Arka planda açılır pencere” anahtarlarını açın.",
+      "“Otomatik başlat”: Ayarlar > Uygulamalar > İzinler > Otomatik başlat listesinde Tam Vakti'ni açın (düğme bu listeyi doğrudan açar; açılmazsa bu yolu elle izleyin).",
+      "“İzin sayfası”: “Kilit ekranında göster” ve “Arka planda açılır pencere” anahtarlarını açın (tam ekran bildirim için).",
       "“Pil ayarı”: “Kısıtlama yok” seçin (Pil tasarrufu kapalı).",
       "“Bildirim kanalı”: Vakit bildirimlerinde “Kilit ekranında göster” ve “Yüzen bildirim” açık olsun.",
       "UYGULAMAYI KİLİTLEYİN (en önemlisi): Son uygulamalar ekranını açın (alttan yukarı kaydırıp tutun ya da ▢ tuşu), Tam Vakti kartına basılı tutun, kilit simgesine dokunun. Kilitlenmezse Xiaomi uygulamayı temizleyip alarmları öldürür."] };
@@ -1444,9 +1445,11 @@ class TamVaktiApp {
     const info = this.oemInfo(mfr);
     const steps = info ? info.steps.map((t, i) => `${i + 1}) ${t}`).join("\n") : "Uygulama bilgisinden arka plan kısıtlamasını kaldırın.";
     const xiaomi = /xiaomi|redmi|poco/.test(String(mfr));
-    const opts = [{ value: "perm", label: xiaomi ? "1. İzinler ve Otomatik başlat" : "Ayarları aç", desc: xiaomi ? "Otomatik başlat, kilit ekranı, açılır pencere" : "Otomatik başlatma / izin sayfası" }];
-    if (xiaomi) opts.push({ value: "batt", label: "2. Pil ayarı (Kısıtlama yok)", desc: "Xiaomi pil tasarrufu sayfası" });
-    if (xiaomi) opts.push({ value: "chan", label: "3. Bildirim kanalı ayarı", desc: "Kilit ekranı ve yüzen bildirim" });
+    const opts = [];
+    if (xiaomi) opts.push({ value: "auto", label: "1. Otomatik başlat", desc: "Uygulama listesinde Tam Vakti'ni açın" });
+    opts.push({ value: "perm", label: xiaomi ? "2. İzin sayfası" : "Ayarları aç", desc: xiaomi ? "Kilit ekranında göster, arka planda açılır pencere" : "Otomatik başlatma / izin sayfası" });
+    if (xiaomi) opts.push({ value: "batt", label: "3. Pil ayarı (Kısıtlama yok)", desc: "Xiaomi pil tasarrufu sayfası" });
+    if (xiaomi) opts.push({ value: "chan", label: "4. Bildirim kanalı ayarı", desc: "Kilit ekranı ve yüzen bildirim" });
     opts.push({ value: "ign", label: "Pil muafiyeti isteği", desc: "Android'in pil optimizasyonu penceresi" });
     opts.push({ value: "app", label: "Uygulama bilgisi", desc: "Genel sistem sayfası (yedek yol)" });
     this.openChoice(info ? `${info.name}: arka planda çalışma` : "Arka planda çalışma", steps, opts, null, (v) => {
@@ -1455,8 +1458,9 @@ class TamVaktiApp {
       if (v === "chan") return void (b.openSoundSettings ? b.openSoundSettings() : (b.openAppNotificationSettings && b.openAppNotificationSettings()));
       if (v === "ign") return void (b.requestIgnoreBatteryOptimizations ? b.requestIgnoreBatteryOptimizations() : (b.openBatteryOptimizationSettings && b.openBatteryOptimizationSettings()));
       if (v === "perm") ok = !!(b.openOemSettings && b.openOemSettings(0));
+      else if (v === "auto") ok = !!(b.openOemSettings && b.openOemSettings(2));
       else if (v === "batt") ok = !!(b.openOemSettings && b.openOemSettings(1));
-      if (v === "perm" || v === "batt") {
+      if (v === "perm" || v === "batt" || v === "auto") {
         if (ok) return;
         this.showToast("Bu telefonda doğrudan açılamadı: Uygulama bilgisi açılıyor", "ℹ️", 3500);
         if (v === "batt" && b.openBatteryOptimizationSettings) return setTimeout(() => b.openBatteryOptimizationSettings(), 800);
@@ -1867,7 +1871,7 @@ class TamVaktiApp {
   }
 
   formatChangelog(rawText) {
-    if (!rawText) return "<div class='text-slate-500 py-1'>Yeni özellikler ve performans iyileştirmeleri.</div>";
+    if (!rawText) return "<div class='text-slate-300 py-1'>Yeni özellikler ve performans iyileştirmeleri.</div>";
 
     const lines = rawText.split("\n");
     const bulletItems = [];
@@ -1878,27 +1882,28 @@ class TamVaktiApp {
       if (trimmed.startsWith("#") || trimmed.startsWith("- **Sürüm:**") || trimmed.startsWith("- **Paket Adı:**")) {
         continue;
       }
-      if (trimmed.includes("Kurulum") || trimmed.includes("TamVakti") || trimmed.includes(".apk")) {
+      // Otomatik "Full Changelog" bağlantı satırı ve dosya adı satırları gösterilmez
+      if (/^\**Full Changelog/i.test(trimmed) || trimmed.includes(".apk")) {
         continue;
       }
       if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
         let content = trimmed.substring(2).trim();
-        content = content.replace(/\*\*(.*?)\*\*/g, "<strong class='text-sky-950 font-bold'>$1</strong>");
+        content = content.replace(/\*\*(.*?)\*\*/g, "<strong class='text-white font-bold'>$1</strong>");
         bulletItems.push(content);
       } else if (trimmed.length > 5 && !trimmed.startsWith("```")) {
-        let content = trimmed.replace(/\*\*(.*?)\*\*/g, "<strong class='text-sky-950 font-bold'>$1</strong>");
+        let content = trimmed.replace(/\*\*(.*?)\*\*/g, "<strong class='text-white font-bold'>$1</strong>");
         bulletItems.push(content);
       }
     }
 
     if (bulletItems.length === 0) {
-      return `<div class="p-1 text-slate-700">${rawText.replace(/\n/g, "<br>")}</div>`;
+      return "<div class='text-slate-300 py-1'>Hata düzeltmeleri ve iyileştirmeler.</div>";
     }
 
     return bulletItems.map(item => `
-      <div class="flex items-start gap-2 py-1.5 border-b border-sky-900/5 last:border-0">
-        <span class="text-sky-600 text-sm leading-none mt-0.5">•</span>
-        <div class="text-[11.5px] text-slate-700 leading-snug">${item}</div>
+      <div class="flex items-start gap-2 py-1.5 border-b border-white/5 last:border-0">
+        <span class="text-sky-400 text-sm leading-none mt-0.5">•</span>
+        <div class="text-[12px] text-slate-100 leading-snug">${item}</div>
       </div>
     `).join("");
   }

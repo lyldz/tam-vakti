@@ -791,24 +791,24 @@
       </div>
 
       <!-- Yeni Güncelleme Kartı (GitHub'da Yeni Sürüm Varsa Görünür) -->
-      <div id="updateNoticeCard" class="hidden text-left bg-sky-50 border border-sky-200/90 rounded-2xl p-3 space-y-2">
+      <div id="updateNoticeCard" class="hidden text-left bg-[#0d1527] border border-sky-400/30 rounded-2xl p-3 space-y-2">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-extrabold text-[#0f3e2e] flex items-center gap-1.5">
+          <span class="text-xs font-extrabold text-slate-50 flex items-center gap-1.5">
             <span class="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
             Yeni Güncelleme!
           </span>
-          <span id="updateNewVersionTag" class="text-[10px] font-mono font-bold bg-sky-200/80 text-sky-900 px-2 py-0.5 rounded-full">v2.6.10 • Şafak</span>
+          <span id="updateNewVersionTag" class="text-[10px] font-mono font-bold bg-sky-400/20 text-sky-200 px-2 py-0.5 rounded-full">v2.6.10 • Şafak</span>
         </div>
-        <p id="updateReleaseNotes" class="text-[11px] text-slate-600 leading-snug line-clamp-3">
+        <p id="updateReleaseNotes" class="text-[11px] text-slate-300 leading-snug line-clamp-3">
           Yeni sürüm hazır.
         </p>
 
         <!-- Canlı İndirme İlerleme Alanı -->
         <div id="updateProgressArea" class="hidden space-y-1 pt-1">
-          <div class="w-full bg-sky-200/60 rounded-full h-2 overflow-hidden">
-            <div id="updateProgressBar" class="bg-sky-600 h-full rounded-full transition-all duration-200" style="width: 0%;"></div>
+          <div class="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+            <div id="updateProgressBar" class="bg-sky-400 h-full rounded-full transition-all duration-200" style="width: 0%;"></div>
           </div>
-          <div id="updateProgressStatus" class="text-[10px] font-bold text-sky-800 text-center">İndiriliyor... %0</div>
+          <div id="updateProgressStatus" class="text-[10px] font-bold text-sky-200 text-center">İndiriliyor... %0</div>
         </div>
 
         <!-- İndirme & Kurulum Butonu -->
@@ -877,46 +877,46 @@
 
   <!-- MODAL: Yeni Güncelleme Bulundu Ekranı (Changelog & Tek Dokunuşla Yükle) -->
   <div id="updateFoundModal" class="hidden fixed inset-0 z-60 flex items-center justify-center p-4 modal-overlay transition-all duration-300">
-    <div class="bg-white rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-4 border border-sky-900/10">
+    <div class="bg-[#0d1527] rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-4 border border-sky-400/25">
       
       <!-- Tepe: İkon, Başlık ve Kapat -->
       <div class="flex items-start justify-between">
         <div class="flex items-center gap-3">
-          <div class="w-11 h-11 rounded-2xl bg-sky-100 flex items-center justify-center text-2xl shadow-xs">
+          <div class="w-11 h-11 rounded-2xl bg-sky-400/15 border border-sky-400/30 flex items-center justify-center text-2xl shadow-xs">
             🚀
           </div>
           <div>
-            <h3 class="font-extrabold text-base text-[#0f3e2e] leading-tight">Yeni Güncelleme Mevcut!</h3>
+            <h3 class="font-extrabold text-base text-slate-50 leading-tight">Yeni Güncelleme Mevcut!</h3>
             <div class="flex items-center gap-2 mt-1">
-              <span id="updateModalNewTag" class="text-[11px] font-mono font-bold bg-sky-700 text-white px-2.5 py-0.5 rounded-full">v2.6.10 • Şafak</span>
-              <span class="text-[10px] font-semibold text-slate-400">Mevcut: v2.6.10 • Şafak</span>
+              <span id="updateModalNewTag" class="text-[11px] font-mono font-bold bg-sky-500 text-slate-950 px-2.5 py-0.5 rounded-full">v2.6.10 • Şafak</span>
+              <span class="text-[10px] font-semibold text-slate-300">Mevcut: v2.6.10 • Şafak</span>
             </div>
           </div>
         </div>
-        <button onclick="app.closeUpdateFoundModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-full text-xl leading-none cursor-pointer">&times;</button>
+        <button onclick="app.closeUpdateFoundModal()" class="text-slate-300 hover:text-white p-1 rounded-full text-xl leading-none cursor-pointer">&times;</button>
       </div>
 
       <!-- Değişiklik Listesi (Changelog Kutusu) -->
       <div class="space-y-1.5">
-        <div class="text-[11px] font-black text-[#64748b] uppercase tracking-wider flex items-center gap-1.5">
+        <div class="text-[11px] font-black text-sky-300 uppercase tracking-wider flex items-center gap-1.5">
           <span>✨ Neler Yeni?</span>
         </div>
-        <div id="updateModalChangelog" class="max-h-52 overflow-y-auto bg-slate-800/40 border border-sky-400/20 rounded-2xl p-3 text-xs text-slate-200 space-y-1.5 leading-relaxed">
+        <div id="updateModalChangelog" class="max-h-52 overflow-y-auto bg-slate-900/70 border border-sky-400/20 rounded-2xl p-3 text-xs text-slate-100 space-y-1.5 leading-relaxed">
           <!-- Dinamik değişiklik maddeleri listelenecek -->
         </div>
       </div>
 
       <!-- İndirme İlerleme Alanı (İndirme başladığında açılır) -->
-      <div id="modalUpdateProgressArea" class="hidden space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
-        <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
-          <div id="modalUpdateProgressBar" class="bg-sky-600 h-full rounded-full transition-all duration-150" style="width: 0%;"></div>
+      <div id="modalUpdateProgressArea" class="hidden space-y-1.5 bg-slate-900/70 p-3 rounded-2xl border border-sky-400/20">
+        <div class="w-full bg-slate-700 rounded-full h-2.5 overflow-hidden">
+          <div id="modalUpdateProgressBar" class="bg-sky-400 h-full rounded-full transition-all duration-150" style="width: 0%;"></div>
         </div>
-        <div id="modalUpdateProgressStatus" class="text-[11px] font-bold text-sky-800 text-center">İndiriliyor... %0</div>
+        <div id="modalUpdateProgressStatus" class="text-[11px] font-bold text-sky-200 text-center">İndiriliyor... %0</div>
       </div>
 
       <!-- Butonlar: Şimdi Güncelle & Daha Sonra -->
       <div class="flex gap-2 pt-1">
-        <button onclick="app.closeUpdateFoundModal()" class="flex-1 py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl text-xs font-bold transition-all cursor-pointer">
+        <button onclick="app.closeUpdateFoundModal()" class="flex-1 py-2.5 px-3 bg-slate-800 hover:bg-slate-700 border border-slate-600/60 text-slate-100 rounded-2xl text-xs font-bold transition-all cursor-pointer">
           Daha Sonra
         </button>
         <button id="modalBtnStartUpdate" onclick="app.startUpdateDownloadFromModal()" class="flex-[1.5] py-2.5 px-3 bg-[#12304a] hover:bg-[#1d4e75] active:scale-95 text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer">

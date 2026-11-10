@@ -576,7 +576,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         fun getDistribution(): String = if (BuildConfig.IS_PLAY) "play" else "github"
 
         /**
-         * Üreticiye özel arka plan ayar sayfasını açar. kind 0 = izinler/otomatik başlatma, 1 = pil/arka plan sınırı.
+         * Üreticiye özel arka plan ayar sayfasını açar. kind 0 = izin sayfası, 1 = pil/arka plan sınırı, 2 = otomatik başlat listesi.
          * Doğrudan açılamazsa false döner (JS genel uygulama bilgisine düşer). Paket görünürlüğü
          * kısıtı yüzünden resolveActivity yerine doğrudan startActivity denenir.
          */
@@ -589,11 +589,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val list = ArrayList<Intent>()
             when {
                 mfr.contains("xiaomi") || mfr.contains("redmi") || mfr.contains("poco") -> {
-                    if (kind == 0) {
-                        // Uygulama izin sayfası: Otomatik başlat, Kilit ekranında göster, Arka planda açılır pencere
+                    if (kind == 2) {
+                        // Otomatik başlat listesi (Ayarlar > Uygulamalar > İzinler > Otomatik başlat)
+                        list.add(Intent("miui.intent.action.OP_AUTO_START").addCategory(Intent.CATEGORY_DEFAULT))
+                        list.add(c("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"))
+                    } else if (kind == 0) {
+                        // Uygulama izin sayfası: Kilit ekranında göster, Arka planda açılır pencere vb.
                         list.add(c("com.miui.securitycenter", "com.miui.permcenter.permissions.PermissionsEditorActivity").putExtra("extra_pkgname", pkg))
                         list.add(Intent("miui.intent.action.APP_PERM_EDITOR").setClassName("com.miui.securitycenter", "com.miui.permcenter.permissions.PermissionsEditorActivity").putExtra("extra_pkgname", pkg))
-                        list.add(c("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"))
                     } else {
                         // Uygulamaya özel pil tasarrufu (Kısıtlama yok)
                         list.add(c("com.miui.powerkeeper", "com.miui.powerkeeper.ui.HiddenAppsConfigActivity")

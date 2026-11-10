@@ -81,6 +81,30 @@ sed -i "s|// Sürüm Yapılandırması: .*|// Sürüm Yapılandırması: $TAG_NA
 mkdir -p "$REPO_DIR/android/app/src/main/assets/www"
 cp -ru "$REPO_DIR/www/"* "$REPO_DIR/android/app/src/main/assets/www/"
 
+# 3b. Sürüm notları: notes/<etiket>.md elle yazılmışsa o kullanılır; yoksa son etiketten bu yana commit konularından üretilir.
+# (GitHub Release gövdesi ve uygulamadaki "Neler yeni?" penceresi bu dosyadan beslenir.)
+mkdir -p "$REPO_DIR/notes"
+NOTES_FILE="$REPO_DIR/notes/$TAG_NAME.md"
+if [ ! -f "$NOTES_FILE" ]; then
+  LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
+  RANGE="${LAST_TAG:+$LAST_TAG..}HEAD"
+  git log $RANGE --no-merges --pretty=%s \
+    | grep -Ev '^(docs|chore|test|ci|build|style)(\(.*\))?:' \
+    | grep -Ev '^(feat|fix): Tam Vakti v' \
+    | python3 -c '
+import re, sys
+for line in sys.stdin:
+    t = re.sub(r"^(feat|fix|perf|refactor)(\([^)]*\))?: *", "", line.strip())
+    t = re.sub(r" *\(v[0-9.]+\)$", "", t)
+    if not t:
+        continue
+    first = {"i": "İ", "ı": "I"}.get(t[0], t[0].upper())
+    print("- " + first + t[1:])
+' > "$NOTES_FILE" || true
+  [ -s "$NOTES_FILE" ] || echo "- Küçük iyileştirmeler ve hata düzeltmeleri." > "$NOTES_FILE"
+  echo "Sürüm notları otomatik üretildi: notes/$TAG_NAME.md (gerekirse commit öncesi elle düzenleyin)"
+fi
+
 # 4. Git Commit ve Push
 git add .
 git commit -m "$COMMIT_MSG" || echo "Değişiklik yok, devam ediliyor..."
