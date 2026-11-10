@@ -1,6 +1,8 @@
 package com.tamvakti.app
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.IntentFilter
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -17,6 +19,11 @@ import androidx.appcompat.app.AppCompatActivity
  */
 class PrayerAlertActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
+    private val screenOffReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            finishAndRemoveTask() // kullanıcı ekranı kapattı
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,7 +37,9 @@ class PrayerAlertActivity : AppCompatActivity() {
             })
             finishAndRemoveTask()
         }
-        // Unutulursa ekran sonsuza dek açık kalmasın
+        // Ekran kapatılana kadar açık kalır; ekran kapanınca kendini kapatır
+        registerReceiver(screenOffReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF))
+        // Güvenlik sınırı: unutulursa ekran sonsuza dek açık kalmasın
         handler.postDelayed({ finishAndRemoveTask() }, AUTO_CLOSE_MS)
     }
 
@@ -42,6 +51,7 @@ class PrayerAlertActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
+        try { unregisterReceiver(screenOffReceiver) } catch (e: Exception) {}
         super.onDestroy()
     }
 
@@ -82,7 +92,7 @@ class PrayerAlertActivity : AppCompatActivity() {
         const val EXTRA_TIME = "pa_time"
         const val EXTRA_PLACE = "pa_place"
         const val EXTRA_INFO = "pa_info"
-        private const val AUTO_CLOSE_MS = 10 * 60 * 1000L
+        private const val AUTO_CLOSE_MS = 30 * 60 * 1000L
 
         fun intent(ctx: Context, name: String, time: String, place: String, info: String): Intent =
             Intent(ctx, PrayerAlertActivity::class.java).apply {

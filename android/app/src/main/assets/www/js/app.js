@@ -1598,25 +1598,38 @@ class TamVaktiApp {
     }
     this.fullScreenAlert = !!checked;
     localStorage.setItem("tamvakti_fullscreen_alert", this.fullScreenAlert ? "true" : "false");
-    if (this.fullScreenAlert && b.canUseFullScreenIntent && !b.canUseFullScreenIntent()) {
-      this.showToast("Tam ekran için açılan sayfada izni verin", "🔔", 3500);
-      if (b.openFullScreenIntentSettings) setTimeout(() => b.openFullScreenIntentSettings(), 600);
+    if (this.fullScreenAlert && !this.hasFullScreenPermission()) {
+      this.askFullScreenPermission();
     } else {
       this.showToast(this.fullScreenAlert ? "Vakit girince tam ekran bildirim gelecek" : "Tam ekran bildirim kapatıldı", "🔔", 2500);
     }
     this.scheduleSync();
   }
 
+  // Telefon açıkken tam ekran için "diğer uygulamaların üzerinde göster" izni gerekir;
+  // yoksa yalnızca ekran kapalı/kilitliyken tam ekran (Android 14+'ta ayrı izinle) çalışır.
+  hasFullScreenPermission() {
+    const b = window.AndroidBridge;
+    if (!b) return false;
+    if (b.canDrawOverlays && b.canDrawOverlays()) return true;
+    return false;
+  }
+
+  askFullScreenPermission() {
+    const b = window.AndroidBridge;
+    this.showToast("Açılan sayfada \"Diğer uygulamaların üzerinde göster\" iznini verin", "🔔", 4500);
+    if (b && b.openOverlaySettings) setTimeout(() => b.openOverlaySettings(), 700);
+  }
+
   testFullScreenAlert() {
     const b = window.AndroidBridge;
     if (!b || !b.testFullScreenAlert) return;
-    if (b.canUseFullScreenIntent && !b.canUseFullScreenIntent()) {
-      this.showToast("Önce tam ekran izni verin", "🔔", 3000);
-      if (b.openFullScreenIntentSettings) setTimeout(() => b.openFullScreenIntentSettings(), 600);
+    if (!this.hasFullScreenPermission()) {
+      this.askFullScreenPermission();
       return;
     }
     b.testFullScreenAlert(10);
-    this.showToast("10 sn sonra gelecek: ekranı kilitleyip bekleyin", "🔔", 4000);
+    this.showToast("10 sn sonra tam ekran gelecek (başka uygulamada ya da kilitliyken deneyebilirsiniz)", "🔔", 4500);
   }
 
   // Giren vakte ait kısa bilgi (tam ekran bildirimde gösterilir; Hanefi/Diyanet rekât düzeni)

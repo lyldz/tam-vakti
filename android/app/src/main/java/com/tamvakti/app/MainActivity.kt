@@ -575,6 +575,22 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         @JavascriptInterface
         fun getDistribution(): String = if (BuildConfig.IS_PLAY) "play" else "github"
 
+        /** "Diğer uygulamaların üzerinde göster" izni (telefon açıkken tam ekranı doğrudan açmak için) */
+        @JavascriptInterface
+        fun canDrawOverlays(): Boolean = Settings.canDrawOverlays(activity)
+
+        @JavascriptInterface
+        fun openOverlaySettings() {
+            activity.runOnUiThread {
+                try {
+                    activity.startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION).apply {
+                        data = Uri.parse("package:${activity.packageName}")
+                    })
+                } catch (e: Exception) {
+                }
+            }
+        }
+
         /** Tam ekran bildirim izni var mı? (Android 14+ kullanıcı iznine bağlı) */
         @JavascriptInterface
         fun canUseFullScreenIntent(): Boolean = Notifs.canUseFullScreen(activity)

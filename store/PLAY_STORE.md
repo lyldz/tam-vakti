@@ -38,6 +38,7 @@ Paket: `com.tamvakti.app` • AAB: GitHub Actions > Artifacts > **TamVakti-Play-
 - **Rahatsız Etme erişimi (ACCESS_NOTIFICATION_POLICY):** Yalnızca kullanıcı "Namazda sessize al" seçeneğini açarsa, vakitte telefonu 30 dk titreşime alıp geri döndürür. Bildirim içeriği okunmaz.
 - **Açılışta çalış (RECEIVE_BOOT_COMPLETED):** Yeniden başlatma sonrası vakit alarmlarını yeniden kurar.
 - **Yaklaşık konum:** İlçeyi bulup vakitleri hesaplamak için, isteğe bağlı. Arka planda konum **kullanılmaz**.
+- **Tam ekran vakit bildirimi (isteğe bağlı, varsayılan kapalı):** `USE_FULL_SCREEN_INTENT` ve `SYSTEM_ALERT_WINDOW` ("Diğer uygulamaların üzerinde göster"). Yalnızca kullanıcı Ayarlar'da "Tam ekran bildirim"i açıp izni verirse ve yalnızca vakit girişinde, namaz vaktini hatırlatan tam ekranı açmak için kullanılır. **Play riski:** bu iki izin Play'de kısıtlıdır (tam ekran bildirim: arama/alarm uygulamaları; yer paylaşımı: gerekçe ister). İnceleme sorunu çıkarsa Play sürümünde (`IS_PLAY`) bu özelliği kapatıp yalnızca GitHub sürümünde bırakmak gerekebilir.
 - Play sürümünde **kendini güncelleme ve REQUEST_INSTALL_PACKAGES yoktur**.
 
 ## Teknik not
