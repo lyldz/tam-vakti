@@ -211,6 +211,8 @@ class TamVaktiApp {
     if (this.canSelfUpdate) {
       this.loadCachedUpdate();
       setTimeout(() => this.checkForUpdates(true), 2500);
+      // Uygulama açık kalırsa 30 dakikada bir denetle
+      setInterval(() => this.checkForUpdates(true), 30 * 60 * 1000);
     }
   }
 
@@ -600,6 +602,12 @@ class TamVaktiApp {
 
   // Android uygulaması arka plandan döndüğünde çağrılır
   onAppResume() {
+    if (this.canSelfUpdate) {
+      // Kurulum ekranı iptal edildiyse düğmeyi yeniden etkinleştir
+      if (this._installLaunched) { this._installLaunched = false; this.onUpdateDownloadError("Kurulum tamamlanmadı"); }
+      // Öne gelince son denetim 5 dakikadan eskiyse denetle
+      if (!this.isDownloadingUpdate && Date.now() - (this._lastUpdateCheck || 0) > 5 * 60 * 1000) this.checkForUpdates(true);
+    }
     this.updatePrayers();
     this.refreshPermissionStatus();
     this.onOnboardingResume();
@@ -2049,6 +2057,7 @@ class TamVaktiApp {
 
   async checkForUpdates(silent = true) {
     if (!this.canSelfUpdate) return;
+    this._lastUpdateCheck = Date.now();
     const statusEl = document.getElementById("updateCheckStatus");
 
     if (!silent && statusEl) {
@@ -2173,6 +2182,7 @@ class TamVaktiApp {
     if (modalStatus) modalStatus.textContent = txt;
 
     if (percent >= 100) {
+      this._installLaunched = true;
       const finishText = `<span>📦</span><span>Paket Yükleyici Başlatılıyor...</span>`;
       if (btn) btn.innerHTML = finishText;
       if (modalBtn) modalBtn.innerHTML = finishText;

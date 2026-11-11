@@ -875,8 +875,8 @@
   </div>
 
   <!-- MODAL: Yeni Güncelleme Bulundu Ekranı (Changelog & Tek Dokunuşla Yükle) -->
-  <div id="updateFoundModal" class="hidden fixed inset-0 z-60 flex items-center justify-center p-4 modal-overlay transition-all duration-300">
-    <div class="bg-[#0d1527] rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-4 border border-sky-400/25">
+  <div id="updateFoundModal" class="hidden fixed inset-0 z-60 flex flex-col bg-[#0d1527] overflow-y-auto" style="padding-top:env(safe-area-inset-top)">
+    <div class="w-full max-w-md mx-auto flex-1 flex flex-col p-5 pt-8 space-y-4">
       
       <!-- Tepe: Başlık ve Kapat -->
       <div class="flex items-start justify-between gap-3">
@@ -891,11 +891,11 @@
       </div>
 
       <!-- Değişiklik Listesi (Changelog Kutusu) -->
-      <div class="space-y-1.5">
+      <div class="space-y-1.5 flex-1 flex flex-col min-h-0">
         <div class="text-[11px] font-black text-sky-300 uppercase tracking-wider flex items-center gap-1.5">
           <span>✨ Neler Yeni?</span>
         </div>
-        <div id="updateModalChangelog" class="max-h-52 overflow-y-auto bg-slate-900/70 border border-sky-400/20 rounded-2xl p-3 text-xs text-slate-100 space-y-1.5 leading-relaxed">
+        <div id="updateModalChangelog" class="flex-1 min-h-40 overflow-y-auto bg-slate-900/70 border border-sky-400/20 rounded-2xl p-3 text-xs text-slate-100 space-y-1.5 leading-relaxed">
           <!-- Dinamik değişiklik maddeleri listelenecek -->
         </div>
       </div>
