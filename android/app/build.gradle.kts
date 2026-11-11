@@ -14,9 +14,9 @@ android {
         minSdk = 24
         targetSdk = 36
         
-        // Sürüm Yapılandırması: v2.9.0 "İkindi"
-        versionCode = 22600
-        versionName = "2.9.0"
+        // Sürüm Yapılandırması: v2.9.1 "İkindi"
+        versionCode = 22700
+        versionName = "2.9.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

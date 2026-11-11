@@ -570,3 +570,11 @@ main:has(#viewQibla:not(.hidden)) {
   #monthlyModal table th { font-size: 9px; }
   #monthlyTableBody { font-size: 10px; }
 }
+
+/* Şu anki vakit: yavaş nefes (parlaklık %70-100). Hareket azaltma açıksa durur. */
+@keyframes vakit-nefes {
+  0%, 100% { opacity: 0.72; box-shadow: 0 0 6px rgba(56,189,248,0.15); }
+  50% { opacity: 1; box-shadow: 0 0 18px rgba(56,189,248,0.45); }
+}
+.vakit-nefes { animation: vakit-nefes 4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .vakit-nefes { animation: none; } }

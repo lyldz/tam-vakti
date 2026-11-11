@@ -1,6 +1,6 @@
 /**
  * Tam Vakti - Minimalist Adaçayı Yeşili & Sade Vakit / Kıble Kontrolcüsü
- * Sürüm: v2.9.0
+ * Sürüm: v2.9.1
  */
 
 const PRAYER_LIST = [
@@ -57,9 +57,9 @@ class TamVaktiApp {
     // Dağıtım: "play" (kendini güncelleme yok), "github" (APK güncelleyici var) veya "web"
     this.distribution = (window.AndroidBridge && window.AndroidBridge.getDistribution) ? window.AndroidBridge.getDistribution() : "web";
     this.canSelfUpdate = this.distribution !== "play";
-    this.currentVersion = "v2.9.0";
+    this.currentVersion = "v2.9.1";
     this.versionCodename = "İkindi";
-    this.versionDisplay = "v2.9.0 • İkindi";
+    this.versionDisplay = "v2.9.1 • İkindi";
     this.onboardingStep = 1;
     this.monthlyYear = null;
     this.monthlyMonth = null;
@@ -429,28 +429,28 @@ class TamVaktiApp {
 
     const orderKeys = ["imsak", "gunes", "ogle", "ikindi", "aksam", "yatsi"];
     const currentIdx = Math.max(0, orderKeys.indexOf(this.activePrayerKey));
-    const nextIdx = (currentIdx + 1) % 6;
 
     // 3x2 büyük kutu: yaşlılar ve küçük ekranlar için okunaklı (ad 15px, saat 22px)
     ribbon.innerHTML = PRAYER_LIST.map((item, idx) => {
       const timeVal = this.currentTimes[item.key] || "--:--";
       const isCurrent = (item.key === this.activePrayerKey);
-      const isNext = (idx === nextIdx);
+      const isPassed = idx < currentIdx;
 
       let box = "flex flex-col items-center justify-center py-3 px-1 rounded-2xl transition-all border";
       let nameColor, timeColor;
       if (isCurrent) {
-        box += " bg-sky-500/20 border-sky-400/70 shadow-[0_0_14px_rgba(56,189,248,0.28)]";
+        box += " vakit-nefes bg-sky-500/20 border-sky-400/70";
         nameColor = "text-sky-200 font-bold";
         timeColor = "text-white font-bold";
-      } else if (isNext) {
+      } else if (isPassed) {
+        // geçen vakit: soluk ama okunur
+        box += " bg-slate-900/30 border-transparent";
+        nameColor = "text-slate-500 font-semibold";
+        timeColor = "text-slate-400 font-semibold";
+      } else {
         box += " bg-slate-800/60 border-slate-500/60";
         nameColor = "text-sky-100 font-semibold";
         timeColor = "text-sky-50 font-bold";
-      } else {
-        box += " bg-slate-900/40 border-transparent";
-        nameColor = "text-slate-300 font-semibold";
-        timeColor = "text-slate-200 font-semibold";
       }
 
       const displayName = (item.key === "ogle" && this.isFriday) ? "Cuma" : item.name;
