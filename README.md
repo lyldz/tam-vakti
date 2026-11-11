@@ -70,7 +70,7 @@ Uygulama, yerel bir Android WebView kabuğunun içinde çalışan HTML/CSS/JS ar
 - Web varlıklarını (`www/`) değiştirdikten sonra Android'in gömülü kopyasıyla eşitleyin: `cp -r www/* android/app/src/main/assets/www/`. Silinen dosyaları iki yerden de silin.
 - JS dosyalarını `node --check www/js/<dosya>.js` ile denetleyin.
 - **İmza anahtarı depoda yoktur.** GitHub Secrets (`KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`) veya yerel `android/keystore.properties` kullanılır.
-- Yapılacaklar için `TODO.md`, devir notu için `HANDOFF.md` dosyasına bakın.
+- Proje bağlamı ve kurallar için `CLAUDE.md`, yapılacaklar için `TODO.md` dosyasına bakın.
 
 ---
 
@@ -96,7 +96,7 @@ tam-vakti/
 ├── store/PLAY_STORE.md               # Google Play mağaza metinleri
 ├── tools/                            # Test ve görsel üretim araçları
 ├── release.sh                        # Sürümleme ve yayın betiği
-├── AGENTS.md  HANDOFF.md  TODO.md
+├── CLAUDE.md  TODO.md  (AGENTS.md, HANDOFF.md → CLAUDE.md)
 └── LICENSE
 ```
 
