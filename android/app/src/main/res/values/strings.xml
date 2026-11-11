@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">Tam Vakti</string>
+    <!-- Widget adları ve açıklamaları (widget seçicide görünür) -->
+    <string name="w_label_prayer">Sıradaki Vakit</string>
+    <string name="w_label_small">Geri Sayım</string>
+    <string name="w_label_row">Günün Vakitleri</string>
+    <string name="w_label_list">Vakit Listesi</string>
+    <string name="w_label_large">Büyük Panel</string>
+    <string name="w_label_clock">Saat ve Vakit</string>
+    <string name="w_label_minimal">Sade (Şeffaf)</string>
+    <string name="w_desc_prayer">Sıradaki vakit, saati ve geri sayım</string>
+    <string name="w_desc_small">Küçük: sıradaki vakte kalan süre</string>
+    <string name="w_desc_row">Günün 6 vakti yan yana, sıradaki vurgulu</string>
+    <string name="w_desc_list">Günün 6 vakti alt alta, sıradaki vurgulu</string>
+    <string name="w_desc_large">Sıradaki vakit, geri sayım ve günün tüm vakitleri</string>
+    <string name="w_desc_clock">Büyük saat, tarih ve sıradaki vakte kalan süre</string>
+    <string name="w_desc_minimal">Arka plansız, duvar kâğıdı üstünde yalnız yazı</string>
 </resources>

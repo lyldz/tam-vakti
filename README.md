@@ -23,7 +23,7 @@ Paket adı: `com.tamvakti.app`
 - 📍 **Konum:** GPS ile otomatik konum ya da il/ilçeyi listeden seçme. İhtiyat süreleri Ayarlar'dan ayarlanır.
 - 🧭 **Kıble pusulası:** Telefonun sensörleriyle Kâbe yönünü gösterir. Kullanım öncesi kalibrasyon ister. Kâbe'ye mesafeyi ve günün kıble saatini de gösterir.
 - 🧙 **Kurulum sihirbazı:** Konum, bildirim, tam zamanlı alarm, pil muafiyeti ve Rahatsız Etmeyin izinlerini adım adım ister. Her izin için durum rozeti gösterir (Verildi / Reddedildi / Ayarlara git). Ayarlar'dan yeniden başlatılabilir. Akış `docs/KURULUM.md` içinde anlatılmıştır.
-- 🧩 **Ana ekran widget'ı:** Sıradaki vakti ana ekranda gösterir.
+- 🧩 **7 ana ekran widget'ı:** Sıradaki Vakit, Geri Sayım (2x1), Günün Vakitleri (4x1, yatay), Vakit Listesi (dikey), Büyük Panel (4x2), Saat ve Vakit, Sade (şeffaf). Hepsi Arctic koyu; geri sayım saniye saniye işler, sıradaki vakit vurgulanır.
 - 🛡️ **Reklamsız, izleyicisiz:** Hesap, reklam veya takip yok.
 
 ---

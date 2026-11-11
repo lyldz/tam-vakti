@@ -68,14 +68,62 @@
         </receiver>
 
 
-        <!-- Ana ekran widget'ı -->
-        <receiver android:name=".PrayerWidget" android:exported="true">
+        <!-- Ana ekran widget'ları (Widgets.kt) -->
+        <receiver android:name=".PrayerWidget" android:exported="true" android:label="@string/w_label_prayer">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/prayer_widget_info" />
+        </receiver>
+        <receiver android:name=".SmallWidget" android:exported="true" android:label="@string/w_label_small">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/small_widget_info" />
+        </receiver>
+        <receiver android:name=".RowWidget" android:exported="true" android:label="@string/w_label_row">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/row_widget_info" />
+        </receiver>
+        <receiver android:name=".ListWidget" android:exported="true" android:label="@string/w_label_list">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/list_widget_info" />
+        </receiver>
+        <receiver android:name=".LargeWidget" android:exported="true" android:label="@string/w_label_large">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/large_widget_info" />
+        </receiver>
+        <receiver android:name=".ClockWidget" android:exported="true" android:label="@string/w_label_clock">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/clock_widget_info" />
+        </receiver>
+        <receiver android:name=".MinimalWidget" android:exported="true" android:label="@string/w_label_minimal">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/minimal_widget_info" />
         </receiver>
 
     </application>
