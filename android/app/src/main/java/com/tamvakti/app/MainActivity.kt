@@ -76,8 +76,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var smoothingInitialized = false
     private val smoothingFactor = 0.18
     private var lastUpdateTimestamp: Long = 0
-    // Kurulum izni ekranına gidilince bekleyen APK; izin verilip dönülünce kurulum devam eder
-    private var pendingApk: File? = null
 
     // Doğruluk (0..3 = UNRELIABLE..HIGH) yalnızca manyetometre / rotasyon vektöründen izlenir
     private var lastMagAccuracy = 0
@@ -365,13 +363,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onResume() {
         super.onResume()
-        pendingApk?.let {
-            pendingApk = null
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || packageManager.canRequestPackageInstalls()) {
-                promptInstallApk(it)
-                return // kurulum ekranı açılıyor, JS tarafını bu dönüşte yenileme
-            }
-        }
         // Arka plandan dönünce vakitleri tazele ve pusulayı yeniden başlat
         if (::webView.isInitialized) {
             webView.evaluateJavascript("window.app && window.app.onAppResume && window.app.onAppResume();", null)
@@ -994,9 +985,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
                         data = Uri.parse("package:$packageName")
                     }
-                    pendingApk = apkFile
                     startActivity(intent)
-                    return
                 }
             }
 
