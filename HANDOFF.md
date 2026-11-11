@@ -1,4 +1,4 @@
-# Tam Vakti: devir notu (güncel: 2026-11-10, v2.8.1 "Zeval")
+# Tam Vakti: devir notu (güncel: 2026-11-10, v2.9.1)
 
 Depo: /root/tam-vakti (github.com/lyldz/tam-vakti, herkese açık, dal: main). Hafıza: /root/.claude/projects/-root/memory/tam-vakti.md
 
@@ -7,7 +7,7 @@ Depo: /root/tam-vakti (github.com/lyldz/tam-vakti, herkese açık, dal: main). H
 Yerelde Gradle çalışmaz; Kotlin yalnızca GitHub Actions'ta derlenir (`gh` oturumu açık). Web: `www/` → `android/app/src/main/assets/www/` eşitle (`cp -r www/. ...`, `diff -rq`, `node --check`).
 
 ## Durum
-- Yayında: v2.8.1 "Zeval" (koyu mod bildirim yazı düzeltmesi dahil; 10 bildirim sesi: 6 yeni, kullanıcı dinledi, hepsi beğenildi; sabit bildirimde ilerleme çubuğu + logo simgesi + açık/koyu tema; güvenlik sıkılaştırması ve çöp temizliği v2.7.3'te).
+- Yayında: v2.9.1 (ana sayfada şu anki vakit "nefes alır", geçen vakitler soluk; v2.9.0: 7 ana ekran widget'ı; koyu mod bildirim yazı düzeltmesi dahil; 10 bildirim sesi: 6 yeni, kullanıcı dinledi, hepsi beğenildi; sabit bildirimde ilerleme çubuğu + logo simgesi + açık/koyu tema; güvenlik sıkılaştırması ve çöp temizliği v2.7.3'te).
 - Canlı Güncelleme (Android 16) v2.7.2'de denendi, Xiaomi'de başarısız, v2.7.4'te kaldırıldı. Kullanıcı istemedikçe önerme (ayrıntı hafızada).
 - main temiz, tüm iş yayında.
 
