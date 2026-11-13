@@ -717,7 +717,7 @@ class TamVaktiApp {
 
     const countEl = document.getElementById("mainCountdown");
     if (countEl) {
-      countEl.innerHTML = `<span class="cd-main">${hrsStr}:${minsStr}:</span><span class="cd-sec">${secsStr}</span>`;
+      countEl.innerHTML = `<span class="cd-main">${hrsStr}:${minsStr}</span><span class="cd-sec">:${secsStr}</span>`;
     }
 
     // 2. İlerleme çizgisi: mevcut vaktin ne kadarı geçti

@@ -513,7 +513,8 @@ body.onboarding-active #mainBottomDock,
 
 #mainCountdown .cd-sec {
   color: #7dd3fc;
-  opacity: 0.85;
+  font-size: 0.6em;
+  opacity: 0.75;
 }
 
 /* Açık anahtar: cyan iz (kapalıyla ayırt edilebilsin) */
