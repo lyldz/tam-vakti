@@ -60,8 +60,8 @@ Katı SemVer `MAJOR.MINOR.PATCH`. **Sürüm numarasını kullanıcıya sorma; de
 - Android 16 Canlı Güncelleme v2.7.2'de denendi, Xiaomi'de başarısız oldu, v2.7.4'te kaldırıldı. İstenmedikçe önerme.
 - Güvenlik: WebView dosya erişimi kapalı, dış bağlantılar tarayıcıda açılır, APK indirme yalnızca GitHub'dan (`docs/GUVENLIK.md`).
 
-## Durum (güncel: 2026-11-12)
-- Yayında: **v2.9.1 İkindi** (`versionCode` 22700). `main` temiz.
+## Durum (güncel: 2026-11-13)
+- Yayında: **v2.10.0 Gurub** (`versionCode` 22800): Cuma tutarlılığı, kıble açısı rozeti, Cuma tebriği; v2.9.1: nefes alan vakit kutusu. Beğenilmezse geri dönüş v2.9.1. `main` temiz.
 - 2026-11-11: "tam ekran güncelleme penceresi, 30 dk / öne gelince denetim, izin dönüşünde kurulum devamı" değişikliği yapıldı ve geri alındı (revert).
 - Sırada (`TODO.md`): Ramazan modu (beklemede, "erken" denildi); gerçek kısa tekbir klibi (`[!]`, lisans); Google Play hazırlığı (ertelendi, `store/PLAY_STORE.md`).
 - Bilinen küçük sorunlar: 320x568'de ana ekran 12 px taşıyor; v2.9.0 widget'ları ve bazı bildirim özellikleri telefonda tek tek doğrulanmadı.
