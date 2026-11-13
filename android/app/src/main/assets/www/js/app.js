@@ -1,6 +1,6 @@
 /**
  * Tam Vakti - Minimalist Adaçayı Yeşili & Sade Vakit / Kıble Kontrolcüsü
- * Sürüm: v2.9.1
+ * Sürüm: v2.10.0
  */
 
 const PRAYER_LIST = [
@@ -57,9 +57,9 @@ class TamVaktiApp {
     // Dağıtım: "play" (kendini güncelleme yok), "github" (APK güncelleyici var) veya "web"
     this.distribution = (window.AndroidBridge && window.AndroidBridge.getDistribution) ? window.AndroidBridge.getDistribution() : "web";
     this.canSelfUpdate = this.distribution !== "play";
-    this.currentVersion = "v2.9.1";
-    this.versionCodename = "İkindi";
-    this.versionDisplay = "v2.9.1 • İkindi";
+    this.currentVersion = "v2.10.0";
+    this.versionCodename = "Gurub";
+    this.versionDisplay = "v2.10.0 • Gurub";
     this.onboardingStep = 1;
     this.monthlyYear = null;
     this.monthlyMonth = null;
@@ -251,6 +251,8 @@ class TamVaktiApp {
       const qiblaInfo = this.engine.calculateQibla(this.currentLocation.lat, this.currentLocation.lon);
       const angleBigEl = document.getElementById("qiblaAngleBig");
       if (angleBigEl) angleBigEl.textContent = `${Math.round(qiblaInfo.angle)}°`;
+      const hq = document.getElementById("headerQibla");
+      if (hq) hq.textContent = `${Math.round(qiblaInfo.angle)}°`;
       const distSubEl = document.getElementById("qiblaDistanceSub");
       if (distSubEl) distSubEl.textContent = `Kâbe'ye ≈ ${qiblaInfo.distanceKm.toLocaleString('tr-TR')} km`;
       const headerCityEl = document.getElementById("qiblaHeaderCity");
@@ -637,10 +639,11 @@ class TamVaktiApp {
     const tAksam = this.parseTimeToDate(this.currentTimes.aksam, now);
     const tYatsi = this.parseTimeToDate(this.currentTimes.yatsi, now);
 
+    const ogleName = this.isFriday ? "Cuma" : "Öğle";
     const prayerOrder = [
       { key: "imsak", name: "İmsak", start: tImsak, end: tGunes, nextName: "Güneş", nextTime: tGunes, nextTimeStr: this.currentTimes.gunes },
-      { key: "gunes", name: "Güneş", start: tGunes, end: tOgle, nextName: "Öğle", nextTime: tOgle, nextTimeStr: this.currentTimes.ogle },
-      { key: "ogle", name: "Öğle", start: tOgle, end: tIkindi, nextName: "İkindi", nextTime: tIkindi, nextTimeStr: this.currentTimes.ikindi },
+      { key: "gunes", name: "Güneş", start: tGunes, end: tOgle, nextName: ogleName, nextTime: tOgle, nextTimeStr: this.currentTimes.ogle },
+      { key: "ogle", name: ogleName, start: tOgle, end: tIkindi, nextName: "İkindi", nextTime: tIkindi, nextTimeStr: this.currentTimes.ikindi },
       { key: "ikindi", name: "İkindi", start: tIkindi, end: tAksam, nextName: "Akşam", nextTime: tAksam, nextTimeStr: this.currentTimes.aksam },
       { key: "aksam", name: "Akşam", start: tAksam, end: tYatsi, nextName: "Yatsı", nextTime: tYatsi, nextTimeStr: this.currentTimes.yatsi },
       { key: "yatsi", name: "Yatsı", start: tYatsi, end: new Date(tImsak.getTime() + 86400000), nextName: "İmsak", nextTime: new Date(tImsak.getTime() + 86400000), nextTimeStr: this.currentTimes.imsak }
@@ -680,7 +683,7 @@ class TamVaktiApp {
     const suffixes = {
       "imsak": "İmsak'a",
       "gunes": "Güneş'e",
-      "ogle": "Öğle'ye",
+      "ogle": this.isFriday ? "Cuma'ya" : "Öğle'ye",
       "ikindi": "İkindi'ye",
       "aksam": "Akşam'a",
       "yatsi": "Yatsı'ya"
@@ -698,6 +701,8 @@ class TamVaktiApp {
     if (currentBadge) {
       currentBadge.textContent = `Şu an: ${current.name}`;
     }
+    const cuma = document.getElementById("cumaTebrik");
+    if (cuma) cuma.classList.toggle("hidden", !this.isFriday);
 
     // 2. Canlı Geri Sayım (HH:MM:SS) - Tabular ve Soluk Saniye
     const diffMs = Math.max(0, current.nextTime.getTime() - now.getTime());
