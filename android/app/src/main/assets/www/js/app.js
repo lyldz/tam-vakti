@@ -1274,7 +1274,7 @@ class TamVaktiApp {
     if (this.autoLocation) this.checkAutoLocation(true);
   }
 
-  // Açıkken uygulama açılınca/öne gelince konuma bakar; 10 km'den fazla uzaklaştıysa vakitleri yeni ilçeye taşır.
+  // Açıkken uygulama açılınca/öne gelince konuma bakar; il/ilçe değiştiyse vakitleri yeni ilçeye taşır.
   // Çevrimdışı ilçe verisi kullanılır, konum dışarı gönderilmez. Arka planda sürekli takip yok (pil, gizlilik).
   checkAutoLocation(force = false) {
     if (!this.autoLocation || !navigator.geolocation) return;
@@ -1284,17 +1284,15 @@ class TamVaktiApp {
     navigator.geolocation.getCurrentPosition((pos) => {
       const { latitude: lat, longitude: lon } = pos.coords;
       const cur = this.currentLocation;
-      if (cur && !cur.isPlaceholder) {
-        const dLat = (lat - cur.lat) * 111.2;
-        const dLon = (lon - cur.lon) * 111.2 * Math.cos(lat * Math.PI / 180);
-        if (Math.hypot(dLat, dLon) < 10) return;
-      }
       const n = this.findNearestLocation(lat, lon);
       if (!n) return;
       const name = (n.districtName && n.districtName !== "Merkez" && n.districtName !== n.cityName)
         ? `${n.cityName}/${n.districtName}` : n.cityName;
       if (cur && cur.name === name) return;
-      this.saveLocation({ name, lat, lon });
+      // Sınırda gidip gelmesin: yeni ilçe merkezi, kayıtlı yerden en az 1 km daha yakın olmalı
+      const km = (la, lo) => Math.hypot((lat - la) * 111.2, (lon - lo) * 111.2 * Math.cos(lat * Math.PI / 180));
+      if (cur && !cur.isPlaceholder && km(n.lat, n.lon) > km(cur.lat, cur.lon) - 1) return;
+      this.saveLocation({ name, lat: n.lat, lon: n.lon });
       this.updatePrayers();
       this.showToast(`Konum güncellendi: ${this.shortPlaceName(name)}`, "📍");
     }, () => {}, { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 });
