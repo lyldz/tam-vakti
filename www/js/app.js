@@ -1,6 +1,6 @@
 /**
  * Tam Vakti - Minimalist Adaçayı Yeşili & Sade Vakit / Kıble Kontrolcüsü
- * Sürüm: v2.10.1
+ * Sürüm: v2.11.0
  */
 
 const PRAYER_LIST = [
@@ -57,9 +57,9 @@ class TamVaktiApp {
     // Dağıtım: "play" (kendini güncelleme yok), "github" (APK güncelleyici var) veya "web"
     this.distribution = (window.AndroidBridge && window.AndroidBridge.getDistribution) ? window.AndroidBridge.getDistribution() : "web";
     this.canSelfUpdate = this.distribution !== "play";
-    this.currentVersion = "v2.10.1";
-    this.versionCodename = "Gurub";
-    this.versionDisplay = "v2.10.1 • Gurub";
+    this.currentVersion = "v2.11.0";
+    this.versionCodename = "Şefak";
+    this.versionDisplay = "v2.11.0 • Şefak";
     this.onboardingStep = 1;
     this.monthlyYear = null;
     this.monthlyMonth = null;
@@ -67,6 +67,7 @@ class TamVaktiApp {
     this.isDownloadingUpdate = false;
 
     this.autoSilent = localStorage.getItem("tamvakti_auto_silent") !== "false";
+    this.autoLocation = localStorage.getItem("tamvakti_auto_location") === "true";
 
     // Bildirim tercihleri
     // bip = telefonun kendi bildirim sesi, sessiz = yalnızca yazı (eski "ezan" ayarı bip'e taşınır)
@@ -83,6 +84,9 @@ class TamVaktiApp {
     this._syncSeq = 0;
 
     this.isFriday = false;
+
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) this.checkAutoLocation(); });
+    setTimeout(() => this.checkAutoLocation(true), 3000);
 
     this.init();
   }
@@ -1157,7 +1161,8 @@ class TamVaktiApp {
     }
   }
 
-  selectLocation(name, lat, lon) {
+  selectLocation(name, lat, lon, auto = false) {
+    if (!auto) this.setAutoLocation(false); // listeden elle seçim otomatik takibi kapatır
     this.saveLocation({ name, lat, lon });
     this.closeLocationModal();
     this.updatePrayers();
@@ -1261,6 +1266,40 @@ class TamVaktiApp {
     return fallbackName;
   }
 
+  setAutoLocation(on) {
+    this.autoLocation = !!on;
+    localStorage.setItem("tamvakti_auto_location", this.autoLocation ? "true" : "false");
+    const cb = document.getElementById("autoLocationToggle");
+    if (cb) cb.checked = this.autoLocation;
+    if (this.autoLocation) this.checkAutoLocation(true);
+  }
+
+  // Açıkken uygulama açılınca/öne gelince konuma bakar; 10 km'den fazla uzaklaştıysa vakitleri yeni ilçeye taşır.
+  // Çevrimdışı ilçe verisi kullanılır, konum dışarı gönderilmez. Arka planda sürekli takip yok (pil, gizlilik).
+  checkAutoLocation(force = false) {
+    if (!this.autoLocation || !navigator.geolocation) return;
+    const now = Date.now();
+    if (!force && now - (this._autoLocAt || 0) < 15 * 60 * 1000) return;
+    this._autoLocAt = now;
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const { latitude: lat, longitude: lon } = pos.coords;
+      const cur = this.currentLocation;
+      if (cur && !cur.isPlaceholder) {
+        const dLat = (lat - cur.lat) * 111.2;
+        const dLon = (lon - cur.lon) * 111.2 * Math.cos(lat * Math.PI / 180);
+        if (Math.hypot(dLat, dLon) < 10) return;
+      }
+      const n = this.findNearestLocation(lat, lon);
+      if (!n) return;
+      const name = (n.districtName && n.districtName !== "Merkez" && n.districtName !== n.cityName)
+        ? `${n.cityName}/${n.districtName}` : n.cityName;
+      if (cur && cur.name === name) return;
+      this.saveLocation({ name, lat, lon });
+      this.updatePrayers();
+      this.showToast(`Konum güncellendi: ${this.shortPlaceName(name)}`, "📍");
+    }, () => {}, { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 });
+  }
+
   locateWithGPS() {
     const btn = document.getElementById("gpsLocateBtn");
     if (btn) btn.textContent = "İlçe ve konum tespit ediliyor...";
@@ -1272,6 +1311,7 @@ class TamVaktiApp {
           const lon = pos.coords.longitude;
           const locName = await this.resolveLocationName(lat, lon);
           this.selectLocation(locName, lat, lon);
+          this.setAutoLocation(true);
           const districtDisplay = locName.includes("/") ? locName.split("/")[1] : locName;
           this.showToast(`Konumunuz tespit edildi: ${districtDisplay}`, "📍");
           if (btn) btn.textContent = "GPS ile Otomatik Bul";
@@ -1318,6 +1358,8 @@ class TamVaktiApp {
         ? this.currentLocation.name.replace("/", " / ")
         : "Konum Seçiniz";
     }
+    const locToggle = document.getElementById("autoLocationToggle");
+    if (locToggle) locToggle.checked = this.autoLocation;
     const silentToggle = document.getElementById("autoSilentToggle");
     if (silentToggle) {
       silentToggle.checked = this.autoSilent;
@@ -2554,6 +2596,7 @@ class TamVaktiApp {
           const lon = pos.coords.longitude;
           const locName = await this.resolveLocationName(lat, lon);
           this.selectLocation(locName, lat, lon); // konum adımından kendiliğinden ilerler
+          this.setAutoLocation(true);
           const districtDisplay = locName.includes("/") ? locName.split("/")[1] : locName;
           this.showToast(`Konum tespit edildi: ${districtDisplay}`, "📍");
           if (btn) btn.innerHTML = origHtml;
