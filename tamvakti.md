@@ -123,6 +123,12 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
   - `setLargeIcon` 128×128 (`inSampleSize = 8`) hafif Bitmap; kullanılmayan eski `tamvakti_alert_*` kanalları otomatik silinir.
   - `Silencer.endIfExpired()` ile yeniden başlatmada titreşimde takılı kalma önlendi.
 
-- **Güncelleme iptal sonrası tekrar kurulum/indirme kilidi düzeltmesi:**
+- [x] **Ara Düzeltme — Güncelleme İptal Sonrası Yeniden Kurulum/İndirme Kilidi (2026-11-21, `v2.13.9` Seher, `versionCode`: 24200):**
   - `www/js/app.js`: İndirme %100'e ulaşıp paket yükleyici açıldığında `isDownloadingUpdate` sıfırlanıyor, `onAppResume()` ve 2.5 sn yedek zamanlayıcı ile `resetUpdateDownloadUI()` çağrılarak düğmeler yeniden tıklanabilir hale geliyor ("Kur" / "Kurulumu Başlat").
   - `MainActivity.kt`: Aynı oturumda zaten indirilmiş APK önbellekte duruyorsa (`downloadedApkUrl`) tekrar indirme yapmadan doğrudan paket yükleyiciyi açıyor; eşzamanlı indirme kilidi (`isApkDownloading`), eksik dosya kontrolü ve bilinmeyen kaynak izni iptalinde `pendingInstallApk` temizliği eklendi.
+  - Gerçek cihazda `v2.13.9` sorunsuz kuruldu (Play Protect uyarısı vermedi).
+
+## Kaldığımız Yer (Sonraki Oturum İçin)
+- **Güncel yayınlanan sürüm:** `v2.13.9` ("Seher", `versionCode: 24200`, `main` temiz ve `origin/main` ile eşit).
+- **Tamamlanan inceleme ve iyileştirmeler:** Ana ekran Sade/Detay modu, güneş yayı, kıble pusulası, bildirim/tam ekran/simgeler, Ayarlar sadeleştirme, 2 adımlı şehir seçici, logo ufuk cilası, aylık imsakiye, widget'lar, bildirim hijyeni & otomatik sessiz, güncelleme iptal kilidi.
+- **Google Play aşamasına bırakılanlar:** Yurt dışı konum seçimi, Play (`play` flavor) AAB yayın hazırlığı.
