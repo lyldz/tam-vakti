@@ -161,19 +161,19 @@
         <!-- HORIZONTAL HORIZON TIMELINE BAR (TEK MERKEZİ KART) -->
         <div class="rounded-2xl p-4 bg-slate-900/80 backdrop-blur-xl border border-sky-400/20 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.6)] flex flex-col gap-3">
           <!-- Header Row -->
-          <div class="flex items-center justify-between text-[15px]">
-            <div class="flex items-center gap-1.5">
+          <div class="flex items-center justify-between gap-1.5 text-[14px] min-w-0">
+            <div class="flex items-center gap-1 min-w-0 shrink-0">
               <span id="horizonStartName" class="font-bold text-sky-300">İkindi</span>
-              <span id="horizonStartTime" class="text-slate-400 font-mono text-[14px]">15:31</span>
+              <span id="horizonStartTime" class="text-slate-400 font-mono text-[13px]">15:31</span>
             </div>
             <!-- Kerahat Alert Badge -->
-            <div id="horizonKerahatBadge" class="hidden flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 font-semibold shadow-[0_0_12px_rgba(251,146,60,0.25)]">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 pulse-amber"></span>
+            <div id="horizonKerahatBadge" class="hidden flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[12px] font-semibold shadow-[0_0_12px_rgba(251,146,60,0.25)] shrink-0">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 pulse-amber shrink-0"></span>
               <span>Kerahat 17:11</span>
             </div>
-            <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-1 min-w-0 shrink-0">
               <span id="horizonEndName" class="font-bold text-slate-200">Akşam</span>
-              <span id="horizonEndTime" class="text-slate-400 font-mono text-[14px]">17:56</span>
+              <span id="horizonEndTime" class="text-slate-400 font-mono text-[13px]">17:56</span>
             </div>
           </div>
 
@@ -483,6 +483,19 @@
               <span id="settingsLocationAction">Değiştir</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </span>
           </button>
+          <label class="flex items-center justify-between gap-3 px-4 py-3.5 cursor-pointer active:bg-white/5">
+            <span class="flex items-center gap-3 min-w-0">
+              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+              <span class="min-w-0">
+                <span class="block text-[14px] font-semibold text-slate-100">Konumu otomatik güncelle</span>
+                <span class="block text-[12px] text-slate-400">Şehir değişince vakitler kendiliğinden yenilenir</span>
+              </span>
+            </span>
+            <span class="relative inline-flex items-center shrink-0">
+              <input type="checkbox" id="autoLocationToggle" onchange="app.setAutoLocation(this.checked)" class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
+            </span>
+          </label>
           <button onclick="app.openCalcMethodModal()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
             <span class="flex items-center gap-3 min-w-0">
               <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
@@ -564,14 +577,14 @@
           </label>
           <label class="flex items-center justify-between gap-3 px-4 py-3.5 cursor-pointer active:bg-white/5">
             <span class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               <span class="min-w-0">
-                <span class="block text-[14px] font-semibold text-slate-100">Konumu otomatik güncelle</span>
-                <span class="block text-[12px] text-slate-400">Şehir değişince vakitler kendiliğinden yenilenir</span>
+                <span class="block text-[14px] font-semibold text-slate-100">Sabit bildirim (canlı sayaç)</span>
+                <span class="block text-[12px] text-slate-400">Bildirim çubuğunda kalan süreyi gösterir</span>
               </span>
             </span>
             <span class="relative inline-flex items-center shrink-0">
-              <input type="checkbox" id="autoLocationToggle" onchange="app.setAutoLocation(this.checked)" class="sr-only peer">
+              <input type="checkbox" id="ongoingNotifToggle" onchange="app.toggleOngoingNotification(this.checked)" class="sr-only peer" checked>
               <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
             </span>
           </label>
@@ -590,7 +603,7 @@
           </label>
           <label class="flex items-center justify-between gap-3 px-4 py-3.5 cursor-pointer active:bg-white/5">
             <span class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
               <span class="min-w-0">
                 <span class="block text-[14px] font-semibold text-slate-100">Tam ekran bildirim</span>
                 <span class="block text-[12px] text-slate-400">Vakit girince tüm ekranı kaplar</span>
@@ -835,7 +848,7 @@
       <!-- Güncelleme Denetleme Durumu & Butonu -->
       <div id="updateCheckRow" class="pt-0.5 flex items-center justify-between text-[11px] text-slate-500 px-1">
         <span id="updateCheckStatus">✓ Sürüm güncel</span>
-        <button onclick="app.checkForUpdates(false)" class="text-sky-700 font-bold hover:underline cursor-pointer flex items-center gap-1">
+        <button onclick="app.checkForUpdates(false)" class="text-sky-400 font-bold hover:underline cursor-pointer flex items-center gap-1">
           <span>🔄</span>
           <span>Denetle</span>
         </button>

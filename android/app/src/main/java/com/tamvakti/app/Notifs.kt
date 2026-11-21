@@ -231,7 +231,7 @@ object Notifs {
         scheduleTick(ctx)
     }
 
-    /** İlerleme çubuğu geri sayım gibi kendiliğinden akmaz; birkaç dakikada bir yeniden çizilir. */
+    /** İlerleme çubuğu geri sayım gibi kendiliğinden akmaz; 10 dakikada bir (Doze dostu) yenilenir. */
     private fun scheduleTick(ctx: Context) {
         try {
             val am = ctx.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
@@ -242,17 +242,40 @@ object Notifs {
             val pi = PendingIntent.getBroadcast(
                 ctx, 7771, i, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-            am.setAndAllowWhileIdle(
-                android.app.AlarmManager.RTC, System.currentTimeMillis() + 3 * 60_000L, pi
+            am.set(
+                android.app.AlarmManager.RTC, System.currentTimeMillis() + 10 * 60_000L, pi
             )
         } catch (e: Exception) {}
     }
 
+    /** Sabit bildirim kapatıldığında ilerleme çubuğu tazeleme alarmını da iptal eder. */
+    fun cancelTick(ctx: Context) {
+        try {
+            val am = ctx.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+            val i = Intent(ctx, AlarmReceiver::class.java).apply {
+                action = "com.tamvakti.app.ONGOING_TICK"
+                putExtra("type", "ongoing_tick")
+            }
+            val pi = PendingIntent.getBroadcast(
+                ctx, 7771, i, PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+            )
+            if (pi != null) {
+                am.cancel(pi)
+                pi.cancel()
+            }
+        } catch (e: Exception) {}
+    }
+
+    fun cancelOngoing(ctx: Context) {
+        val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        nm.cancel(ID_ONGOING)
+        cancelTick(ctx)
+    }
+
     /** Uygulama kapalıyken bile sabit bildirimi sıradaki vakte günceller. */
     fun refreshOngoing(ctx: Context) {
-        val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (!Store.ongoingEnabled(ctx)) {
-            nm.cancel(ID_ONGOING)
+            cancelOngoing(ctx)
             return
         }
         val next = Store.nextPrayer(ctx) ?: return

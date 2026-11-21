@@ -59,7 +59,8 @@ class PrayerAlertActivity : AppCompatActivity() {
         }
         // Ekran kapatılana kadar açık kalır; ekran kapanınca kendini kapatır
         registerReceiver(screenOffReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF))
-        // Güvenlik sınırı: unutulursa ekran sonsuza dek açık kalmasın
+        // Pil / OLED koruması: 60 sn sonra ekranı zorla açık tutmayı bırak, 5 dk sonra pencereyi kapat
+        handler.postDelayed({ window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }, KEEP_SCREEN_MS)
         handler.postDelayed({ finishAndRemoveTask() }, AUTO_CLOSE_MS)
     }
 
@@ -112,7 +113,8 @@ class PrayerAlertActivity : AppCompatActivity() {
         const val EXTRA_TIME = "pa_time"
         const val EXTRA_PLACE = "pa_place"
         const val EXTRA_INFO = "pa_info"
-        private const val AUTO_CLOSE_MS = 30 * 60 * 1000L
+        private const val KEEP_SCREEN_MS = 60 * 1000L
+        private const val AUTO_CLOSE_MS = 5 * 60 * 1000L
 
         fun intent(ctx: Context, name: String, time: String, place: String, info: String): Intent =
             Intent(ctx, PrayerAlertActivity::class.java).apply {

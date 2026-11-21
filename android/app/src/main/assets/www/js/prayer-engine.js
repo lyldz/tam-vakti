@@ -112,7 +112,8 @@ class PrayerEngine {
   }
 
   // Canlı Güneş Azimutu (0-360 derece, Kuzeyden saat yönünde) ve Yükseklik Açısı
-  getSunPositionNow(date, lat, lon, tz = 3.0) {
+  getSunPositionNow(date, lat, lon, tz) {
+    if (tz === undefined || tz === null) tz = -date.getTimezoneOffset() / 60;
     const jd = this.julianDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
     const solar = this.getSolarPosition(jd);
     const declination = solar.declination;
@@ -143,8 +144,9 @@ class PrayerEngine {
   }
 
   // Diyanet Klasik Kıble Saati (Güneşin tam Kâbe açısında olduğu saat)
-  calculateQiblaHour(date, lat, lon, qiblaAngle, tz = 3.0) {
+  calculateQiblaHour(date, lat, lon, qiblaAngle, tz) {
     try {
+      if (tz === undefined || tz === null) tz = -date.getTimezoneOffset() / 60;
       const jd = this.julianDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
       const solar = this.getSolarPosition(jd);
       const delta = this.d2r(solar.declination);
@@ -260,6 +262,57 @@ class PrayerEngine {
     };
   }
 
+  // Zaman aşımlı fetch (zayıf/donuk bağlantıda uygulamanın asılı kalmasını önler)
+  async _fetchWithTimeout(url, opts = {}, ms = 4000) {
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    const id = controller ? setTimeout(() => controller.abort(), ms) : null;
+    try {
+      return await fetch(url, controller ? { ...opts, signal: controller.signal } : opts);
+    } finally {
+      if (id) clearTimeout(id);
+    }
+  }
+
+  // Önbellekte bugüne ait kayıt varsa eşzamanlı döndür (açılışta gecikmesiz çizim için)
+  getCachedPrayerTimes(date, lat, lon) {
+    if (typeof localStorage === "undefined") return null;
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const cacheKey = `tamvakti_v2_${lat.toFixed(2)}_${lon.toFixed(2)}_${dateStr}${this._mk()}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (!cached) return null;
+    try { return JSON.parse(cached); } catch (e) { return null; }
+  }
+
+  // Eski önbellek kayıtlarını temizle (localStorage kota dolumunu önler)
+  pruneCache() {
+    if (typeof localStorage === "undefined") return;
+    try {
+      const now = Date.now();
+      const dailyCutoff = now - 45 * 86400000;
+      const dNow = new Date(now);
+      const curYM = dNow.getFullYear() * 12 + dNow.getMonth();
+      const toRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k) continue;
+        if (k.startsWith("tamvakti_v2_")) {
+          const m = k.match(/_(\d{4})-(\d{2})-(\d{2})(?:_|$)/);
+          if (m) {
+            const ts = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime();
+            if (ts < dailyCutoff) toRemove.push(k);
+          }
+        } else if (k.startsWith("tamvakti_monthly_v2_")) {
+          const m = k.match(/_(\d{4})_(\d{2})(?:_|$)/);
+          if (m) {
+            const ym = Number(m[1]) * 12 + (Number(m[2]) - 1);
+            if (curYM - ym > 3) toRemove.push(k);
+          }
+        }
+      }
+      toRemove.forEach(k => localStorage.removeItem(k));
+    } catch (e) {}
+  }
+
   // Çevrimiçi Diyanet API'den Çekme ve Yerel Önbelleğe (Cache) Alma
   async getPrayerTimes(date, lat, lon, tz = 3.0) {
     const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -283,7 +336,7 @@ class PrayerEngine {
       const y = date.getFullYear();
       const url = `https://api.aladhan.com/v1/timings/${d}-${m}-${y}?latitude=${lat}&longitude=${lon}&method=${this.methodInfo().id}`;
       
-      const res = await fetch(url, { cache: "force-cache" });
+      const res = await this._fetchWithTimeout(url, { cache: "force-cache" }, 4000);
       if (res.ok) {
         const json = await res.json();
         if (json && json.data && json.data.timings) {
@@ -344,7 +397,7 @@ class PrayerEngine {
     // 2. Çevrimiçi Aladhan Diyanet Calendar API (Method 13)
     try {
       const url = `https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${lat}&longitude=${lon}&method=${this.methodInfo().id}`;
-      const res = await fetch(url);
+      const res = await this._fetchWithTimeout(url, {}, 5000);
       if (res.ok) {
         const json = await res.json();
         if (json && Array.isArray(json.data) && json.data.length > 0) {

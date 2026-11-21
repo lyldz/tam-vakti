@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private var pendingGeoCallback: GeolocationPermissions.Callback? = null
     private var pendingGeoOrigin: String? = null
+    private var pendingInstallApk: File? = null
 
     // Native Pusula & Sensör Değişkenleri
     private var sensorManager: SensorManager? = null
@@ -192,11 +193,19 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         // Yerel varlığı yükle
         webView.loadUrl("file:///android_asset/www/index.html")
 
-        // Geri tuşu yönetimi
+        // Geri tuşu yönetimi: önce açık modal/Kıble sekmesini kapat, yoksa uygulamadan çık
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (webView.canGoBack()) {
-                    webView.goBack()
+                if (::webView.isInitialized) {
+                    webView.evaluateJavascript("window.app && window.app.handleBack ? window.app.handleBack() : false;") { res ->
+                        if (res == "true") return@evaluateJavascript
+                        if (webView.canGoBack()) {
+                            webView.goBack()
+                        } else {
+                            isEnabled = false
+                            onBackPressedDispatcher.onBackPressed()
+                        }
+                    }
                 } else {
                     isEnabled = false
                     onBackPressedDispatcher.onBackPressed()
@@ -246,9 +255,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     fun cancelOngoingPrayerNotification() {
-        val notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.cancel(Notifs.ID_ONGOING)
+        Notifs.cancelOngoing(this)
     }
 
     override fun onRequestPermissionsResult(
@@ -359,10 +366,19 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onPause() {
         super.onPause()
         stopCompassListening()
+        Notifs.stopTone()
     }
 
     override fun onResume() {
         super.onResume()
+        // Bilinmeyen kaynak izninden dönüldüyse bekleyen APK kurulumunu başlat
+        val apk = pendingInstallApk
+        if (apk != null && apk.exists()) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || packageManager.canRequestPackageInstalls()) {
+                pendingInstallApk = null
+                promptInstallApk(apk)
+            }
+        }
         // Arka plandan dönünce vakitleri tazele ve pusulayı yeniden başlat
         if (::webView.isInitialized) {
             webView.evaluateJavascript("window.app && window.app.onAppResume && window.app.onAppResume();", null)
@@ -370,8 +386,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         stopCompassListening()
+        Notifs.stopTone()
+        if (::webView.isInitialized) {
+            webView.destroy()
+        }
+        super.onDestroy()
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
@@ -982,10 +1002,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 if (!packageManager.canRequestPackageInstalls()) {
+                    pendingInstallApk = apkFile
                     val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
                         data = Uri.parse("package:$packageName")
                     }
                     startActivity(intent)
+                    return
                 }
             }
 

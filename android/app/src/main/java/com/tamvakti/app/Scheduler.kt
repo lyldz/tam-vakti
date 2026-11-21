@@ -132,12 +132,25 @@ object Scheduler {
                 n++
             }
         }
-        Store.prefs(app).edit().putInt("count", n).apply()
+        Store.prefs(app).edit().putInt("count", n).putInt("remaining", n).apply()
 
         // Otomatik sessiz kapatıldıysa, bizim sessize aldığımız telefonu geri aç
         if (!hasSilentEnd) Silencer.end(app)
 
         PrayerWidget.updateAll(app)
         Notifs.refreshOngoing(app)
+    }
+
+    /**
+     * Kayan pencere: her alarmda tüm alarmları silip yeniden kurmak yerine yalnızca kalan
+     * kurulu alarm sayısı 30'un altına düştüğünde yeniler. Aynı dakikadaki birden fazla
+     * alarmın (ör. vakit + silent_start + kerahat) birbirini iptal etmesini de önler.
+     */
+    fun rescheduleIfNeeded(ctx: Context) {
+        val app = ctx.applicationContext
+        val p = Store.prefs(app)
+        val rem = (p.getInt("remaining", 0) - 1).coerceAtLeast(0)
+        p.edit().putInt("remaining", rem).apply()
+        if (rem <= 30) reschedule(app)
     }
 }

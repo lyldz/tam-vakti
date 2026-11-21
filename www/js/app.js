@@ -156,6 +156,7 @@ class TamVaktiApp {
   }
 
   async init() {
+    if (this.engine && this.engine.pruneCache) this.engine.pruneCache();
     this.renderCitySelector();
     this.compass = new QiblaCompass(this.engine);
 
@@ -233,26 +234,23 @@ class TamVaktiApp {
   async updatePrayers() {
     this.applyCalcMethod();
     const now = new Date();
-    
+    const { lat, lon } = this.currentLocation;
+
     // Şehir Rozeti
     const isPlaceholder = !this.currentLocation || this.currentLocation.isPlaceholder || this.currentLocation.name === "Konum Seçiniz";
     const displayName = isPlaceholder ? "Konum Seçiniz" : this.shortPlaceName();
     document.getElementById("headerCityName").textContent = displayName;
 
-    // Vakitleri Al
-    const rawTimes = await this.engine.getPrayerTimes(
-      now, 
-      this.currentLocation.lat, 
-      this.currentLocation.lon
-    );
-    this.currentTimes = this.applyOffset(rawTimes);
-
-    // Miladi + Hicri tarih (Hicri, API verisi geldikten sonra yazılır)
-    this.updateMiladiDate();
+    // Yarının gerçek imsak saatini hazırla (Yatsı sonrası geri sayım için)
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const tomorrowRaw = (this.engine.getCachedPrayerTimes && this.engine.getCachedPrayerTimes(tomorrow, lat, lon))
+      || this.engine.calculateTimesOffline(tomorrow, lat, lon);
+    const tomorrowShifted = this.applyOffset(tomorrowRaw);
+    this.tomorrowImsak = (tomorrowShifted && tomorrowShifted.imsak) || null;
 
     // Kıble Açısı ve Mesafe (Kıble etkinse güvenli çalıştır)
     if (this.compass) {
-      const qiblaInfo = this.engine.calculateQibla(this.currentLocation.lat, this.currentLocation.lon);
+      const qiblaInfo = this.engine.calculateQibla(lat, lon);
       const angleBigEl = document.getElementById("qiblaAngleBig");
       if (angleBigEl) angleBigEl.textContent = `${Math.round(qiblaInfo.angle)}°`;
       const hq = document.getElementById("headerQibla");
@@ -261,12 +259,28 @@ class TamVaktiApp {
       if (distSubEl) distSubEl.textContent = `Kâbe'ye ≈ ${qiblaInfo.distanceKm.toLocaleString('tr-TR')} km`;
       const headerCityEl = document.getElementById("qiblaHeaderCity");
       if (headerCityEl) headerCityEl.textContent = displayName;
-      this.compass.setTargetQibla(qiblaInfo.angle, this.currentLocation.lat, this.currentLocation.lon);
+      this.compass.setTargetQibla(qiblaInfo.angle, lat, lon);
     }
 
-    this.renderDayRibbon();
-    this.evaluateCurrentPrayer();
-    this.updateSolarTransitCurve(); // güneş yayı etiketleri yöntem/ihtiyat/konum değişince hemen yenilensin
+    const renderNow = () => {
+      this.updateMiladiDate();
+      this.renderDayRibbon();
+      this.evaluateCurrentPrayer();
+      this.updateSolarTransitCurve();
+    };
+
+    // Önbellekte yoksa önce çevrimdışı hesapla ekranı gecikmesiz çiz, ardından API'yi bekle
+    const cachedToday = this.engine.getCachedPrayerTimes ? this.engine.getCachedPrayerTimes(now, lat, lon) : null;
+    if (!cachedToday) {
+      this.currentTimes = this.applyOffset(this.engine.calculateTimesOffline(now, lat, lon));
+      renderNow();
+    }
+
+    // Vakitleri Al (önbellekten anında veya zaman aşımlı API'den)
+    const rawTimes = await this.engine.getPrayerTimes(now, lat, lon);
+    this.currentTimes = this.applyOffset(rawTimes);
+
+    renderNow();
     this.scheduleSync();
   }
 
@@ -606,7 +620,15 @@ class TamVaktiApp {
 
   // Android uygulaması arka plandan döndüğünde çağrılır
   onAppResume() {
-    this.updatePrayers();
+    const t = new Date();
+    const todayKey = `${t.getFullYear()}-${t.getMonth()}-${t.getDate()}`;
+    if (!this.currentTimes || this._dayKey !== todayKey) {
+      this._dayKey = todayKey;
+      this.updatePrayers();
+    } else {
+      this.evaluateCurrentPrayer();
+      this.updateSolarTransitCurve();
+    }
     this.refreshPermissionStatus();
     this.onOnboardingResume();
     const viewQibla = document.getElementById("viewQibla");
@@ -614,6 +636,23 @@ class TamVaktiApp {
     if (this.compass && qiblaVisible) {
       this.compass.resumeCompass(); // native taraf onPause'da durdu
     }
+  }
+
+  // Android fiziksel geri tuşu: açık modal/sekme varsa onu kapatır ve true döner
+  handleBack() {
+    const isOpen = (id) => {
+      const el = document.getElementById(id);
+      return !!el && !el.classList.contains("hidden");
+    };
+    if (isOpen("choiceSheet")) { this.closeChoice(); return true; }
+    if (isOpen("locationModal")) { this.closeLocationModal(); return true; }
+    if (isOpen("detailModal")) { this.closePrayerDetail(); return true; }
+    if (isOpen("aboutModal")) { this.closeAboutModal(); return true; }
+    if (isOpen("updateFoundModal")) { this.closeUpdateFoundModal(); return true; }
+    if (isOpen("monthlyModal")) { this.closeMonthlyModal(); return true; }
+    if (isOpen("settingsModal")) { this.closeSettingsModal(); return true; }
+    if (isOpen("viewQibla")) { this.switchTab("prayer"); return true; }
+    return false;
   }
 
   parseTimeToDate(timeStr, baseDate) {
@@ -643,6 +682,10 @@ class TamVaktiApp {
     const tAksam = this.parseTimeToDate(this.currentTimes.aksam, now);
     const tYatsi = this.parseTimeToDate(this.currentTimes.yatsi, now);
 
+    const tomorrowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const nextImsakStr = this.tomorrowImsak || this.currentTimes.imsak;
+    const tNextImsak = this.parseTimeToDate(nextImsakStr, tomorrowDate) || new Date(tImsak.getTime() + 86400000);
+
     const ogleName = this.isFriday ? "Cuma" : "Öğle";
     const prayerOrder = [
       { key: "imsak", name: "İmsak", start: tImsak, end: tGunes, nextName: "Güneş", nextTime: tGunes, nextTimeStr: this.currentTimes.gunes },
@@ -650,7 +693,7 @@ class TamVaktiApp {
       { key: "ogle", name: ogleName, start: tOgle, end: tIkindi, nextName: "İkindi", nextTime: tIkindi, nextTimeStr: this.currentTimes.ikindi },
       { key: "ikindi", name: "İkindi", start: tIkindi, end: tAksam, nextName: "Akşam", nextTime: tAksam, nextTimeStr: this.currentTimes.aksam },
       { key: "aksam", name: "Akşam", start: tAksam, end: tYatsi, nextName: "Yatsı", nextTime: tYatsi, nextTimeStr: this.currentTimes.yatsi },
-      { key: "yatsi", name: "Yatsı", start: tYatsi, end: new Date(tImsak.getTime() + 86400000), nextName: "İmsak", nextTime: new Date(tImsak.getTime() + 86400000), nextTimeStr: this.currentTimes.imsak }
+      { key: "yatsi", name: "Yatsı", start: tYatsi, end: tNextImsak, nextName: "İmsak", nextTime: tNextImsak, nextTimeStr: nextImsakStr }
     ];
 
     let current = null;
@@ -1271,7 +1314,13 @@ class TamVaktiApp {
     localStorage.setItem("tamvakti_auto_location", this.autoLocation ? "true" : "false");
     const cb = document.getElementById("autoLocationToggle");
     if (cb) cb.checked = this.autoLocation;
-    if (this.autoLocation) this.checkAutoLocation(true);
+    if (this.autoLocation) {
+      const p = this.getPermissionState();
+      if (p && !p.loc) {
+        this.showToast("Otomatik güncelleme için konum izni gerekli (Ayarlar › Uygulama izni).", "📍", 3500);
+      }
+      this.checkAutoLocation(true);
+    }
   }
 
   // Açıkken uygulama açılınca/öne gelince konuma bakar; il/ilçe değiştiyse vakitleri yeni ilçeye taşır.
@@ -1283,6 +1332,8 @@ class TamVaktiApp {
     this._autoLocAt = now;
     navigator.geolocation.getCurrentPosition((pos) => {
       const { latitude: lat, longitude: lon } = pos.coords;
+      // Türkiye + KKTC sınırları dışındayken TURKEY_CITIES eşleştirmesi yapma (yanlış sınır ilçesine çekmesin)
+      if (lat < 34.5 || lat > 42.5 || lon < 25.5 || lon > 45.2) return;
       const cur = this.currentLocation;
       const n = this.findNearestLocation(lat, lon);
       if (!n) return;
@@ -1362,6 +1413,8 @@ class TamVaktiApp {
     if (silentToggle) {
       silentToggle.checked = this.autoSilent;
     }
+    const ongoingToggle = document.getElementById("ongoingNotifToggle");
+    if (ongoingToggle) ongoingToggle.checked = this.ongoingNotifEnabled;
     this.updateSettingsLabels();
   }
 
@@ -1673,9 +1726,11 @@ class TamVaktiApp {
         const t = x.dt.getTime();
         const name = (p.key === "ogle" && isFri) ? "Cuma (Öğle)" : p.name;
 
-        events.push({ t, type: "prayer" });
-
         const al = this.prayerAlerts[p.key];
+        // Vaktinde bildirim yoksa widget ve sabit bildirimin sıradaki vakte geçmesi için hafif olay ekle
+        if (!al || !al.at) {
+          events.push({ t, type: "prayer" });
+        }
         if (al && al.before > 0) {
           events.push({
             t: t - al.before * MIN, type: "reminder",
@@ -1984,12 +2039,13 @@ class TamVaktiApp {
       if (/^\**Full Changelog/i.test(trimmed) || trimmed.includes(".apk")) {
         continue;
       }
+      const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
-        let content = trimmed.substring(2).trim();
+        let content = esc(trimmed.substring(2).trim());
         content = content.replace(/\*\*(.*?)\*\*/g, "<strong class='text-white font-bold'>$1</strong>");
         bulletItems.push(content);
       } else if (trimmed.length > 5 && !trimmed.startsWith("```")) {
-        let content = trimmed.replace(/\*\*(.*?)\*\*/g, "<strong class='text-white font-bold'>$1</strong>");
+        let content = esc(trimmed).replace(/\*\*(.*?)\*\*/g, "<strong class='text-white font-bold'>$1</strong>");
         bulletItems.push(content);
       }
     }
@@ -2101,9 +2157,13 @@ class TamVaktiApp {
     }
 
     try {
+      const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const timeoutId = controller ? setTimeout(() => controller.abort(), 5000) : null;
       const res = await fetch("https://api.github.com/repos/lyldz/tam-vakti/releases/latest", {
-        headers: { "Accept": "application/vnd.github.v3+json" }
+        headers: { "Accept": "application/vnd.github.v3+json" },
+        ...(controller ? { signal: controller.signal } : {})
       });
+      if (timeoutId) clearTimeout(timeoutId);
       if (!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
       const latestTag = data.tag_name || "";
