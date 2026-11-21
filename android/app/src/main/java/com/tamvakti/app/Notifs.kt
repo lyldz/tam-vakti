@@ -22,6 +22,9 @@ object Notifs {
     const val CH_ALERT = "tamvakti_alert"
     const val CH_QUIET = "tamvakti_quiet"
     const val ID_ONGOING = 2026
+    const val ID_ALERT_VAKIT = 3001
+    const val ID_ALERT_REMINDER = 3002
+    const val ID_ALERT_KERAHAT = 3003
 
     fun createChannels(ctx: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
@@ -81,14 +84,14 @@ object Notifs {
     /** Seçili ses için vakit kanalı: "telefon" = varsayılan kanal, diğerleri kendi sesli kanalı (kanal sesi sonradan değişmez). */
     fun alertChannelId(ctx: Context): String {
         val tone = Store.tone(ctx)
-        if (tone == "telefon" || toneRawId(ctx, tone) == 0) return CH_ALERT
-        val id = "tamvakti_alert_$tone"
+        val useDefault = tone == "telefon" || toneRawId(ctx, tone) == 0
+        val activeId = if (useDefault) CH_ALERT else "tamvakti_alert_$tone"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            if (nm.getNotificationChannel(id) == null) {
+            if (!useDefault && nm.getNotificationChannel(activeId) == null) {
                 val label = TONE_LABELS[tone] ?: tone.replaceFirstChar { it.uppercase() }
                 nm.createNotificationChannel(
-                    NotificationChannel(id, "Vakit bildirimleri ($label)", NotificationManager.IMPORTANCE_HIGH).apply {
+                    NotificationChannel(activeId, "Vakit bildirimleri ($label)", NotificationManager.IMPORTANCE_HIGH).apply {
                         description = "Tam Vakti $label sesiyle vakit bildirimleri"
                         setSound(
                             android.net.Uri.parse("android.resource://${ctx.packageName}/${toneRawId(ctx, tone)}"),
@@ -101,8 +104,16 @@ object Notifs {
                     }
                 )
             }
+            // Kullanılmayan eski ton kanallarını temizle (ayarlarda kanal birikmesin)
+            try {
+                for (ch in nm.notificationChannels) {
+                    if (ch.id.startsWith("tamvakti_alert_") && ch.id != activeId) {
+                        nm.deleteNotificationChannel(ch.id)
+                    }
+                }
+            } catch (e: Exception) {}
         }
-        return id
+        return activeId
     }
 
     private var tonePlayer: android.media.MediaPlayer? = null
@@ -156,10 +167,18 @@ object Notifs {
     private fun largeIcon(ctx: Context): android.graphics.Bitmap? {
         cachedLargeIcon?.let { return it }
         return try {
-            android.graphics.BitmapFactory.decodeResource(ctx.resources, R.drawable.logo_full)?.also {
+            val opts = android.graphics.BitmapFactory.Options().apply { inSampleSize = 8 }
+            android.graphics.BitmapFactory.decodeResource(ctx.resources, R.drawable.logo_full, opts)?.also {
                 cachedLargeIcon = it
             }
         } catch (e: Exception) { null }
+    }
+
+    fun cancelAlert(ctx: Context, id: Int) {
+        try {
+            val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            nm.cancel(id)
+        } catch (e: Exception) {}
     }
 
     /** Vakit girişi / hatırlatma / kerahat bildirimi. */
@@ -242,11 +261,11 @@ object Notifs {
             .setPriority(NotificationCompat.PRIORITY_LOW)
         val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.notify(ID_ONGOING, builder.build())
-        scheduleTick(ctx)
+        scheduleTick(ctx, targetMillis)
     }
 
-    /** İlerleme çubuğu geri sayım gibi kendiliğinden akmaz; 10 dakikada bir (Doze dostu) yenilenir. */
-    private fun scheduleTick(ctx: Context) {
+    /** İlerleme çubuğu 10 dk'da bir veya sıradaki vakit sınırında (+2 sn) yenilenir (Doze dostu). */
+    private fun scheduleTick(ctx: Context, targetMillis: Long = 0L) {
         try {
             val am = ctx.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
             val i = Intent(ctx, AlarmReceiver::class.java).apply {
@@ -256,9 +275,13 @@ object Notifs {
             val pi = PendingIntent.getBroadcast(
                 ctx, 7771, i, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-            am.set(
-                android.app.AlarmManager.RTC, System.currentTimeMillis() + 10 * 60_000L, pi
-            )
+            val now = System.currentTimeMillis()
+            val delay = if (targetMillis > now) {
+                minOf(10 * 60_000L, (targetMillis - now) + 2000L).coerceAtLeast(5_000L)
+            } else {
+                10 * 60_000L
+            }
+            am.set(android.app.AlarmManager.RTC, now + delay, pi)
         } catch (e: Exception) {}
     }
 

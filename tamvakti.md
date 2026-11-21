@@ -117,4 +117,8 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
   - Sıradaki vakit sınırına (`+2 sn`) hafif widget tazeleme alarmı (`scheduleNextBoundary`) eklendi (Chronometer eksiye düşmez); aktif widget yoksa alarm kurulmaz.
   - Tüm 7 widget'ta `Chronometer` ve vakit saatleri `monospace` yapıldı; `widget_bg.xml`'e 1dp Arctic camgöbeği çerçeve eklendi.
   - `LargeWidget`: Yatsı sonrası `"• Yarın"` ve kerahat anında `"• Kerahat"` notu; `PrayerWidget`: Cuma günü `"Cuma"` tutarlılığı.
-- [ ] **Aşama 8:** Bildirimler genel inceleme ve iyileştirme (en son)
+- [x] **Aşama 8 — Bildirimler ve Otomatik Sessize Alma (2026-11-21, `v2.13.8` Seher, `versionCode`: 24100):**
+  - Tür bazlı sabit bildirim ID'leri (`3001/3002/3003`) ile bildirim yığılması önlendi; vakit girince eski hatırlatma otomatik temizlenir.
+  - Sabit bildirimde açık/koyu tema uyumlu `notif_accent`, `monospace` kronometre ve vakit sınırına tam yenileme (`min(10 dk, kalan + 2 sn)`).
+  - `setLargeIcon` 128×128 (`inSampleSize = 8`) hafif Bitmap; kullanılmayan eski `tamvakti_alert_*` kanalları otomatik silinir.
+  - `Silencer.endIfExpired()` ile yeniden başlatmada titreşimde takılı kalma önlendi.

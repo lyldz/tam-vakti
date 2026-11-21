@@ -104,10 +104,23 @@ object Scheduler {
         }
 
         run {
-            for (e in upcoming.take(WINDOW)) {
+            val slice = upcoming.take(WINDOW)
+            for ((idx, e) in slice.withIndex()) {
                 val t = e.optLong("t", 0L)
                 val type = e.optString("type")
                 if (type == "silent_end") hasSilentEnd = true
+
+                var silentUntil = 0L
+                if (type == "silent_start") {
+                    for (j in idx + 1 until slice.size) {
+                        val nextEv = slice[j]
+                        if (nextEv.optString("type") == "silent_end") {
+                            silentUntil = nextEv.optLong("t", 0L)
+                            break
+                        }
+                    }
+                    if (silentUntil <= t) silentUntil = t + 35 * 60_000L
+                }
 
                 val intent = baseIntent(app).apply {
                     putExtra("type", type)
@@ -118,6 +131,7 @@ object Scheduler {
                     putExtra("time", e.optString("time"))
                     putExtra("info", e.optString("info"))
                     putExtra("id", BASE_CODE + n)
+                    if (silentUntil > 0L) putExtra("until", silentUntil)
                 }
                 val pi = PendingIntent.getBroadcast(
                     app, BASE_CODE + n, intent,
@@ -134,8 +148,8 @@ object Scheduler {
         }
         Store.prefs(app).edit().putInt("count", n).putInt("remaining", n).apply()
 
-        // Otomatik sessiz kapatıldıysa, bizim sessize aldığımız telefonu geri aç
-        if (!hasSilentEnd) Silencer.end(app)
+        // Otomatik sessiz kapatıldıysa veya telefon yeniden açıldığında süre dolmuşsa sesi geri aç
+        if (!hasSilentEnd) Silencer.end(app) else Silencer.endIfExpired(app)
 
         PrayerWidget.updateAll(app)
         Notifs.refreshOngoing(app)

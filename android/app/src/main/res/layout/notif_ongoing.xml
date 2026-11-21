@@ -18,7 +18,7 @@
             android:layout_weight="1"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="@color/alert_accent"
+            android:textColor="@color/notif_accent"
             android:textSize="15sp"
             android:textStyle="bold" />
         <TextView
@@ -53,6 +53,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:fontFamily="monospace"
             android:maxLines="1"
             android:textAppearance="@android:style/TextAppearance.Material.Notification"
             android:textSize="12sp" />
@@ -61,6 +62,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:fontFamily="monospace"
             android:gravity="end"
             android:maxLines="1"
             android:textAppearance="@android:style/TextAppearance.Material.Notification.Title"

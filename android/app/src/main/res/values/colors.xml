@@ -13,6 +13,7 @@
     <color name="alert_muted">#94A3B8</color>
     <color name="alert_btn">#0EA5E9</color>
     <color name="alert_btn_text">#04111F</color>
+    <color name="notif_accent">#0369A1</color>
     <color name="notif_bar">#0284C7</color>
     <color name="notif_track">#55808080</color>
 

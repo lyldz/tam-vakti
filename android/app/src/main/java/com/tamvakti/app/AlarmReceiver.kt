@@ -17,7 +17,8 @@ class AlarmReceiver : BroadcastReceiver() {
             intent.getStringExtra("name") ?: "",
             intent.getStringExtra("time") ?: "",
             intent.getStringExtra("info") ?: "",
-            intent.getBooleanExtra("force_fs", false)
+            intent.getBooleanExtra("force_fs", false),
+            intent.getLongExtra("until", 0L)
         )
     }
 
@@ -25,13 +26,16 @@ class AlarmReceiver : BroadcastReceiver() {
         /** mode: "bip" = telefonun bildirim sesi, "sessiz" = sessiz bildirim. */
         fun handle(
             ctx: Context, type: String, title: String, body: String, mode: String, id: Int,
-            name: String = "", time: String = "", info: String = "", forceFullScreen: Boolean = false
+            name: String = "", time: String = "", info: String = "", forceFullScreen: Boolean = false,
+            silentUntil: Long = 0L
         ) {
             val app = ctx.applicationContext
             if (type == "ongoing_tick") { Notifs.refreshOngoing(app); return }
             when (type) {
-                "reminder" -> Notifs.postAlert(app, id, title, body, quiet = mode == "sessiz")
+                "reminder" -> Notifs.postAlert(app, Notifs.ID_ALERT_REMINDER, title, body, quiet = mode == "sessiz")
                 "vakit" -> {
+                    // Vakit girince o vaktin eski "vakitten önce" hatırlatmasını temizle
+                    Notifs.cancelAlert(app, Notifs.ID_ALERT_REMINDER)
                     // Vakit girişinde (ve ayar açıksa) tam ekran bildirim
                     var fs: Intent? = null
                     if (forceFullScreen || Store.fullScreenEnabled(app)) {
@@ -51,10 +55,10 @@ class AlarmReceiver : BroadcastReceiver() {
                         next != null -> "Sıradaki: ${next.name} ${next.time}"
                         else -> body
                     }
-                    Notifs.postAlert(app, id, title, cleanBody, quiet = mode == "sessiz", fullScreen = fs)
+                    Notifs.postAlert(app, Notifs.ID_ALERT_VAKIT, title, cleanBody, quiet = mode == "sessiz", fullScreen = fs)
                 }
-                "kerahat" -> Notifs.postAlert(app, id, title, body, quiet = true)
-                "silent_start" -> Silencer.start(app)
+                "kerahat" -> Notifs.postAlert(app, Notifs.ID_ALERT_KERAHAT, title, body, quiet = true)
+                "silent_start" -> Silencer.start(app, silentUntil)
                 "silent_end" -> Silencer.end(app)
                 else -> {}
             }
