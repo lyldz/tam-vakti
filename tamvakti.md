@@ -71,7 +71,7 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
 
 ## Aşama 3 — Detay Ekranı Nokta Temizliği (2026-11-21)
 
-**Durum:** Uygulandı ve `main` dalına gönderildi (yayın etiketi henüz kesilmedi; onay sonrası `v2.13.1` olarak yayınlanabilir).
+**Durum:** Tamamlandı ve **`v2.13.1` Seher** (`versionCode`: 23400) olarak GitHub Release yayınlandı.
 
 - [x] **3×2 vakit kutuları (Seçenek A):** Her vaktin yanındaki parlak mavi noktalar kaldırıldı; vakit adları tam ortalandı. Yalnızca uyarısı **kapalı** olan vakitlerde kutunun sağ üst köşesinde soluk, ince bir kapalı zil SVG ikonu gösteriliyor (`www/js/app.js`).
 - [x] **`Geçen süre` satırı:** Başındaki gereksiz gri nokta kaldırıldı (`www/index.html`).
