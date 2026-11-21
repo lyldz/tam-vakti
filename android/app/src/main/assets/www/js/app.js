@@ -68,6 +68,9 @@ class TamVaktiApp {
 
     this.autoSilent = localStorage.getItem("tamvakti_auto_silent") !== "false";
     this.autoLocation = localStorage.getItem("tamvakti_auto_location") === "true";
+    // Ana ekran görünümü: "detail" (varsayılan, ilk açılışta) veya "focus" (sade odak) — son bırakılan hal kalıcı saklanır
+    this.homeMode = localStorage.getItem("tamvakti_home_mode") === "focus" ? "focus" : "detail";
+    this.homeModeHintSeen = localStorage.getItem("tamvakti_home_mode_hint_seen") === "true";
 
     // Bildirim tercihleri
     // bip = telefonun kendi bildirim sesi, sessiz = yalnızca yazı (eski "ezan" ayarı bip'e taşınır)
@@ -184,6 +187,7 @@ class TamVaktiApp {
     }
 
     // Canlı Saat & Tarih Sayacı
+    this.applyHomeMode(false);
     setInterval(() => this.tick(), 1000);
     this.tick();
 
@@ -740,7 +744,9 @@ class TamVaktiApp {
     const nextKey = currentIdx >= 0 ? orderKeys[(currentIdx + 1) % 6] : "aksam";
     const suffixName = suffixes[nextKey] || `${current.nextName}'e`;
     if (nextLabel) {
-      nextLabel.textContent = `${suffixName} Kalan`;
+      nextLabel.textContent = this.homeMode === "focus" && current.nextTimeStr
+        ? `${suffixName} Kalan · ${current.nextTimeStr}`
+        : `${suffixName} Kalan`;
     }
 
     // Horizon 2B: Şu An Vakit Rozeti
@@ -837,6 +843,30 @@ class TamVaktiApp {
     if (kRemain) {
       kRemain.textContent = remainTxt;
       kRemain.classList.toggle("hidden", !warn);
+    }
+
+    // Sade / Odak modu ince ilerleme çizgisi ve tek satır kerahat hapı
+    const fBar = document.getElementById("focusProgressBar");
+    if (fBar) fBar.style.width = `${pct}%`;
+    const fZone = document.getElementById("focusKerahatZone");
+    if (fZone) {
+      if (zoneStart !== null) {
+        const w = Math.min(60, Math.max(8, (K / totalDuration) * 100));
+        fZone.style.width = `${w.toFixed(1)}%`;
+        fZone.classList.remove("hidden");
+      } else {
+        fZone.classList.add("hidden");
+      }
+    }
+    const fPill = document.getElementById("focusKerahatPill");
+    const fTxt = document.getElementById("focusKerahatText");
+    if (fPill && fTxt) {
+      fPill.classList.toggle("hidden", !warn);
+      if (warn) {
+        fTxt.textContent = kerahatEnd !== null
+          ? `Kerahat vakti · ${remainTxt}`
+          : `${remainTxt} · ${fmtHM(kerahatNextStart)}`;
+      }
     }
 
     // 3. Android Durum Çubuğu Sabit Bildirimini Güncelle
@@ -1438,7 +1468,61 @@ class TamVaktiApp {
     if (fs) fs.checked = this.fullScreenAlert;
     const fsRow = document.getElementById("fsTestRow");
     if (fsRow) fsRow.classList.toggle("hidden", !(window.AndroidBridge && window.AndroidBridge.testFullScreenAlert));
+    set("settingsHomeModeValue", this.homeMode === "focus" ? "Sade" : "Detay");
     this.refreshPermissionStatus();
+    this.applyHomeMode(false);
+  }
+
+  // ==========================================
+  // ANA EKRAN SADE (ODAK) / DETAY GEÇİŞİ
+  // ==========================================
+  applyHomeMode(save = true) {
+    const mode = this.homeMode === "focus" ? "focus" : "detail";
+    this.homeMode = mode;
+    const view = document.getElementById("viewPrayer");
+    if (view) view.dataset.mode = mode;
+    const txt = document.getElementById("homeModeToggleText");
+    if (txt) txt.textContent = mode === "focus" ? "Tüm vakitler & detay" : "Sade görünüm";
+    const sVal = document.getElementById("settingsHomeModeValue");
+    if (sVal) sVal.textContent = mode === "focus" ? "Sade" : "Detay";
+    const hint = document.getElementById("homeModeHint");
+    if (hint) {
+      const showHint = !this.homeModeHintSeen && !this.isOnboardingOpen();
+      hint.classList.toggle("hidden", !showHint);
+    }
+    if (save) {
+      try { localStorage.setItem("tamvakti_home_mode", mode); } catch (e) {}
+    }
+  }
+
+  toggleHomeMode() {
+    this.homeMode = this.homeMode === "focus" ? "detail" : "focus";
+    if (!this.homeModeHintSeen) {
+      this.homeModeHintSeen = true;
+      try { localStorage.setItem("tamvakti_home_mode_hint_seen", "true"); } catch (e) {}
+    }
+    this.applyHomeMode(true);
+    this.evaluateCurrentPrayer();
+  }
+
+  dismissHomeModeHint() {
+    this.homeModeHintSeen = true;
+    try { localStorage.setItem("tamvakti_home_mode_hint_seen", "true"); } catch (e) {}
+    const hint = document.getElementById("homeModeHint");
+    if (hint) hint.classList.add("hidden");
+  }
+
+  openHomeModeModal() {
+    this.openChoice("Ana ekran görünümü", "Son seçtiğiniz görünüm kalıcı olarak saklanır. Ana ekranda alt ortadan tek dokunuşla da değiştirebilirsiniz.", [
+      { value: "detail", label: "Detay (tüm vakitler)", desc: "İlerleme kartı ve 6 vakit kutusu açık" },
+      { value: "focus", label: "Sade (tek vakit odağı)", desc: "Yalnızca sıradaki vakit ve geri sayım" }
+    ], this.homeMode, (v) => {
+      this.homeMode = v === "focus" ? "focus" : "detail";
+      this.homeModeHintSeen = true;
+      try { localStorage.setItem("tamvakti_home_mode_hint_seen", "true"); } catch (e) {}
+      this.applyHomeMode(true);
+      this.evaluateCurrentPrayer();
+    });
   }
 
   closeSettingsModal() {
@@ -2403,6 +2487,7 @@ class TamVaktiApp {
       dock.style.removeProperty("display");
     }
     this.refreshPermissionStatus();
+    this.applyHomeMode(false);
   }
 
   // "Atla": konum yoksa konum adımına götürür, varsa kurulumu kapatır

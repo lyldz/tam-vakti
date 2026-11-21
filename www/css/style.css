@@ -568,3 +568,25 @@ main:has(#viewQibla:not(.hidden)) {
 }
 .vakit-nefes { animation: vakit-nefes 4s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .vakit-nefes { animation: none; } }
+
+/* ---- Ana ekran Sade (Odak) / Detay geçişi (tahribatsız data-mode) ---- */
+#viewPrayer[data-mode="detail"] #focusCompactMeta {
+  display: none !important;
+}
+#viewPrayer[data-mode="focus"] #horizonCard,
+#viewPrayer[data-mode="focus"] #dayTimesRibbon {
+  display: none !important;
+}
+#viewPrayer[data-mode="focus"] #focusCompactMeta {
+  display: flex !important;
+}
+#viewPrayer[data-mode="focus"] #heroPresentModule {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+#viewPrayer[data-mode="focus"] #mainCountdown {
+  font-size: clamp(3.1rem, 10dvh, 4.7rem) !important;
+}
+#viewPrayer[data-mode="focus"] #homeModeToggleIcon {
+  transform: rotate(180deg);
+}

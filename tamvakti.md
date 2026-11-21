@@ -55,12 +55,14 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
 
 ---
 
-## Aşama 2 — Sade / Odak ↔ Detay Ana Ekran Arayüzü (Planlanan — Sonraki Sürüm)
+## Aşama 2 — Sade / Odak ↔ Detay Ana Ekran Arayüzü (2026-11-21)
 
-**Durum:** Planlandı (kullanıcı kararları alındı; Aşama 1 yayınlandıktan sonra ayrı sürümde yapılacak, ör. `v2.13.0 Seher`).
+**Durum:** Uygulandı ve `main` dalına gönderildi (yayın etiketi henüz kesilmedi; onay sonrası `v2.13.0 Seher` olarak yayınlanabilir).
 
-### Alınan Tasarım Kararları
-1. **Güneş yolu yayı:** Şimdilik kalsın; gerekirse sonraki değerlendirmede yalnızca Detay kısmına alınabilir.
-2. **İlk açılış ve yönlendirme:** İlk açılışta **Detay** görünümü açık gelsin; ekranda tek seferlik sade bir not/ipucu ile ekran alt orta kısımdan **Sade ↔ Detay** geçişi gösterilsin.
-3. **Kalıcı hafıza:** Kullanıcı alt orta kısma dokunup hangi görünümde bırakırsa (`sade` veya `detay`) son hali kalıcı olarak (`localStorage`: `tamvakti_home_mode`) saklansın.
-4. **Güvenli geri dönüş:** Mevcut Detay düzeni tahribatsız (`data-mode="focus|detail"`) korunacak; izole dal/commit ile geliştirilip beğenilmezse tek `git revert` ile veri kaybı olmadan geri alınabilecek.
+### Uygulanan Tasarım ve Kararlar
+- [x] **Güneş yolu yayı korundu:** Hem Sade hem Detay görünümünde güneş yolu yayı görünür kalır (istenirse ileride yalnızca Detay moduna alınabilir).
+- [x] **İlk açılış Detay + tek seferlik ipucu:** İlk açılışta mevcut Detay görünümü açılır (`tamvakti_home_mode` varsayılan `"detail"`). Alt orta düğmenin hemen üzerinde tek seferlik bir not (`✨ Alt ortaya dokunarak Sade / Detay arasında geçebilirsiniz`) gösterilir; ilk dokunuşta veya kapatılınca bir daha çıkmaz (`tamvakti_home_mode_hint_seen`).
+- [x] **Tek dokunuş ve kalıcı hafıza:** Ekranın alt orta kısmındaki düğmeyle (`Sade görünüm` ↔ `Tüm vakitler & detay`) tek dokunuşta geçiş yapılır; kullanıcının bıraktığı son görünüm `localStorage` (`tamvakti_home_mode`) içinde kalıcı saklanır.
+- [x] **Sade / Odak görünümü:** İlerleme kartı (`#horizonCard`) ve 6 vakit kutusu (`#dayTimesRibbon`) gizlenir; sayaç büyür, alt başlıkta sıradaki vaktin saati (`Öğle'ye Kalan · 12:51`), ince bir ilerleme çizgisi ve yalnızca kerahat varken tek satır kerahat hapı gösterilir.
+- [x] **Ayarlar'da görünüm seçeneği:** Ayarlar → Uygulama altına *"Ana ekran görünümü (Detay / Sade)"* satırı eklendi.
+- [x] **Güvenli geri dönüş:** Mevcut Detay düzeni silinmeden `data-mode="focus|detail"` üzerinden korundu; tüm Aşama 2 değişikliği izole tek commit olarak gönderildi (beğenilmezse tek `git revert` ile veri kaybı olmadan geri alınabilir).
