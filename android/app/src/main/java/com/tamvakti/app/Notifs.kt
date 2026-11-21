@@ -151,6 +151,17 @@ object Notifs {
         )
     }
 
+    private var cachedLargeIcon: android.graphics.Bitmap? = null
+
+    private fun largeIcon(ctx: Context): android.graphics.Bitmap? {
+        cachedLargeIcon?.let { return it }
+        return try {
+            android.graphics.BitmapFactory.decodeResource(ctx.resources, R.drawable.logo_full)?.also {
+                cachedLargeIcon = it
+            }
+        } catch (e: Exception) { null }
+    }
+
     /** Vakit girişi / hatırlatma / kerahat bildirimi. */
     fun postAlert(
         ctx: Context, id: Int, title: String, body: String, quiet: Boolean,
@@ -158,6 +169,7 @@ object Notifs {
     ) {
         if (!hasPermission(ctx)) return
         createChannels(ctx)
+        val city = Store.city(ctx)
         val builder = NotificationCompat.Builder(ctx, if (quiet) CH_QUIET else alertChannelId(ctx))
             .setSmallIcon(R.drawable.ic_stat_tamvakti)
             .setColor(ContextCompat.getColor(ctx, R.color.primary))
@@ -167,6 +179,8 @@ object Notifs {
             .setContentIntent(openAppIntent(ctx))
             .setPriority(if (quiet) NotificationCompat.PRIORITY_DEFAULT else NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
+        if (city.isNotBlank() && city != "Tam Vakti") builder.setSubText(city)
+        largeIcon(ctx)?.let { builder.setLargeIcon(it) }
         // Tam ekran bildirim (kilit ekranı / ekran kapalıyken tüm ekranı kaplar; açıkken yukarıdan kayan bildirim olur)
         if (fullScreen != null && !quiet && canUseFullScreen(ctx)) {
             val pi = PendingIntent.getActivity(

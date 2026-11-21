@@ -98,6 +98,10 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
   - Üst rozette canlı doğruluk göstergesi (`Yüksek / Orta / Düşük doğruluk`) ve dokununca manuel yeniden kalibrasyon (`recalibrate()`).
   - Çifte EMA gecikmesi dengelendi (`MainActivity` `0.35`, `compass.js` `65 ms`).
   - Kıble saati yoksa `"Bugün yok"` yazısı ve `±4°` hizalanmada Kâbe simgesine altın parıltı eklendi.
-- [ ] **Aşama 6:** Aylık İmsakiye inceleme ve iyileştirme
+- [x] **Ara Aşama — Tam Ekran Bildirim, Kayan Bildirim ve Durum Simgesi (2026-11-21, `v2.13.4` Seher, `versionCode`: 23700):**
+  - Tam ekran bildirim (`activity_prayer_alert.xml`, `PrayerAlertActivity.kt`, `values/colors.xml`): rekât kartı ve tekrar satırı kaldırıldı, daima Arctic koyu tema, 76dp logo + konum + dev saat + tek satır sıradaki vakit.
+  - Kayan bildirim (`Notifs.kt`, `AlarmReceiver.kt`): sağda renkli `logo_full` (`setLargeIcon`), üstte şehir (`setSubText`), gövdede `"saat · Sıradaki: ..."`.
+  - Durum çubuğu ve tek renk simge (`ic_stat_tamvakti.xml`, `ic_launcher_monochrome.xml`): güneş–yay–ufuk arası net boşluklu yeni çizim.
+- [ ] **Aşama 6:** Ayarlar (inceleme raporu hazırlandı) / Aylık İmsakiye inceleme ve iyileştirme
 - [ ] **Aşama 7:** Ana ekran Widget'ları inceleme ve iyileştirme
 - [ ] **Aşama 8:** Bildirimler inceleme ve iyileştirme (en son)

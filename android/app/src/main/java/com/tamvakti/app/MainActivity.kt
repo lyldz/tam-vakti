@@ -699,10 +699,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         @JavascriptInterface
         fun testFullScreenAlert(delaySec: Int) {
             val time = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault()).format(java.util.Date(System.currentTimeMillis() + delaySec * 1000L))
-            val info = "Örnek bildirim: giren vakte ait kısa bilgi burada görünür."
             if (delaySec <= 0) {
                 activity.runOnUiThread {
-                    activity.startActivity(PrayerAlertActivity.intent(activity, "Öğle", time, Store.city(activity), info))
+                    activity.startActivity(PrayerAlertActivity.intent(activity, "Öğle", time, Store.city(activity), ""))
                 }
                 return
             }
@@ -712,7 +711,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 putExtra("type", "vakit"); putExtra("title", "Öğle vakti girdi")
                 putExtra("body", "${Store.city(activity)} • $time"); putExtra("mode", "bip")
                 putExtra("id", 4999); putExtra("name", "Öğle"); putExtra("time", time)
-                putExtra("info", info); putExtra("force_fs", true)
+                putExtra("info", ""); putExtra("force_fs", true)
             }
             val pi = PendingIntent.getBroadcast(activity, 4999, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             val at = System.currentTimeMillis() + delaySec * 1000L

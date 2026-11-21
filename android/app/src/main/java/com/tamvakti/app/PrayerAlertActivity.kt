@@ -39,15 +39,13 @@ class PrayerAlertActivity : AppCompatActivity() {
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
             WindowInsetsCompat.CONSUMED
         }
-        // Sistem açık/koyu temasını izle: çubuk renkleri ve simge tonu
+        // Her zaman Arctic koyu tema: çubuk renkleri koyu, simgeler açık
         val bg = androidx.core.content.ContextCompat.getColor(this, R.color.alert_bg)
         @Suppress("DEPRECATION")
         run { window.statusBarColor = bg; window.navigationBarColor = bg }
-        val night = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
-            android.content.res.Configuration.UI_MODE_NIGHT_YES
         androidx.core.view.WindowCompat.getInsetsController(window, window.decorView).apply {
-            isAppearanceLightStatusBars = !night
-            isAppearanceLightNavigationBars = !night
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = false
         }
         bind(intent)
         findViewById<Button>(R.id.alertClose).setOnClickListener { finishAndRemoveTask() }
@@ -92,20 +90,19 @@ class PrayerAlertActivity : AppCompatActivity() {
 
     private fun bind(i: Intent) {
         val name = i.getStringExtra(EXTRA_NAME).orEmpty().ifBlank { "Namaz" }
-        val time = i.getStringExtra(EXTRA_TIME).orEmpty()
         val place = i.getStringExtra(EXTRA_PLACE).orEmpty().ifBlank { Store.city(this) }
-        val info = i.getStringExtra(EXTRA_INFO).orEmpty()
 
         findViewById<TextView>(R.id.alertTitle).text = "$name vakti girdi"
         findViewById<TextView>(R.id.alertPlace).text = place.replace("/", " / ")
-        findViewById<TextView>(R.id.alertTime).text = if (time.isNotBlank()) "Vakit girişi $time" else "Vakit girdi"
-        findViewById<TextView>(R.id.alertInfo).apply {
-            text = info
-            visibility = if (info.isBlank()) android.view.View.GONE else android.view.View.VISIBLE
-        }
         val next = Store.nextPrayer(this)
-        findViewById<TextView>(R.id.alertNext).text =
-            if (next != null) "Sıradaki: ${next.name} ${next.time}" else ""
+        findViewById<TextView>(R.id.alertNext).apply {
+            if (next != null) {
+                text = "Sıradaki: ${next.name} · ${next.time}"
+                visibility = android.view.View.VISIBLE
+            } else {
+                visibility = android.view.View.GONE
+            }
+        }
     }
 
     companion object {

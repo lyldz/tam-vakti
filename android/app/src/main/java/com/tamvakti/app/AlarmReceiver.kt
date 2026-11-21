@@ -44,7 +44,14 @@ class AlarmReceiver : BroadcastReceiver() {
                         }
                         if (!launched) fs = alert
                     }
-                    Notifs.postAlert(app, id, title, body, quiet = mode == "sessiz", fullScreen = fs)
+                    val next = Store.nextPrayer(app)
+                    val cleanBody = when {
+                        time.isNotBlank() && next != null -> "$time · Sıradaki: ${next.name} ${next.time}"
+                        time.isNotBlank() -> time
+                        next != null -> "Sıradaki: ${next.name} ${next.time}"
+                        else -> body
+                    }
+                    Notifs.postAlert(app, id, title, cleanBody, quiet = mode == "sessiz", fullScreen = fs)
                 }
                 "kerahat" -> Notifs.postAlert(app, id, title, body, quiet = true)
                 "silent_start" -> Silencer.start(app)
