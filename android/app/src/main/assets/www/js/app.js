@@ -1,6 +1,6 @@
 /**
  * Tam Vakti - Minimalist Adaçayı Yeşili & Sade Vakit / Kıble Kontrolcüsü
- * Sürüm: v2.12.1
+ * Sürüm: v2.13.0
  */
 
 const PRAYER_LIST = [
@@ -57,9 +57,9 @@ class TamVaktiApp {
     // Dağıtım: "play" (kendini güncelleme yok), "github" (APK güncelleyici var) veya "web"
     this.distribution = (window.AndroidBridge && window.AndroidBridge.getDistribution) ? window.AndroidBridge.getDistribution() : "web";
     this.canSelfUpdate = this.distribution !== "play";
-    this.currentVersion = "v2.12.1";
-    this.versionCodename = "İşa";
-    this.versionDisplay = "v2.12.1 • İşa";
+    this.currentVersion = "v2.13.0";
+    this.versionCodename = "Seher";
+    this.versionDisplay = "v2.13.0 • Seher";
     this.onboardingStep = 1;
     this.monthlyYear = null;
     this.monthlyMonth = null;

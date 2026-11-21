@@ -57,7 +57,7 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
 
 ## Aşama 2 — Sade / Odak ↔ Detay Ana Ekran Arayüzü (2026-11-21)
 
-**Durum:** Uygulandı ve `main` dalına gönderildi (yayın etiketi henüz kesilmedi; onay sonrası `v2.13.0 Seher` olarak yayınlanabilir).
+**Durum:** Tamamlandı ve **`v2.13.0` Seher** (`versionCode`: 23300) olarak GitHub Release yayınlandı.
 
 ### Uygulanan Tasarım ve Kararlar
 - [x] **Güneş yolu yayı korundu:** Hem Sade hem Detay görünümünde güneş yolu yayı görünür kalır (istenirse ileride yalnızca Detay moduna alınabilir).
