@@ -14,9 +14,9 @@ android {
         minSdk = 24
         targetSdk = 36
         
-        // Sürüm Yapılandırması: v2.13.2 "Seher"
-        versionCode = 23500
-        versionName = "2.13.2"
+        // Sürüm Yapılandırması: v2.13.3 "Seher"
+        versionCode = 23600
+        versionName = "2.13.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

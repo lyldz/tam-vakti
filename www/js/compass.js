@@ -8,14 +8,17 @@
 
 const QIBLA_MIN_ACCURACY = 2;      // 2 = orta, 3 = yüksek
 const QIBLA_STABLE_MS = 1000;      // kalibrasyondan çıkmak için kararlı süre
+const QIBLA_HIGH_FAST_MS = 1500;   // doğruluk zaten yüksekse (3) hızlı doğrulama süresi
+const QIBLA_MED_CALIB_MS = 3000;   // doğruluk orta (2) ise kısa kalibrasyon süresi
+const QIBLA_MED_MOTION_DEG = 360;  // doğruluk orta (2) ise gereken hareket (derece)
 const QIBLA_RECALIB_MS = 1500;     // doğruluk bu kadar düşük kalırsa tekrar kalibrasyon
-const QIBLA_MOTION_DEG = 720;      // kalibrasyon için gereken toplam hareket (heading+eğim, derece)
-const QIBLA_MIN_CALIB_MS = 6000;   // kalibrasyon en az bu kadar sürer
-const QIBLA_SKIP_MS = 15000;       // "Atla" düğmesi gecikmesi
+const QIBLA_MOTION_DEG = 720;      // düşük doğrulukta kalibrasyon için gereken toplam hareket
+const QIBLA_MIN_CALIB_MS = 6000;   // düşük doğrulukta en az kalibrasyon süresi
+const QIBLA_SKIP_MS = 8000;        // "Atla" düğmesi gecikmesi
 const QIBLA_NO_SENSOR_MS = 3000;   // bu sürede hiç veri gelmezse sensör yok say
 const QIBLA_ALIGN_IN = 4;          // hizalanma eşiği (derece)
 const QIBLA_ALIGN_OUT = 7;         // hizalanmadan çıkış eşiği (histerezis)
-const QIBLA_TAU_MS = 90;           // düşük geçiren filtre zaman sabiti
+const QIBLA_TAU_MS = 65;           // düşük geçiren filtre zaman sabiti
 
 const ACC_LABELS = ["Güvenilmez", "Düşük", "Orta", "Yüksek"];
 
@@ -147,7 +150,7 @@ class QiblaCompass {
     }
     if (eng.calculateQiblaHour) {
       const qHour = eng.calculateQiblaHour(now, this.userLat, this.userLon, this.targetQiblaAngle);
-      if (qHour) this._text("qiblaHourValue", qHour);
+      this._text("qiblaHourValue", qHour || "Bugün yok");
     }
   }
 
@@ -245,13 +248,28 @@ class QiblaCompass {
     }
   }
 
-  _setBadge(label) {
+  _setBadge(label, tone = "ok") {
     const k = "badge";
-    if (this._cache[k] === label) return;
+    const key = tone + ":" + label;
+    if (this._cache[k] === key) return;
     const e = this._el("qiblaSensorBadge");
     if (!e) return;
-    this._cache[k] = label;
-    e.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span><span>${label}</span>`;
+    this._cache[k] = key;
+    const dotCol = tone === "low" ? "bg-amber-400" : "bg-sky-400";
+    e.innerHTML = `<span class="inline-block w-2 h-2 rounded-full ${dotCol} animate-pulse"></span><span>${label}</span>`;
+  }
+
+  _updateAccuracyBadge() {
+    if (!this._hasData) return;
+    const acc = Math.max(0, Math.min(3, this._accuracy));
+    const label = `${ACC_LABELS[acc]} doğruluk`;
+    this._setBadge(label, acc < QIBLA_MIN_ACCURACY ? "low" : "ok");
+  }
+
+  recalibrate() {
+    if (!this.isListening) return;
+    this._skipped = false;
+    this._enterCalib();
   }
 
   _bindWebOrientation() {
@@ -368,22 +386,36 @@ class QiblaCompass {
     const elapsed = now - (this._calibStart || this._startTs);
     this._hidden("qiblaCalibSkip", !(noSensor || elapsed > QIBLA_SKIP_MS));
 
-    // İlerleme: yeterli hareket + en az süre + yeterli doğruluk (kararlı)
+    // İlerleme: doğruluk zaten yüksekse (3) 1,5 sn kararlılıkla hızlı geçiş; orta (2) ise kısa, düşükte tam 8 çizme
     if (this._hasData && acc >= QIBLA_MIN_ACCURACY) {
       if (!this._goodSince) this._goodSince = now;
     } else {
       this._goodSince = 0;
     }
-    const motionP = Math.min(1, (this._motion || 0) / QIBLA_MOTION_DEG);
-    const timeP = Math.min(1, elapsed / QIBLA_MIN_CALIB_MS);
-    const stableOk = this._goodSince && now - this._goodSince >= QIBLA_STABLE_MS;
-    let p = Math.min(motionP, timeP);
-    if (!stableOk) p = Math.min(p, 0.95);
+    this._updateAccuracyBadge();
+    let p = 0;
+    let ready = false;
+    if (this._hasData && acc >= 3 && this._goodSince) {
+      p = Math.min(1, (now - this._goodSince) / QIBLA_HIGH_FAST_MS);
+      ready = p >= 1;
+    } else if (this._hasData && acc === 2 && this._goodSince) {
+      const motionP = Math.min(1, (this._motion || 0) / QIBLA_MED_MOTION_DEG);
+      const timeP = Math.min(1, elapsed / QIBLA_MED_CALIB_MS);
+      const stableOk = now - this._goodSince >= QIBLA_STABLE_MS;
+      p = Math.min(motionP, timeP);
+      if (!stableOk) p = Math.min(p, 0.95);
+      ready = p >= 1 && stableOk;
+    } else {
+      const motionP = Math.min(1, (this._motion || 0) / QIBLA_MOTION_DEG);
+      const timeP = Math.min(1, elapsed / QIBLA_MIN_CALIB_MS);
+      p = Math.min(0.95, Math.min(motionP, timeP));
+    }
     this._style("qiblaCalibProgress", "transform", `scaleX(${p.toFixed(2)})`);
-    if (p >= 1 && stableOk) this._enterCompass();
+    if (ready) this._enterCompass();
   }
 
   _tickCompass(now, dt) {
+    this._updateAccuracyBadge();
     // Doğruluk düştü mü? (atlanmışsa veya sensör hiç yoksa kapıya geri dönme)
     if (this._hasData && !this._skipped) {
       if (this._accuracy < QIBLA_MIN_ACCURACY) {

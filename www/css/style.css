@@ -130,6 +130,8 @@ html, body {
 .qibla-dial-wrap .qd-ring { transition: stroke 0.3s ease; }
 .qibla-dial-wrap.qibla-aligned { filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.6)); }
 .qibla-dial-wrap.qibla-aligned .qd-ring { stroke: #38bdf8; }
+#qiblaKaaba { transition: filter 0.3s ease; }
+.qibla-dial-wrap.qibla-aligned #qiblaKaaba { filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.85)); }
 .compass-dial { will-change: transform; transform-origin: 50% 50%; }
 
 .qibla-warn {

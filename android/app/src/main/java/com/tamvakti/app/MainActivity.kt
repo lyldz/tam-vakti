@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var smoothedSin = 0.0
     private var smoothedCos = 0.0
     private var smoothingInitialized = false
-    private val smoothingFactor = 0.18
+    private val smoothingFactor = 0.35
     private var lastUpdateTimestamp: Long = 0
 
     // Doğruluk (0..3 = UNRELIABLE..HIGH) yalnızca manyetometre / rotasyon vektöründen izlenir
@@ -335,6 +335,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             }
 
             isCompassListening = registered
+            if (registered) {
+                window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
             android.util.Log.d("TamVaktiCompass", "Started compass: ok=$registered, rv=${rotationSensor != null}, acc=${accelerometer != null}, mag=${magnetometer != null}")
         }
     }
@@ -355,7 +358,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     fun stopCompassListening() {
-        // Idempotent: kayıtlı dinleyici kalmadığından emin ol
+        // Idempotent: kayıtlı dinleyici kalmadığından emin ol ve ekran kilidini serbest bırak
+        window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         sensorManager?.unregisterListener(this)
         if (!isCompassListening) return
         isCompassListening = false

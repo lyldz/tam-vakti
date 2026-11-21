@@ -92,7 +92,12 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
 ---
 
 ## Sıradaki Çalışma Planı (Her Aşama İzole Commit + Geri Dönüş Güvenceli)
-- [ ] **Aşama 5:** Kıble Pusulası inceleme ve iyileştirme
+- [x] **Aşama 5 — Kıble Pusulası (2026-11-21, `v2.13.3` Seher, `versionCode`: 23600):**
+  - Akıllı kalibrasyon (Yüksek doğrulukta ~1,5 sn hızlı geçiş, Orta'da 3 sn / 360°, Düşük'te tam 8 çizme; "Atla" 8 sn).
+  - Kıble sekmesinde `FLAG_KEEP_SCREEN_ON` (çıkınca otomatik temizlenir).
+  - Üst rozette canlı doğruluk göstergesi (`Yüksek / Orta / Düşük doğruluk`) ve dokununca manuel yeniden kalibrasyon (`recalibrate()`).
+  - Çifte EMA gecikmesi dengelendi (`MainActivity` `0.35`, `compass.js` `65 ms`).
+  - Kıble saati yoksa `"Bugün yok"` yazısı ve `±4°` hizalanmada Kâbe simgesine altın parıltı eklendi.
 - [ ] **Aşama 6:** Aylık İmsakiye inceleme ve iyileştirme
 - [ ] **Aşama 7:** Ana ekran Widget'ları inceleme ve iyileştirme
 - [ ] **Aşama 8:** Bildirimler inceleme ve iyileştirme (en son)
