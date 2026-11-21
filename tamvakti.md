@@ -81,7 +81,7 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
 
 ## Aşama 4 — Dinamik Parlaklıklı Atmosferik Güneş Yayı (2026-11-21)
 
-**Durum:** Uygulandı ve izole tek commit olarak `main` dalına gönderildi (beğenilmezse tek `git revert` ile geri alınabilir).
+**Durum:** Tamamlandı ve **`v2.13.2` Seher** (`versionCode`: 23500) olarak GitHub Release yayınlandı.
 
 - [x] **Vakte göre dinamik güneş parıltısı:** Gündüzleri güneş yüksekliğine bağlı olarak sabah yumuşak başlar, **Öğle** tepe noktasında maksimum atmosferik parlaklığa ulaşır, **Akşam**a doğru yavaşça azalır (`sunAtmos` + `sunCorona` + çekirdek, `www/index.html`, `www/js/app.js`).
 - [x] **Gece hilal parıltısı:** **Yatsı** civarında en parlak gümüşi-camgöbeği parıltıda olur, güneş doğuşuna yaklaştıkça kademeli olarak sönümlenir (`moonAtmos`).
