@@ -132,3 +132,10 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
 - **Güncel yayınlanan sürüm:** `v2.13.9` ("Seher", `versionCode: 24200`, `main` temiz ve `origin/main` ile eşit).
 - **Tamamlanan inceleme ve iyileştirmeler:** Ana ekran Sade/Detay modu, güneş yayı, kıble pusulası, bildirim/tam ekran/simgeler, Ayarlar sadeleştirme, 2 adımlı şehir seçici, logo ufuk cilası, aylık imsakiye, widget'lar, bildirim hijyeni & otomatik sessiz, güncelleme iptal kilidi.
 - **Google Play aşamasına bırakılanlar:** Yurt dışı konum seçimi, Play (`play` flavor) AAB yayın hazırlığı.
+
+## Yapılacak / Düzeltilecek Listesi (Hatırlatılacak)
+- [ ] **GPS ile konum bulunduğunda gösterilen bildirim/toast tasarımı:**
+  - Şu anki toplu iğne (`📍`) ikonlu küçük toast yerine daha modern, okunaklı ve biraz daha büyük bir görsel tasarım hazırlanacak.
+  - Toplu iğne yerine telefonlardaki modern GPS/konum simgesi (SVG) yanında bulunan il/ilçe adı yer alabilir.
+  - Ekrandan yumuşak bir şekilde silinerek (fade-out) kaybolmalı.
+  - **Not:** İlk sohbette kullanıcıya hatırlatılacak; uygulama öncesi araştırılıp görsel taslak/öneri sunulacak.
