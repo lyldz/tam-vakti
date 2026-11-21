@@ -9,7 +9,7 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
 
 ## Aşama 1 — Güvenilirlik, Pil ve Kullanım Düzeltmeleri (2026-11-21)
 
-**Durum:** Tamamlandı ve `main` dalına gönderildi (yayın etiketi henüz kesilmedi; onay sonrası `v2.12.1` olarak yayınlanabilir).
+**Durum:** Tamamlandı ve **`v2.12.1` İşa** (`versionCode`: 23200) olarak GitHub Release yayınlandı.
 
 ### 1.1. Kritik Düzeltmeler
 - [x] **Aynı dakikadaki alarm iptal yarışı giderildi:**
