@@ -108,6 +108,8 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
   - `Hesaplama yöntemi` ve `İhtiyat` tek `Hesaplama ve ihtiyat` satırında toplandı.
   - 5 satırlık `İzinler` bloğu akıllı özet satıra (`✓ Tümü hazır` / `N izin eksik`, dokununca açılır) dönüştürüldü.
   - 4 test/bakım düğmesi tek `Test ve sorun giderme` alt penceresinde toplandı.
-- [ ] **Aşama 6:** Şehir ve İlçe Seçimi modernizasyonu (rapor hazırlandı) / Aylık İmsakiye inceleme ve iyileştirme
+- [x] **Ara Aşama 3 — Modern 2 Adımlı Şehir ve İlçe Seçimi (2026-11-21, `v2.13.5` Seher, `versionCode`: 23800):**
+  - Ayarlar sadeleştirmesi + yeni Arctic 2 adımlı konum seçici (`#locationModal`: Adım 1 plaka+il 2 sütunlu kartlar → Adım 2 ilçe kartları, canlı arama, son seçilen 3 yer hapı, geri tuşu Adım 2 → Adım 1 desteği; yurt dışı Google Play aşamasına bırakıldı) `v2.13.5` olarak yayınlandı.
+- [ ] **Aşama 6:** Aylık İmsakiye inceleme ve iyileştirme
 - [ ] **Aşama 7:** Ana ekran Widget'ları inceleme ve iyileştirme
 - [ ] **Aşama 8:** Bildirimler inceleme ve iyileştirme (en son)

@@ -1,6 +1,6 @@
 /**
  * Tam Vakti - Minimalist Adaçayı Yeşili & Sade Vakit / Kıble Kontrolcüsü
- * Sürüm: v2.13.4
+ * Sürüm: v2.13.5
  */
 
 const PRAYER_LIST = [
@@ -57,9 +57,9 @@ class TamVaktiApp {
     // Dağıtım: "play" (kendini güncelleme yok), "github" (APK güncelleyici var) veya "web"
     this.distribution = (window.AndroidBridge && window.AndroidBridge.getDistribution) ? window.AndroidBridge.getDistribution() : "web";
     this.canSelfUpdate = this.distribution !== "play";
-    this.currentVersion = "v2.13.4";
+    this.currentVersion = "v2.13.5";
     this.versionCodename = "Seher";
-    this.versionDisplay = "v2.13.4 • Seher";
+    this.versionDisplay = "v2.13.5 • Seher";
     this.onboardingStep = 1;
     this.monthlyYear = null;
     this.monthlyMonth = null;
@@ -156,6 +156,14 @@ class TamVaktiApp {
   saveLocation(loc) {
     this.currentLocation = loc;
     localStorage.setItem("tamvakti_active_location", JSON.stringify(loc));
+    if (loc && !loc.isPlaceholder && loc.name && loc.name !== "Konum Seçiniz" && loc.lat != null && loc.lon != null) {
+      try {
+        const list = JSON.parse(localStorage.getItem("tamvakti_recent_locations") || "[]");
+        const filtered = Array.isArray(list) ? list.filter(x => x && x.name !== loc.name) : [];
+        filtered.unshift({ name: loc.name, lat: loc.lat, lon: loc.lon });
+        localStorage.setItem("tamvakti_recent_locations", JSON.stringify(filtered.slice(0, 3)));
+      } catch (e) {}
+    }
   }
 
   async init() {
@@ -703,7 +711,11 @@ class TamVaktiApp {
       return !!el && !el.classList.contains("hidden");
     };
     if (isOpen("choiceSheet")) { this.closeChoice(); return true; }
-    if (isOpen("locationModal")) { this.closeLocationModal(); return true; }
+    if (isOpen("locationModal")) {
+      if (this._selectedCityForDistricts) { this.backToCityList(); return true; }
+      this.closeLocationModal();
+      return true;
+    }
     if (isOpen("detailModal")) { this.closePrayerDetail(); return true; }
     if (isOpen("aboutModal")) { this.closeAboutModal(); return true; }
     if (isOpen("updateFoundModal")) { this.closeUpdateFoundModal(); return true; }
@@ -1175,87 +1187,201 @@ class TamVaktiApp {
     }
   }
 
-  // Şehir / Konum Seçimi
+  // Modern 2 Adımlı Şehir ve İlçe Seçimi (Adım 1: İl → Adım 2: İlçe + Canlı Arama + Son Seçilenler)
   renderCitySelector() {
+    this._selectedCityForDistricts = null;
+    this._renderRecentLocations();
+    this._updateLocationHeader();
     const listEl = document.getElementById("cityListContainer");
     if (!listEl) return;
     this._renderCityList(listEl, TURKEY_CITIES, "");
   }
 
+  _renderRecentLocations() {
+    const wrap = document.getElementById("recentLocationsWrap");
+    const box = document.getElementById("recentLocationsList");
+    if (!wrap || !box) return;
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem("tamvakti_recent_locations") || "[]"); } catch (e) {}
+    if (!Array.isArray(list) || !list.length) {
+      wrap.classList.add("hidden");
+      return;
+    }
+    wrap.classList.remove("hidden");
+    box.innerHTML = list.slice(0, 3).map((r) => {
+      const safeName = String(r.name).replace(/'/g, "\\'");
+      const label = this.shortPlaceName(r.name);
+      const isCur = this.currentLocation && this.currentLocation.name === r.name;
+      return `
+        <button onclick="app.selectLocation('${safeName}', ${r.lat}, ${r.lon})"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all active:scale-95 cursor-pointer ${isCur ? "bg-sky-500/20 border-sky-400/50 text-sky-200" : "bg-[#0d1527] border-slate-700/70 text-slate-200 hover:border-sky-400/40"}">
+          <span class="w-1.5 h-1.5 rounded-full ${isCur ? "bg-sky-400" : "bg-slate-500"}"></span>
+          <span>${label}</span>
+        </button>`;
+    }).join("");
+  }
+
+  _updateLocationHeader(query = "") {
+    const city = this._selectedCityForDistricts;
+    const backBtn = document.getElementById("locationBackBtn");
+    const titleEl = document.getElementById("locationModalTitle");
+    const subEl = document.getElementById("locationModalSub");
+    const quickEl = document.getElementById("locationQuickArea");
+    const input = document.getElementById("citySearchInput");
+    const clearBtn = document.getElementById("citySearchClear");
+    const hasQ = !!String(query || "").trim();
+
+    if (backBtn) backBtn.classList.toggle("hidden", !city);
+    if (titleEl) titleEl.textContent = city ? city.name : "Konum Seçimi";
+    if (subEl) subEl.textContent = city ? `${(city.districts || []).length} ilçe — seçiminizi yapın` : "Önce il, sonra ilçe seçin veya arayın";
+    if (quickEl) quickEl.classList.toggle("hidden", !!city || hasQ);
+    if (input) input.placeholder = city ? `${city.name} ilçelerinde ara...` : "İl veya ilçe ara...";
+    if (clearBtn) clearBtn.classList.toggle("hidden", !hasQ);
+  }
+
+  openCityDistricts(cityId) {
+    const city = TURKEY_CITIES.find(c => c.id === cityId);
+    if (!city) return;
+    if (!city.districts || !city.districts.length) {
+      this.selectLocation(city.name, city.lat, city.lon);
+      return;
+    }
+    this._selectedCityForDistricts = city;
+    const input = document.getElementById("citySearchInput");
+    if (input) input.value = "";
+    this._updateLocationHeader("");
+    const listEl = document.getElementById("cityListContainer");
+    if (listEl) {
+      this._renderDistrictGrid(listEl, city, "");
+      listEl.scrollTop = 0;
+    }
+  }
+
+  backToCityList() {
+    this._selectedCityForDistricts = null;
+    const input = document.getElementById("citySearchInput");
+    if (input) input.value = "";
+    this._updateLocationHeader("");
+    const listEl = document.getElementById("cityListContainer");
+    if (listEl) {
+      this._renderCityList(listEl, TURKEY_CITIES, "");
+      listEl.scrollTop = 0;
+    }
+  }
+
+  clearCitySearch() {
+    const input = document.getElementById("citySearchInput");
+    if (input) {
+      input.value = "";
+      input.focus();
+    }
+    this.filterCities("");
+  }
+
+  _renderDistrictGrid(listEl, city, query) {
+    const q = this._normalizeForSearch(query);
+    const all = (city.districts || []).filter(d => d.name !== "Merkez" && d.name !== city.name);
+    all.sort((a, b) => a.name.localeCompare(b.name, "tr"));
+    const filtered = q ? all.filter(d => this._normalizeForSearch(d.name).includes(q)) : all;
+    const safeCity = city.name.replace(/'/g, "\\'");
+    const showCenter = !q || this._normalizeForSearch("merkez " + city.name).includes(q);
+
+    let html = "";
+    if (showCenter) {
+      html += `
+        <button onclick="app.selectLocation('${safeCity}', ${city.lat}, ${city.lon})"
+                class="w-full mb-2.5 px-4 py-3 rounded-2xl bg-sky-500/15 border border-sky-400/35 flex items-center justify-between text-left active:scale-[0.99] transition-all cursor-pointer">
+          <span>
+            <span class="block text-[14px] font-bold text-sky-100">${city.name} (İl Merkezi)</span>
+            <span class="block text-[11px] text-sky-300/80">Merkez ilçe vakitleri</span>
+          </span>
+          <svg class="w-4 h-4 text-sky-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        </button>`;
+    }
+
+    if (filtered.length) {
+      html += `<div class="grid grid-cols-2 gap-2 pb-4">` + filtered.map(d => {
+        const safeDist = d.name.replace(/'/g, "\\'");
+        return `
+          <button onclick="app.selectLocation('${safeCity}/${safeDist}', ${d.lat}, ${d.lon})"
+                  class="px-3.5 py-3 rounded-2xl bg-[#0d1527] border border-sky-400/15 hover:border-sky-400/45 text-left active:scale-95 transition-all cursor-pointer">
+            <span class="block text-[13.5px] font-bold text-slate-100 truncate">${d.name}</span>
+          </button>`;
+      }).join("") + `</div>`;
+    } else if (!showCenter) {
+      html = `<div class="text-center py-10 text-slate-400 text-sm font-semibold">İlçe bulunamadı</div>`;
+    }
+
+    listEl.innerHTML = html;
+    const countEl = document.getElementById("cityResultCount");
+    if (countEl) countEl.textContent = `${filtered.length + (showCenter ? 1 : 0)} ilçe`;
+  }
+
   _renderCityList(listEl, cities, query) {
     const q = this._normalizeForSearch(query);
-    let html = "";
-    let matchCount = 0;
+    if (this._selectedCityForDistricts) {
+      this._renderDistrictGrid(listEl, this._selectedCityForDistricts, query);
+      return;
+    }
 
-    cities.forEach(c => {
-      const cityNorm = this._normalizeForSearch(c.name);
-      const cityMatch = !q || cityNorm.includes(q);
-      
-      // District matches
-      let matchingDistricts = [];
-      let allDistricts = c.districts || [];
-      
-      if (q && !cityMatch) {
-        matchingDistricts = allDistricts.filter(d => 
-          this._normalizeForSearch(d.name).includes(q)
-        );
-        if (matchingDistricts.length === 0) return;
-      } else if (q && cityMatch) {
-        matchingDistricts = allDistricts;
-      } else {
-        matchingDistricts = allDistricts;
+    // Arama varsa: tüm 81 il ve 1002 ilçe içinde anlık düz sonuçlar
+    if (q) {
+      const results = [];
+      for (const c of cities) {
+        if (this._normalizeForSearch(c.name).includes(q) || String(c.id).padStart(2, "0") === q) {
+          results.push({ label: c.name, sub: "İl merkezi", name: c.name, lat: c.lat, lon: c.lon, cityId: c.id, hasDistricts: (c.districts || []).length > 0 });
+        }
+        for (const d of (c.districts || [])) {
+          if (d.name === "Merkez" || d.name === c.name) continue;
+          if (this._normalizeForSearch(d.name).includes(q)) {
+            results.push({ label: d.name, sub: c.name, name: `${c.name}/${d.name}`, lat: d.lat, lon: d.lon });
+          }
+        }
       }
-
-      matchCount++;
-      const hasDistricts = allDistricts.length > 0;
-      const showDistricts = q ? true : false;
-      
-      html += `
-        <div class="border-b border-slate-100 dark:border-sky-900/15 py-2">
-          <div class="flex items-center justify-between">
-            <button onclick="app.selectLocation('${c.name.replace(/'/g, "\\'")}', ${c.lat}, ${c.lon})" 
-                    class="font-extrabold text-sm text-sky-100 hover:text-sky-400 text-left flex-1 cursor-pointer">
-              ${c.name}
+      const shown = results.slice(0, 50);
+      listEl.innerHTML = shown.length ? `<div class="space-y-1.5 pb-4">` + shown.map(r => {
+        const safeName = r.name.replace(/'/g, "\\'");
+        return `
+          <div class="flex items-center gap-1.5">
+            <button onclick="app.selectLocation('${safeName}', ${r.lat}, ${r.lon})"
+                    class="flex-1 min-w-0 px-3.5 py-3 rounded-2xl bg-[#0d1527] border border-sky-400/15 hover:border-sky-400/45 flex items-center justify-between text-left active:scale-[0.99] transition-all cursor-pointer">
+              <span class="min-w-0">
+                <span class="block text-[14px] font-bold text-slate-100 truncate">${r.label}</span>
+                <span class="block text-[11px] text-slate-400 truncate">${r.sub}</span>
+              </span>
+              <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </button>
-            ${hasDistricts ? `
-              <button onclick="app.toggleCityDistricts(${c.id})" 
-                      id="cityExpandBtn-${c.id}"
-                      class="text-[10px] px-2 py-1 rounded-lg bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-bold hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors cursor-pointer flex items-center gap-1">
-                <span>${allDistricts.length} ilçe</span>
-                <svg class="w-3 h-3 transition-transform ${showDistricts ? 'rotate-180' : ''}" id="cityExpandIcon-${c.id}" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-              </button>
-            ` : `
-              <span class="text-[10px] text-slate-400 dark:text-sky-700 font-medium">${c.lat.toFixed(2)}°K</span>
-            `}
-          </div>
-          ${hasDistricts ? `
-            <div id="cityDistricts-${c.id}" class="mt-1.5 pl-1 ${showDistricts ? '' : 'hidden'}">
-              <div class="flex flex-wrap gap-1">
-                ${(q && !cityMatch ? matchingDistricts : allDistricts).map(d => `
-                  <button onclick="app.selectLocation('${c.name.replace(/'/g, "\\'")}/${d.name.replace(/'/g, "\\'")}', ${d.lat}, ${d.lon})"
-                          class="text-[11px] px-2.5 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-900/30 text-sky-900 dark:text-sky-200 hover:bg-sky-700 hover:text-white font-semibold transition-colors cursor-pointer border border-sky-100 dark:border-sky-800/30">
-                    ${d.name}
-                  </button>
-                `).join("")}
-              </div>
-            </div>
-          ` : ''}
-        </div>
-      `;
-    });
+            ${r.hasDistricts ? `
+              <button onclick="app.openCityDistricts(${r.cityId})" class="px-3 py-3 rounded-2xl bg-sky-500/10 border border-sky-400/25 text-sky-300 text-[11px] font-bold shrink-0 active:scale-95 cursor-pointer">İlçeler</button>
+            ` : ""}
+          </div>`;
+      }).join("") + `</div>` : `
+        <div class="text-center py-10">
+          <div class="text-sm font-bold text-slate-400">Sonuç bulunamadı</div>
+          <div class="text-[11px] text-slate-500 mt-1">Farklı bir il veya ilçe adı deneyin</div>
+        </div>`;
+      const countEl = document.getElementById("cityResultCount");
+      if (countEl) countEl.textContent = `${results.length} sonuç bulundu`;
+      return;
+    }
 
-    listEl.innerHTML = html || `
-      <div class="text-center py-8">
-        <div class="text-3xl mb-2">🔍</div>
-        <div class="text-sm font-bold text-slate-400 dark:text-sky-600">Sonuç bulunamadı</div>
-        <div class="text-[11px] text-slate-300 dark:text-sky-700 mt-1">Farklı bir arama deneyin</div>
-      </div>
-    `;
+    // Adım 1: 81 İl — 2 sütunlu ferah plaka + il kartları
+    listEl.innerHTML = `<div class="grid grid-cols-2 gap-2 pb-4">` + cities.map(c => {
+      const plate = String(c.id).padStart(2, "0");
+      const distCount = (c.districts || []).length;
+      return `
+        <button onclick="app.openCityDistricts(${c.id})"
+                class="px-3 py-3 rounded-2xl bg-[#0d1527] border border-sky-400/15 hover:border-sky-400/45 flex items-center gap-2.5 text-left active:scale-95 transition-all cursor-pointer">
+          <span class="w-7 h-7 rounded-xl bg-sky-500/12 border border-sky-400/20 text-sky-300 font-mono text-[11px] font-bold flex items-center justify-center shrink-0">${plate}</span>
+          <span class="min-w-0">
+            <span class="block text-[13.5px] font-bold text-slate-100 truncate">${c.name}</span>
+            <span class="block text-[10.5px] text-slate-400">${distCount} ilçe</span>
+          </span>
+        </button>`;
+    }).join("") + `</div>`;
 
     const countEl = document.getElementById("cityResultCount");
-    if (countEl) {
-      countEl.textContent = q ? `${matchCount} il bulundu` : `${cities.length} il listelendi`;
-    }
+    if (countEl) countEl.textContent = `${cities.length} il • 1002 ilçe`;
   }
 
   _normalizeForSearch(str) {
@@ -1274,18 +1400,10 @@ class TamVaktiApp {
   }
 
   filterCities(query) {
+    this._updateLocationHeader(query);
     const listEl = document.getElementById("cityListContainer");
     if (!listEl) return;
     this._renderCityList(listEl, TURKEY_CITIES, query);
-  }
-
-  toggleCityDistricts(cityId) {
-    const el = document.getElementById(`cityDistricts-${cityId}`);
-    const icon = document.getElementById(`cityExpandIcon-${cityId}`);
-    if (el) {
-      el.classList.toggle("hidden");
-      if (icon) icon.classList.toggle("rotate-180");
-    }
   }
 
   selectLocation(name, lat, lon, auto = false) {
@@ -1434,8 +1552,9 @@ class TamVaktiApp {
   }
 
   locateWithGPS() {
-    const btn = document.getElementById("gpsLocateBtn");
-    if (btn) btn.textContent = "İlçe ve konum tespit ediliyor...";
+    const lbl = document.getElementById("gpsLocateLabel") || document.getElementById("gpsLocateBtn");
+    const idleTxt = "Konumumu otomatik bul (GPS)";
+    if (lbl) lbl.textContent = "Konum tespit ediliyor…";
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -1447,17 +1566,17 @@ class TamVaktiApp {
           this.setAutoLocation(true);
           const districtDisplay = locName.includes("/") ? locName.split("/")[1] : locName;
           this.showToast(`Konumunuz tespit edildi: ${districtDisplay}`, "📍");
-          if (btn) btn.textContent = "GPS ile Otomatik Bul";
+          if (lbl) lbl.textContent = idleTxt;
         },
         (err) => {
           this.showToast("GPS konumu alınamadı. Lütfen listeden şehir seçiniz.", "⚠️");
-          if (btn) btn.textContent = "GPS ile Otomatik Bul";
+          if (lbl) lbl.textContent = idleTxt;
         },
         { enableHighAccuracy: false, timeout: 10000 }
       );
     } else {
       this.showToast("GPS desteği bulunamadı.", "⚠️");
-      if (btn) btn.textContent = "GPS ile Otomatik Bul";
+      if (lbl) lbl.textContent = idleTxt;
     }
   }
 
@@ -1465,13 +1584,11 @@ class TamVaktiApp {
     const modal = document.getElementById("locationModal");
     if (modal) {
       modal.classList.remove("hidden");
-      // Arama kutusunu temizle ve tam listeyi göster
       const searchInput = document.getElementById("citySearchInput");
-      if (searchInput) {
-        searchInput.value = "";
-        setTimeout(() => searchInput.focus(), 300);
-      }
+      if (searchInput) searchInput.value = "";
       this.renderCitySelector();
+      const listEl = document.getElementById("cityListContainer");
+      if (listEl) listEl.scrollTop = 0;
     }
   }
 
