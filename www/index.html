@@ -53,26 +53,26 @@
   <div class="minimal-app w-full max-w-[420px] mx-auto relative overflow-hidden flex flex-col pb-4 arctic-radial-glow">
 
     <!-- 1. ÜST BAŞLIK ALANI (NOCTURNAL ARCTIC 2B) -->
-    <header class="top-header flex items-center justify-between gap-2 mb-2 shrink-0">
+    <header class="top-header flex items-center justify-between gap-1.5 mb-2 shrink-0">
       
       <!-- Sol: Şehir Rozeti -->
-      <button onclick="app.openLocationModal()" class="flex items-center gap-1.5 py-1.5 px-3 rounded-full bg-slate-900/80 border border-sky-400/30 text-sky-400 backdrop-blur-md active:scale-95 transition-transform duration-150 cursor-pointer shadow-sm" title="Konum Değiştir">
-        <svg class="w-4 h-4 text-sky-400" fill="currentColor" viewBox="0 0 24 24">
+      <button onclick="app.openLocationModal()" class="flex items-center gap-1.5 py-1.5 px-2.5 rounded-full bg-slate-900/80 border border-sky-400/30 text-sky-400 backdrop-blur-md active:scale-95 transition-transform duration-150 cursor-pointer shadow-sm min-w-0 max-w-[40%]" title="Konum Değiştir">
+        <svg class="w-4 h-4 text-sky-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
         </svg>
-        <span id="headerCityName" class="text-sm font-bold text-slate-100">Konum Seçiniz</span>
-        <span id="headerQibla" class="hidden min-[380px]:inline text-xs font-mono text-slate-400" title="Kıble açısı"></span>
+        <span id="headerCityName" class="text-[13px] font-bold text-slate-100 truncate">Konum Seçiniz</span>
+        <span id="headerQibla" class="hidden min-[410px]:inline text-xs font-mono text-slate-400 shrink-0" title="Kıble açısı"></span>
       </button>
 
       <!-- Orta: Tarih Kartı (Miladi & Hicri) -->
-      <button onclick="app.openMonthlyModal()" class="text-center px-2.5 py-1 rounded-full bg-slate-900/60 border border-slate-700/50 backdrop-blur-md hover:border-sky-400/30 transition-colors cursor-pointer" title="Aylık İmsakiye">
-        <span class="text-[13px] font-medium text-slate-200 block leading-tight">
-          <span id="miladiDateMain" class="block">5 Kasım 2026 • Perşembe</span><span id="hicriDateSub" class="block text-slate-400 text-[12px] mt-0.5">24 Cemaziyelevvel</span>
+      <button onclick="app.openMonthlyModal()" class="text-center px-2.5 py-1.5 rounded-2xl bg-slate-900/60 border border-slate-700/50 backdrop-blur-md hover:border-sky-400/30 transition-colors cursor-pointer min-w-0 shrink" title="Aylık İmsakiye">
+        <span class="text-[12px] font-medium text-slate-200 block leading-tight">
+          <span id="miladiDateMain" class="block whitespace-nowrap truncate">5 Kasım 2026 • Perşembe</span><span id="hicriDateSub" class="block text-slate-400 text-[11px] mt-0.5 whitespace-nowrap truncate">24 Cemaziyelevvel</span>
         </span>
       </button>
 
       <!-- Sağ: Kıble & Ayarlar İkonları (Sağ Üstte Yan Yana) -->
-      <div class="flex items-center gap-1.5">
+      <div class="flex items-center gap-1.5 shrink-0">
         <!-- Kıble Butonu -->
         <button onclick="app.toggleQiblaTab()" id="headerQiblaBtn" aria-label="Kıble" class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-900/70 border border-slate-700/60 text-slate-300 hover:text-sky-400 hover:border-sky-400/40 active:scale-95 transition-all cursor-pointer" title="Kıble Pusulası">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

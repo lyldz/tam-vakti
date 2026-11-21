@@ -51,6 +51,7 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
 - [x] **`www/css/style.css`** içindeki mükerrer `@keyframes pulse-subtle` tanımı temizlendi.
 - [x] **`formatChangelog()`** HTML kaçış (escape) koruması eklendi (`www/js/app.js`).
 - [x] **`www/` → `android/app/src/main/assets/www/`** eşitlendi ve `node --check` doğrulandı.
+- [x] **Üst tarih rozeti taşma düzeltmesi (2026-11-21):** Uzun ilçe adlarında (`Bolvadin` vb.) tarih kutusunun 4 satıra kırılıp `rounded-full` nedeniyle daireye dönüşmesi ve `Cemaziyelahir` yazısının kenardan taşması giderildi (`rounded-2xl`, `whitespace-nowrap truncate`, şehir rozetine `max-w-[40%] truncate` ve kıble açısı eşiği `410px`).
 
 ---
 
