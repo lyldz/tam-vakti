@@ -376,26 +376,58 @@ class TamVaktiApp {
     const yOf = (alt) => alt >= 0 ? Y0 - Math.min(alt, 80) * K : Y0 - Math.max(alt, -75) * 0.7;
     const nowMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
 
-    // Eğri: 10 dakikalık adımlarla
-    let dBase = "", dPassed = "";
+    // Eğri: 10 dakikalık adımlarla + günün tepe yüksekliği ve gündüz dolgu alanı
+    let dBase = "", dPassed = "", dDayFill = "";
+    let maxDayAlt = 10, dayStartX = null, dayLastX = null;
     for (let m = 0; m <= 1440; m += 10) {
-      const pt = `${xOf(m).toFixed(1)} ${yOf(altAt(m)).toFixed(1)}`;
+      const a = altAt(m);
+      if (a > maxDayAlt) maxDayAlt = a;
+      const x = xOf(m), y = yOf(a);
+      const pt = `${x.toFixed(1)} ${y.toFixed(1)}`;
       dBase += (m === 0 ? "M " : " L ") + pt;
-      if (m <= nowMin) dPassed += (dPassed ? " L " : "M ") + pt;
+      if (m <= nowMin) {
+        dPassed += (dPassed ? " L " : "M ") + pt;
+        if (a > 0) {
+          if (dayStartX === null) {
+            dayStartX = x;
+            dDayFill = `M ${x.toFixed(1)} ${Y0} L ${pt}`;
+          } else {
+            dDayFill += ` L ${pt}`;
+          }
+          dayLastX = x;
+        }
+      }
     }
-    dPassed += ` L ${xOf(nowMin).toFixed(1)} ${yOf(altAt(nowMin)).toFixed(1)}`;
+    const altNow = altAt(nowMin);
+    const sx = xOf(nowMin), sy = yOf(altNow);
+    dPassed += ` L ${sx.toFixed(1)} ${sy.toFixed(1)}`;
+    if (altNow > 0) {
+      if (dayStartX === null) {
+        dayStartX = sx;
+        dDayFill = `M ${sx.toFixed(1)} ${Y0} L ${sx.toFixed(1)} ${sy.toFixed(1)}`;
+      } else {
+        dDayFill += ` L ${sx.toFixed(1)} ${sy.toFixed(1)}`;
+      }
+      dayLastX = sx;
+    }
+    if (dDayFill && dayLastX !== null) {
+      dDayFill += ` L ${dayLastX.toFixed(1)} ${Y0} Z`;
+    }
     baseEl.setAttribute("d", dBase);
     passedEl.setAttribute("d", dPassed);
+    const passedGlowEl = document.getElementById("arcPassedGlow");
+    if (passedGlowEl) passedGlowEl.setAttribute("d", dPassed);
+    const dayFillEl = document.getElementById("arcDayFill");
+    if (dayFillEl) dayFillEl.setAttribute("d", dDayFill);
 
     // Vakit işaretleri (isim + saat)
     const keys = ["imsak", "gunes", "ogle", "ikindi", "aksam", "yatsi"];
     const names = { imsak: "İmsak", gunes: "Güneş", ogle: this.isFriday ? "Cuma" : "Öğle", ikindi: "İkindi", aksam: "Akşam", yatsi: "Yatsı" };
-    // Etiketler eğrinin çizgisine binmesin: yükselen tarafta sola/aşağı-sağa, alçalan tarafta sağa/aşağı-sola
-    // anchor: yazının hizası, dx: yatay kayma, dy: isim satırının y farkı
+    // Etiketler eğrinin çizgisine ve güneş parıltısına binmesin
     const place = {
       imsak:  { anchor: "start",  dx: 9,  dy: 21 },
       gunes:  { anchor: "end",    dx: -9, dy: -19 },
-      ogle:   { anchor: "middle", dx: 0,  dy: -25 },
+      ogle:   { anchor: "middle", dx: 0,  dy: -36 },
       ikindi: { anchor: "start",  dx: 9,  dy: -19 },
       aksam:  { anchor: "end",    dx: -9, dy: 21 },
       yatsi:  { anchor: "start",  dx: 9,  dy: -23 }
@@ -415,7 +447,7 @@ class TamVaktiApp {
       const tx = x + pl.dx, ty = y + pl.dy;
       html += `
         <g onclick="app.showPrayerDetail('${k}')" class="cursor-pointer">
-          <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${active ? 5.5 : 4.2}" fill="${fill}" stroke="#090e1a" stroke-width="1.5"/>
+          <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${active ? 5 : 3.8}" fill="${fill}" stroke="#090e1a" stroke-width="1.5"/>
           <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="16" fill="transparent"/>
           <text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="${pl.anchor}" fill="${nameCol}" font-size="13.5" font-weight="${active ? 800 : 700}">${names[k]}</text>
           <text x="${tx.toFixed(1)}" y="${(ty + 11.5).toFixed(1)}" text-anchor="${pl.anchor}" fill="${active ? "#e0f2fe" : "#94a3b8"}" font-size="12" font-family="'JetBrains Mono', monospace">${str}</text>
@@ -423,26 +455,44 @@ class TamVaktiApp {
     });
     nodesEl.innerHTML = html;
 
-    // Şu anki yer: gündüz güneş, gece hilal
-    const altNow = altAt(nowMin);
-    const sx = xOf(nowMin), sy = yOf(altNow);
+    // Şu anki yer: gündüz öğleye doğru artıp akşama doğru azalan parlak güneş;
+    // gece yatsıda en parlak, sabaha doğru sönümlenen sakin hilal
+    const horizonEl = document.getElementById("arcHorizon");
     if (altNow > -0.833) {
-      let rays = "";
-      for (let a = 0; a < 8; a++) {
-        const r = (a * 45) * Math.PI / 180;
-        rays += `<line x1="${(Math.cos(r) * 12.5).toFixed(1)}" y1="${(Math.sin(r) * 12.5).toFixed(1)}" x2="${(Math.cos(r) * 17.5).toFixed(1)}" y2="${(Math.sin(r) * 17.5).toFixed(1)}" stroke="#fcd34d" stroke-width="2" stroke-linecap="round"/>`;
-      }
+      const dayRatio = Math.max(0, Math.min(1, altNow / maxDayAlt));
+      const dayGlow = 0.35 + 0.65 * Math.pow(dayRatio, 0.75);
+      const atmosR = (30 + 26 * dayGlow).toFixed(1);
+      const coronaR = (14 + 8 * dayGlow).toFixed(1);
+      const coreR = (7.5 + 1.5 * dayGlow).toFixed(1);
+      const atmosOp = (0.45 + 0.55 * dayGlow).toFixed(2);
+      if (dayFillEl) dayFillEl.setAttribute("opacity", (0.35 + 0.65 * dayGlow).toFixed(2));
+      if (passedGlowEl) passedGlowEl.setAttribute("stroke-opacity", (0.14 + 0.22 * dayGlow).toFixed(2));
+      if (horizonEl) horizonEl.setAttribute("stroke", "url(#horizonGlow)");
       sunEl.innerHTML = `
         <g transform="translate(${sx.toFixed(1)} ${sy.toFixed(1)})" pointer-events="none">
-          <circle r="30" fill="url(#sunHalo)"/>
-          <g>${rays}<animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="40s" repeatCount="indefinite"/></g>
-          <circle r="9.5" fill="url(#sunCore)"/>
+          <circle r="${atmosR}" fill="url(#sunAtmos)" opacity="${atmosOp}"/>
+          <circle r="${coronaR}" fill="url(#sunCorona)" opacity="${(0.75 + 0.25 * dayGlow).toFixed(2)}"/>
+          <circle r="${coreR}" fill="#fffbeb"/>
+          <circle r="${(parseFloat(coreR) + 2.4).toFixed(1)}" fill="none" stroke="#fde047" stroke-opacity="${(0.25 + 0.35 * dayGlow).toFixed(2)}" stroke-width="1.2"/>
         </g>`;
     } else {
+      const toMin = (s, fb) => /^\d{1,2}:\d{2}$/.test(s || "") ? s.split(":").map(Number).reduce((h, m) => h * 60 + m) : fb;
+      const aksamMin = toMin(this.currentTimes.aksam, 18 * 60);
+      const gunesMin = toMin(this.currentTimes.gunes, 7 * 60);
+      const elapsedNight = nowMin >= aksamMin ? (nowMin - aksamMin) : (1440 - aksamMin + nowMin);
+      const totalNight = Math.max(60, (1440 - aksamMin) + gunesMin);
+      const nightProgress = Math.max(0, Math.min(1, elapsedNight / totalNight));
+      const nightGlow = 1.0 - 0.68 * Math.pow(nightProgress, 1.15);
+      const moonR = (24 + 22 * nightGlow).toFixed(1);
+      const moonHaloOp = (0.35 + 0.65 * nightGlow).toFixed(2);
+      const moonCoreOp = (0.65 + 0.35 * nightGlow).toFixed(2);
+      if (dayFillEl) dayFillEl.setAttribute("opacity", "0.25");
+      if (passedGlowEl) passedGlowEl.setAttribute("stroke-opacity", "0.14");
+      if (horizonEl) horizonEl.setAttribute("stroke", "rgba(148,163,184,0.24)");
       sunEl.innerHTML = `
         <g transform="translate(${sx.toFixed(1)} ${sy.toFixed(1)})" pointer-events="none">
-          <circle r="28" fill="url(#moonHalo)"/>
-          <path d="M 4 -9.5 A 10 10 0 1 0 4 9.5 A 8 8 0 1 1 4 -9.5 Z" fill="#bae6fd"/>
+          <circle r="${moonR}" fill="url(#moonAtmos)" opacity="${moonHaloOp}"/>
+          <path d="M 4 -9.5 A 10 10 0 1 0 4 9.5 A 8 8 0 1 1 4 -9.5 Z" fill="#e0f2fe" opacity="${moonCoreOp}"/>
         </g>`;
     }
   }

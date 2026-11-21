@@ -76,3 +76,23 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
 - [x] **3×2 vakit kutuları (Seçenek A):** Her vaktin yanındaki parlak mavi noktalar kaldırıldı; vakit adları tam ortalandı. Yalnızca uyarısı **kapalı** olan vakitlerde kutunun sağ üst köşesinde soluk, ince bir kapalı zil SVG ikonu gösteriliyor (`www/js/app.js`).
 - [x] **`Geçen süre` satırı:** Başındaki gereksiz gri nokta kaldırıldı (`www/index.html`).
 - [x] **`www/` → `android/app/src/main/assets/www/`** eşitlendi ve `node --check` doğrulandı.
+
+---
+
+## Aşama 4 — Dinamik Parlaklıklı Atmosferik Güneş Yayı (2026-11-21)
+
+**Durum:** Uygulandı ve izole tek commit olarak `main` dalına gönderildi (beğenilmezse tek `git revert` ile geri alınabilir).
+
+- [x] **Vakte göre dinamik güneş parıltısı:** Gündüzleri güneş yüksekliğine bağlı olarak sabah yumuşak başlar, **Öğle** tepe noktasında maksimum atmosferik parlaklığa ulaşır, **Akşam**a doğru yavaşça azalır (`sunAtmos` + `sunCorona` + çekirdek, `www/index.html`, `www/js/app.js`).
+- [x] **Gece hilal parıltısı:** **Yatsı** civarında en parlak gümüşi-camgöbeği parıltıda olur, güneş doğuşuna yaklaştıkça kademeli olarak sönümlenir (`moonAtmos`).
+- [x] **Atmosferik gündüz dolgusu ve ufuk ışıltısı:** Geçen gündüz yayının altına hafif gün ışığı dolgusu (`#arcDayFill`), yay arkasına yumuşak parıltı (`#arcPassedGlow`) ve ışıklı ufuk çizgisi (`#arcHorizon`) eklendi.
+- [x] **Etiket çakışma düzeltmesi:** `Öğle` etiketi yukarı (`dy: -36`) alınarak güneş tepe noktasındayken `12:47` yazısıyla çakışması önlendi.
+- [x] **Sade mod dikey dengesi:** `#solarTransitContainer` dikey ritmi dengelendi (`www/css/style.css`).
+
+---
+
+## Sıradaki Çalışma Planı (Her Aşama İzole Commit + Geri Dönüş Güvenceli)
+- [ ] **Aşama 5:** Kıble Pusulası inceleme ve iyileştirme
+- [ ] **Aşama 6:** Aylık İmsakiye inceleme ve iyileştirme
+- [ ] **Aşama 7:** Ana ekran Widget'ları inceleme ve iyileştirme
+- [ ] **Aşama 8:** Bildirimler inceleme ve iyileştirme (en son)

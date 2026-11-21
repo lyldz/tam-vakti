@@ -106,19 +106,35 @@
                <linearGradient id="arcPassedGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                  <stop offset="0%" stop-color="#ea580c"/>
                  <stop offset="55%" stop-color="#fb923c"/>
-                 <stop offset="100%" stop-color="#fcd34d"/>
+                 <stop offset="100%" stop-color="#fde047"/>
                </linearGradient>
-               <radialGradient id="sunCore" cx="50%" cy="50%" r="50%">
-                 <stop offset="0%" stop-color="#fff7d6"/>
-                 <stop offset="55%" stop-color="#fcd34d"/>
-                 <stop offset="100%" stop-color="#fb923c"/>
+               <linearGradient id="arcDayFillGrad" x1="0" y1="0" x2="0" y2="1">
+                 <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.24"/>
+                 <stop offset="65%" stop-color="#fb923c" stop-opacity="0.06"/>
+                 <stop offset="100%" stop-color="#fb923c" stop-opacity="0"/>
+               </linearGradient>
+               <linearGradient id="horizonGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+                 <stop offset="0%" stop-color="#38bdf8" stop-opacity="0"/>
+                 <stop offset="28%" stop-color="#fb923c" stop-opacity="0.45"/>
+                 <stop offset="55%" stop-color="#fde047" stop-opacity="0.5"/>
+                 <stop offset="78%" stop-color="#38bdf8" stop-opacity="0.28"/>
+                 <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+               </linearGradient>
+               <radialGradient id="sunAtmos" cx="50%" cy="50%" r="50%">
+                 <stop offset="0%" stop-color="#fef08a" stop-opacity="0.52"/>
+                 <stop offset="38%" stop-color="#fbbf24" stop-opacity="0.22"/>
+                 <stop offset="72%" stop-color="#f97316" stop-opacity="0.06"/>
+                 <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
                </radialGradient>
-               <radialGradient id="sunHalo" cx="50%" cy="50%" r="50%">
-                 <stop offset="0%" stop-color="#fcd34d" stop-opacity="0.55"/>
+               <radialGradient id="sunCorona" cx="50%" cy="50%" r="50%">
+                 <stop offset="0%" stop-color="#ffffff"/>
+                 <stop offset="38%" stop-color="#fef08a"/>
+                 <stop offset="72%" stop-color="#fbbf24" stop-opacity="0.85"/>
                  <stop offset="100%" stop-color="#fb923c" stop-opacity="0"/>
                </radialGradient>
-               <radialGradient id="moonHalo" cx="50%" cy="50%" r="50%">
-                 <stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.45"/>
+               <radialGradient id="moonAtmos" cx="50%" cy="50%" r="50%">
+                 <stop offset="0%" stop-color="#bae6fd" stop-opacity="0.46"/>
+                 <stop offset="45%" stop-color="#38bdf8" stop-opacity="0.16"/>
                  <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
                </radialGradient>
                <linearGradient id="nightFade" x1="0" y1="0" x2="0" y2="1">
@@ -127,8 +143,10 @@
                </linearGradient>
              </defs>
              <rect id="arcNight" x="10" y="150" width="320" height="108" rx="16" fill="url(#nightFade)"/>
-             <line id="arcHorizon" x1="6" y1="150" x2="334" y2="150" stroke="rgba(148,163,184,0.28)" stroke-width="1" stroke-dasharray="2 4"/>
-             <path id="arcBase" d="" fill="none" stroke="rgba(125,211,252,0.28)" stroke-width="2" stroke-linecap="round"/>
+             <path id="arcDayFill" d="" fill="url(#arcDayFillGrad)" opacity="0.85"/>
+             <line id="arcHorizon" x1="6" y1="150" x2="334" y2="150" stroke="url(#horizonGlow)" stroke-width="1.2"/>
+             <path id="arcBase" d="" fill="none" stroke="rgba(125,211,252,0.24)" stroke-width="2" stroke-linecap="round"/>
+             <path id="arcPassedGlow" d="" fill="none" stroke="#fbbf24" stroke-opacity="0.25" stroke-width="6.5" stroke-linecap="round"/>
              <path id="arcPassed" d="" fill="none" stroke="url(#arcPassedGrad)" stroke-width="3.2" stroke-linecap="round"/>
              <g id="solarArcSun"></g>
              <g id="solarArcNodes"></g>

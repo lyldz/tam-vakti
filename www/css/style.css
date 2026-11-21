@@ -584,6 +584,10 @@ main:has(#viewQibla:not(.hidden)) {
   margin-top: auto;
   margin-bottom: auto;
 }
+#viewPrayer[data-mode="focus"] #solarTransitContainer {
+  flex: 0 1 260px;
+  margin-top: auto;
+}
 #viewPrayer[data-mode="focus"] #mainCountdown {
   font-size: clamp(3.1rem, 10dvh, 4.7rem) !important;
 }
