@@ -401,7 +401,7 @@ class PrayerEngine {
       if (res.ok) {
         const json = await res.json();
         if (json && Array.isArray(json.data) && json.data.length > 0) {
-          let hijriSummary = '';
+          let firstH = null, lastH = null;
           const days = json.data.map(item => {
             const t = item.timings;
             const greg = item.date.gregorian;
@@ -410,8 +410,10 @@ class PrayerEngine {
             const dDate = new Date(year, month - 1, dNum);
             const dateStr = `${year}-${monthPadded}-${String(dNum).padStart(2, '0')}`;
 
-            if (hijri && hijri.month && !hijriSummary) {
-              hijriSummary = `${hijriMonthTr(hijri)} ${hijri.year}`;
+            if (hijri && hijri.month) {
+              const hm = hijriMonthTr(hijri);
+              if (!firstH) firstH = { m: hm, y: hijri.year };
+              lastH = { m: hm, y: hijri.year };
             }
 
             return {
@@ -430,6 +432,12 @@ class PrayerEngine {
               hijriDay: hijri ? `${parseInt(hijri.day, 10)} ${hijriMonthTr(hijri)}` : null
             };
           });
+
+          const hijriSummary = firstH
+            ? (lastH && lastH.m !== firstH.m
+              ? (lastH.y !== firstH.y ? `${firstH.m} ${firstH.y} – ${lastH.m} ${lastH.y}` : `${firstH.m} – ${lastH.m} ${lastH.y}`)
+              : `${firstH.m} ${firstH.y}`)
+            : '';
 
           const result = {
             year,
@@ -452,7 +460,7 @@ class PrayerEngine {
     // 3. %100 Çevrimdışı Astronomik Hesaplama (Yedek & Tam Güvenilirlik)
     const daysInMonth = new Date(year, month, 0).getDate();
     const days = [];
-    let hijriSummaryOffline = '';
+    let firstHOff = null, lastHOff = null;
 
     for (let d = 1; d <= daysInMonth; d++) {
       const dDate = new Date(year, month - 1, d);
@@ -464,7 +472,8 @@ class PrayerEngine {
       try {
         const parts = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
           day: 'numeric',
-          month: 'numeric'
+          month: 'numeric',
+          year: 'numeric'
         }).formatToParts(dDate);
         const islamicMonths = [
           '', 'Muharrem', 'Sefer', 'Rebiülevvel', 'Rebiülahir',
@@ -473,10 +482,12 @@ class PrayerEngine {
         ];
         const hDay = parts.find(p => p.type === 'day')?.value || '';
         const hMonthNum = parseInt(parts.find(p => p.type === 'month')?.value || '1', 10);
+        const hYear = (parts.find(p => p.type === 'year')?.value || '').replace(/\D/g, '');
         const hMonth = islamicMonths[hMonthNum] || '';
         hijriDayStr = `${hDay} ${hMonth}`;
-        if (d === 15) {
-          hijriSummaryOffline = hMonth;
+        if (hMonth) {
+          if (!firstHOff) firstHOff = { m: hMonth, y: hYear };
+          lastHOff = { m: hMonth, y: hYear };
         }
       } catch(e) {}
 
@@ -496,6 +507,12 @@ class PrayerEngine {
         hijriDay: hijriDayStr
       });
     }
+
+    const hijriSummaryOffline = firstHOff
+      ? (lastHOff && lastHOff.m !== firstHOff.m
+        ? `${firstHOff.m} – ${lastHOff.m}${lastHOff.y ? ' ' + lastHOff.y : ''}`
+        : `${firstHOff.m}${firstHOff.y ? ' ' + firstHOff.y : ''}`)
+      : '';
 
     return {
       year,

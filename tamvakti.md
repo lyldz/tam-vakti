@@ -110,6 +110,8 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
   - 4 test/bakım düğmesi tek `Test ve sorun giderme` alt penceresinde toplandı.
 - [x] **Ara Aşama 3 — Modern 2 Adımlı Şehir ve İlçe Seçimi (2026-11-21, `v2.13.5` Seher, `versionCode`: 23800):**
   - Ayarlar sadeleştirmesi + yeni Arctic 2 adımlı konum seçici (`#locationModal`: Adım 1 plaka+il 2 sütunlu kartlar → Adım 2 ilçe kartları, canlı arama, son seçilen 3 yer hapı, geri tuşu Adım 2 → Adım 1 desteği; yurt dışı Google Play aşamasına bırakıldı) `v2.13.5` olarak yayınlandı.
-- [ ] **Aşama 6:** Aylık İmsakiye inceleme ve iyileştirme
+- [x] **Aşama 6 — Logo Ufuk Cilası ve Aylık İmsakiye İyileştirmeleri (2026-11-21, `v2.13.6` Seher, `versionCode`: 23900):**
+  - Logo ufuk çizgisi yayın tam tabanına (`y=78`) hizalandı (`A3.svg`, `logo.svg`, `ic_launcher_foreground.xml`, `logo_full.png`, `mipmap-*`, `play-store-icon-512.png`, `docs/logo.png`).
+  - Aylık İmsakiye: çift Hicri ay aralığı başlığı, gün sütununda kısa Hicri tarih, `_monthlySeq` hızlı ay değiştirme koruması, bugünkü sıradaki vakit vurgusu, ihtiyat notu ve sadeleştirilmiş üst bar.
 - [ ] **Aşama 7:** Ana ekran Widget'ları inceleme ve iyileştirme
 - [ ] **Aşama 8:** Bildirimler inceleme ve iyileştirme (en son)

@@ -7,7 +7,7 @@
     android:viewportHeight="108">
     <!-- Maske yalnızca ortadaki 72dp'yi gösterir; çizim güvenli alana sığması için 0.74 ölçeklidir -->
     <group android:pivotX="54" android:pivotY="54" android:scaleX="0.74" android:scaleY="0.74">
-        <path android:pathData="M20,74C32,74 38,38 54,38C70,38 76,74 88,74" android:strokeWidth="7" android:strokeLineCap="round">
+        <path android:pathData="M20,73C32,73 38,37 54,37C70,37 76,73 88,73" android:strokeWidth="6.8" android:strokeLineCap="round">
             <aapt:attr name="android:strokeColor">
                 <gradient android:type="linear" android:startX="20" android:startY="0" android:endX="88" android:endY="0">
                     <item android:offset="0" android:color="#FF38BDF8" />
@@ -16,18 +16,18 @@
                 </gradient>
             </aapt:attr>
         </path>
-        <path android:pathData="M14,74L94,74" android:strokeColor="#80BAE6FD" android:strokeWidth="1.6" android:strokeLineCap="round" />
-        <path android:pathData="M35,38a19,19 0 1,0 38,0a19,19 0 1,0 -38,0z">
+        <path android:pathData="M14,78L94,78" android:strokeColor="#8CBAE6FD" android:strokeWidth="1.5" android:strokeLineCap="round" />
+        <path android:pathData="M34,37a20,20 0 1,0 40,0a20,20 0 1,0 -40,0z">
             <aapt:attr name="android:fillColor">
-                <gradient android:type="radial" android:centerX="54" android:centerY="38" android:gradientRadius="19">
+                <gradient android:type="radial" android:centerX="54" android:centerY="37" android:gradientRadius="20">
                     <item android:offset="0" android:color="#B3FCD34D" />
                     <item android:offset="1" android:color="#00FB923C" />
                 </gradient>
             </aapt:attr>
         </path>
-        <path android:pathData="M43.5,38a10.5,10.5 0 1,0 21,0a10.5,10.5 0 1,0 -21,0z">
+        <path android:pathData="M43.5,37a10.5,10.5 0 1,0 21,0a10.5,10.5 0 1,0 -21,0z">
             <aapt:attr name="android:fillColor">
-                <gradient android:type="radial" android:centerX="54" android:centerY="38" android:gradientRadius="10.5">
+                <gradient android:type="radial" android:centerX="54" android:centerY="37" android:gradientRadius="10.5">
                     <item android:offset="0" android:color="#FFFFFBE6" />
                     <item android:offset="0.5" android:color="#FFFCD34D" />
                     <item android:offset="1" android:color="#FFFB923C" />

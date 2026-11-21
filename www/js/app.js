@@ -1,6 +1,6 @@
 /**
  * Tam Vakti - Minimalist Adaçayı Yeşili & Sade Vakit / Kıble Kontrolcüsü
- * Sürüm: v2.13.5
+ * Sürüm: v2.13.6
  */
 
 const PRAYER_LIST = [
@@ -57,9 +57,9 @@ class TamVaktiApp {
     // Dağıtım: "play" (kendini güncelleme yok), "github" (APK güncelleyici var) veya "web"
     this.distribution = (window.AndroidBridge && window.AndroidBridge.getDistribution) ? window.AndroidBridge.getDistribution() : "web";
     this.canSelfUpdate = this.distribution !== "play";
-    this.currentVersion = "v2.13.5";
+    this.currentVersion = "v2.13.6";
     this.versionCodename = "Seher";
-    this.versionDisplay = "v2.13.5 • Seher";
+    this.versionDisplay = "v2.13.6 • Seher";
     this.onboardingStep = 1;
     this.monthlyYear = null;
     this.monthlyMonth = null;
@@ -1103,6 +1103,7 @@ class TamVaktiApp {
 
   async loadMonthlyData(autoScroll = true) {
     this.applyCalcMethod();
+    const seq = (this._monthlySeq = (this._monthlySeq || 0) + 1);
     const titleEl = document.getElementById("monthlyTitleText");
     const hijriEl = document.getElementById("monthlyHijriText");
     const cityEl = document.getElementById("monthlyCityName");
@@ -1130,6 +1131,7 @@ class TamVaktiApp {
         this.currentLocation.lat,
         this.currentLocation.lon
       );
+      if (seq !== this._monthlySeq) return; // hızlı ay değiştirmede eski yanıtı yoksay
 
       if (hijriEl) {
         hijriEl.textContent = data.hijriSummary || "Hicri Takvim";
@@ -1141,12 +1143,24 @@ class TamVaktiApp {
       }
       const noteEl = document.getElementById("monthlyMethodNote");
       if (noteEl) {
-        noteEl.textContent = this.engine.method === "diyanet"
+        const baseNote = this.engine.method === "diyanet"
           ? "Vakitler Diyanet İşleri Başkanlığı takvim ve astronomik kriterlerine tam uyumludur."
           : `Vakitler "${this.engine.methodInfo().name}" yöntemiyle hesaplanır.`;
+        const offNote = this.timeOffsetMin ? ` İhtiyat (${this.offsetLabel()}) uygulanmıştır.` : "";
+        noteEl.textContent = baseNote + offNote;
       }
 
       if (!tableBody || !data.days) return;
+
+      const orderKeys = ["imsak", "gunes", "ogle", "ikindi", "aksam", "yatsi"];
+      const curIdx = orderKeys.indexOf(this.activePrayerKey);
+      const nextKey = curIdx >= 0 ? orderKeys[(curIdx + 1) % 6] : null;
+      const shortHijri = (s) => {
+        if (!s) return "";
+        const p = String(s).trim().split(/\s+/);
+        if (p.length < 2) return s;
+        return `${p[0]} ${p[1].slice(0, 4)}${p[1].length > 4 ? "." : ""}`;
+      };
 
       tableBody.innerHTML = data.days.map(d0 => {
         const d = this.applyOffset(d0) === d0 ? d0 : { ...d0, ...this.applyOffset(d0) };
@@ -1154,20 +1168,25 @@ class TamVaktiApp {
         const rowId = d.isToday ? 'id="monthlyRow-today"' : '';
         const todayBadge = d.isToday ? '<span class="monthly-today-badge">Bugün</span>' : '';
         const friDot = d.isFriday && !d.isToday ? ' •' : '';
+        const hSub = d.hijriDay ? `<span class="block text-[9.5px] font-medium text-slate-400/80 leading-tight mt-0.5">${shortHijri(d.hijriDay)}</span>` : '';
+        const tdCls = (k, extra = "") => (d.isToday && nextKey === k)
+          ? `py-2 px-1 ${extra} text-sky-300 font-black`
+          : `py-2 px-1 ${extra}`;
 
         return `
           <tr ${rowId} class="${rowClass} hover:bg-slate-800/60 transition-colors">
-            <td class="py-2.5 px-1.5 text-left pl-3 font-sans">
+            <td class="py-2 px-1.5 text-left pl-3 font-sans">
               <span class="font-extrabold">${d.day}</span>
               <span class="text-[10px] opacity-75 font-semibold ml-0.5">${d.dayOfWeekShort}${friDot}</span>
               ${todayBadge}
+              ${hSub}
             </td>
-            <td class="py-2 px-1">${d.imsak}</td>
-            <td class="py-2 px-1">${d.gunes}</td>
-            <td class="py-2 px-1">${d.ogle}</td>
-            <td class="py-2 px-1">${d.ikindi}</td>
-            <td class="py-2 px-1">${d.aksam}</td>
-            <td class="py-2 px-1 pr-3 font-semibold">${d.yatsi}</td>
+            <td class="${tdCls('imsak')}">${d.imsak}</td>
+            <td class="${tdCls('gunes')}">${d.gunes}</td>
+            <td class="${tdCls('ogle')}">${d.ogle}</td>
+            <td class="${tdCls('ikindi')}">${d.ikindi}</td>
+            <td class="${tdCls('aksam')}">${d.aksam}</td>
+            <td class="${tdCls('yatsi', 'pr-3 font-semibold')}">${d.yatsi}</td>
           </tr>
         `;
       }).join('');
