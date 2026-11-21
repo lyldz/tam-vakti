@@ -66,3 +66,13 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
 - [x] **Sade / Odak görünümü:** İlerleme kartı (`#horizonCard`) ve 6 vakit kutusu (`#dayTimesRibbon`) gizlenir; sayaç büyür, alt başlıkta sıradaki vaktin saati (`Öğle'ye Kalan · 12:51`), ince bir ilerleme çizgisi ve yalnızca kerahat varken tek satır kerahat hapı gösterilir.
 - [x] **Ayarlar'da görünüm seçeneği:** Ayarlar → Uygulama altına *"Ana ekran görünümü (Detay / Sade)"* satırı eklendi.
 - [x] **Güvenli geri dönüş:** Mevcut Detay düzeni silinmeden `data-mode="focus|detail"` üzerinden korundu; tüm Aşama 2 değişikliği izole tek commit olarak gönderildi (beğenilmezse tek `git revert` ile veri kaybı olmadan geri alınabilir).
+
+---
+
+## Aşama 3 — Detay Ekranı Nokta Temizliği (2026-11-21)
+
+**Durum:** Uygulandı ve `main` dalına gönderildi (yayın etiketi henüz kesilmedi; onay sonrası `v2.13.1` olarak yayınlanabilir).
+
+- [x] **3×2 vakit kutuları (Seçenek A):** Her vaktin yanındaki parlak mavi noktalar kaldırıldı; vakit adları tam ortalandı. Yalnızca uyarısı **kapalı** olan vakitlerde kutunun sağ üst köşesinde soluk, ince bir kapalı zil SVG ikonu gösteriliyor (`www/js/app.js`).
+- [x] **`Geçen süre` satırı:** Başındaki gereksiz gri nokta kaldırıldı (`www/index.html`).
+- [x] **`www/` → `android/app/src/main/assets/www/`** eşitlendi ve `node --check` doğrulandı.

@@ -460,7 +460,7 @@ class TamVaktiApp {
       const isCurrent = (item.key === this.activePrayerKey);
       const isPassed = idx < currentIdx;
 
-      let box = "flex flex-col items-center justify-center py-3 px-1 rounded-2xl transition-all border";
+      let box = "relative flex flex-col items-center justify-center py-3 px-1 rounded-2xl transition-all border";
       let nameColor, timeColor;
       if (isCurrent) {
         box += " vakit-nefes bg-sky-500/20 border-sky-400/70";
@@ -478,11 +478,15 @@ class TamVaktiApp {
       }
 
       const displayName = (item.key === "ogle" && this.isFriday) ? "Cuma" : item.name;
-      const dot = this.isAlertOn(item.key) ? '<span class="inline-block w-1.5 h-1.5 rounded-full bg-sky-400 ml-1.5 align-middle" title="Uyarı açık"></span>' : '';
+      // Yalnızca uyarısı kapalı vakitlerde köşede soluk sessiz zil ikonu (uyarı açık olan kutular tertemiz kalır)
+      const mutedIcon = !this.isAlertOn(item.key)
+        ? '<svg class="w-3 h-3 text-slate-500/75 absolute top-1.5 right-2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-label="Uyarı kapalı"><path stroke-linecap="round" stroke-linejoin="round" d="M13.73 21a2 2 0 01-3.46 0M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M3 3l18 18"/></svg>'
+        : '';
 
       return `
         <div onclick="app.showPrayerDetail('${item.key}')" class="${box} cursor-pointer active:scale-95" title="${displayName}: ${timeVal}">
-          <span class="text-[15px] ${nameColor}">${displayName}${dot}</span>
+          ${mutedIcon}
+          <span class="text-[15px] ${nameColor}">${displayName}</span>
           <span class="text-[22px] leading-tight font-mono mt-0.5 ${timeColor}">${timeVal}</span>
         </div>
       `;
