@@ -1503,28 +1503,64 @@ class TamVaktiApp {
   }
 
   updateSettingsLabels() {
-    const modeNames = { bip: "Sesli", sessiz: "Sessiz" };
     const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
     const nOn = ["imsak", "gunes", "ogle", "ikindi", "aksam", "yatsi"].filter(k => this.isAlertOn(k)).length;
     set("settingsAlertsSummary", nOn === 0 ? "Kapalı" : `${nOn} vakit açık`);
-    set("settingsNotifMode", modeNames[this.notifMode] || "Sesli");
     const tone = TamVaktiApp.TONES.find(t => t.id === this.alertTone) || TamVaktiApp.TONES[0];
-    set("settingsSoundAction", tone.label);
-    set("settingsSoundDesc", "Seçince kısa önizleme çalar");
-    set("settingsCalcMethod", this.timeOffsetMin === 0 ? "Yok" : this.offsetLabel());
+    set("settingsSoundAction", this.notifMode === "sessiz" ? "Sessiz" : tone.label);
+    set("settingsSoundDesc", this.notifMode === "sessiz" ? "Yalnızca bildirim yazısı gösterilir" : "Seçince kısa önizleme çalar");
     this.applyCalcMethod();
     const mi = this.engine.methodInfo();
-    set("settingsMethodValue", this.calcMethodPref === "auto" ? "Otomatik" : mi.short);
-    set("settingsMethodDesc", this.calcMethodPref === "auto" ? `Konuma göre: ${mi.name}` : mi.name);
+    const offStr = this.timeOffsetMin === 0 ? "" : ` · ${this.offsetLabel()}`;
+    set("settingsCalcSummary", (this.calcMethodPref === "auto" ? mi.short : mi.short) + offStr);
+    set("settingsMethodDesc", (this.calcMethodPref === "auto" ? `Otomatik: ${mi.name}` : mi.name) + (this.timeOffsetMin ? ` (${this.offsetLabel()})` : ""));
     const k = document.getElementById("kerahatToggle");
     if (k) k.checked = this.kerahatAlert;
     const fs = document.getElementById("fullScreenToggle");
     if (fs) fs.checked = this.fullScreenAlert;
-    const fsRow = document.getElementById("fsTestRow");
-    if (fsRow) fsRow.classList.toggle("hidden", !(window.AndroidBridge && window.AndroidBridge.testFullScreenAlert));
     set("settingsHomeModeValue", this.homeMode === "focus" ? "Sade" : "Detay");
     this.refreshPermissionStatus();
-    this.applyHomeMode(false);
+  }
+
+  openCalcAndOffsetModal() {
+    this.applyCalcMethod();
+    const mi = this.engine.methodInfo();
+    const opts = [
+      { value: "method", label: "Hesaplama yöntemi", desc: this.calcMethodPref === "auto" ? `Otomatik (${mi.name})` : mi.name },
+      { value: "offset", label: "İhtiyat dakikası", desc: this.timeOffsetMin === 0 ? "Yok (±0 dk)" : `${this.offsetLabel()} (tüm vakitlere eklenir)` }
+    ];
+    this.openChoice("Hesaplama ve ihtiyat", "Düzenlemek istediğiniz ayara dokunun.", opts, null, (v) => {
+      if (v === "method") this.openCalcMethodModal();
+      else if (v === "offset") this.openIhtiyatModal();
+    });
+  }
+
+  openTroubleshootModal() {
+    const b = window.AndroidBridge;
+    const opts = [
+      { value: "test", label: "Bildirimi test et", desc: "Şimdi bir deneme bildirimi gönderir" }
+    ];
+    if (b && b.testFullScreenAlert) {
+      opts.push({ value: "fs", label: "Tam ekranı dene", desc: "10 sn sonra tam ekran bildirim gelir" });
+    }
+    if (b && b.syncSchedule) {
+      opts.push({ value: "resync", label: "Alarmları yeniden kur", desc: "Uyarılar gelmiyorsa tüm alarmları tazeler" });
+    }
+    opts.push({ value: "ob", label: "Kurulumu yeniden başlat", desc: "Konum ve izin adımlarını tekrar gösterir" });
+    this.openChoice("Test ve sorun giderme", "Tanı ve bakım araçları", opts, null, (v) => {
+      if (v === "test") this.sendTestNotification();
+      else if (v === "fs") this.testFullScreenAlert();
+      else if (v === "resync") this.resyncAlarms();
+      else if (v === "ob") this.restartOnboarding();
+    });
+  }
+
+  togglePermPanel() {
+    const panel = document.getElementById("permListPanel");
+    const chev = document.getElementById("permSummaryChevron");
+    if (!panel) return;
+    const closed = panel.classList.toggle("hidden");
+    if (chev) chev.classList.toggle("rotate-180", !closed);
   }
 
   // ==========================================
@@ -1616,13 +1652,24 @@ class TamVaktiApp {
     this.showToast("Test sesi çalındı (bildirimler yalnızca Android uygulamasında çalışır).", "🔔");
   }
 
-  // Bildirim sesi: telefonun kendi kanal ayarı açılır, istediğiniz sesi seçersiniz
-  // Vakit bildirim sesi seçimi (seçince kısa önizleme çalar); sistem ses ayarına da kısayol
+  // Vakit bildirim sesi ve Sessiz modu tek pencerede (seçince kısa önizleme çalar)
   openToneModal() {
-    const opts = TamVaktiApp.TONES.map(t => ({ value: t.id, label: t.label, desc: t.desc }))
+    const opts = [{ value: "__silent", label: "Sessiz (yalnızca yazı)", desc: "Ses çalmaz, yalnızca bildirim gösterilir" }]
+      .concat(TamVaktiApp.TONES.map(t => ({ value: t.id, label: t.label, desc: t.desc })))
       .concat([{ value: "__sys", label: "Telefon ses ayarları", desc: "Ses düzeyi, titreşim ve kanal ayarı" }]);
-    this.openChoice("Bildirim sesi", "Bir sese dokununca seçilir ve kısa bir önizleme çalar. Vakit bildirimi “Sessiz” ise ses çalmaz.", opts, this.alertTone, (v) => {
+    const current = this.notifMode === "sessiz" ? "__silent" : this.alertTone;
+    this.openChoice("Bildirim sesi", "Bir sese dokununca seçilir ve kısa önizleme çalar.", opts, current, (v) => {
       if (v === "__sys") return this.openSoundSettings();
+      if (v === "__silent") {
+        this.notifMode = "sessiz";
+        localStorage.setItem("tamvakti_notif_mode", "sessiz");
+        this.updateSettingsLabels();
+        this.scheduleSync();
+        this.showToast("Vakit bildirimleri sessiz olarak ayarlandı", "🔕", 2200);
+        return;
+      }
+      this.notifMode = "bip";
+      localStorage.setItem("tamvakti_notif_mode", "bip");
       this.alertTone = v;
       localStorage.setItem("tamvakti_alert_tone", v);
       this.updateSettingsLabels();
@@ -1686,6 +1733,17 @@ class TamVaktiApp {
     chip("permChipBattery", p.battery, "Serbest", "Kısıtlı");
     const dndRow = document.getElementById("permRowDnd");
     if (dndRow) dndRow.classList.toggle("hidden", !this.autoSilent);
+    // Akıllı özet satır: eksik izin sayısını hesapla
+    let missing = 0;
+    if (!p.notif || p.chan === false) missing++;
+    if (!p.exact) missing++;
+    if (!p.battery) missing++;
+    if (this.autoSilent && !p.dnd) missing++;
+    const sumChip = document.getElementById("permSummaryChip");
+    if (sumChip) {
+      sumChip.textContent = missing === 0 ? "✓ Tümü hazır" : `${missing} izin eksik`;
+      sumChip.className = "text-[13px] font-semibold " + (missing === 0 ? "text-sky-300" : "text-amber-300");
+    }
   }
 
   // Üreticiye özel adımlar (yalnızca arka planda uygulama öldürmesiyle bilinen markalarda gösterilir)

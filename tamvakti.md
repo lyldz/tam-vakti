@@ -102,6 +102,12 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
   - Tam ekran bildirim (`activity_prayer_alert.xml`, `PrayerAlertActivity.kt`, `values/colors.xml`): rekât kartı ve tekrar satırı kaldırıldı, daima Arctic koyu tema, 76dp logo + konum + dev saat + tek satır sıradaki vakit.
   - Kayan bildirim (`Notifs.kt`, `AlarmReceiver.kt`): sağda renkli `logo_full` (`setLargeIcon`), üstte şehir (`setSubText`), gövdede `"saat · Sıradaki: ..."`.
   - Durum çubuğu ve tek renk simge (`ic_stat_tamvakti.xml`, `ic_launcher_monochrome.xml`): güneş–yay–ufuk arası net boşluklu yeni çizim.
-- [ ] **Aşama 6:** Ayarlar (inceleme raporu hazırlandı) / Aylık İmsakiye inceleme ve iyileştirme
+- [x] **Ara Aşama 2 — Ayarlar Ekranı Sadeleştirme (2026-11-21):**
+  - 22 satırlık uzun liste hiçbir özellik silinmeden 4 grup altında 13 satıra indirildi (`Konum ve Vakit`, `Bildirimler`, `Görünüm ve Sistem`, `Uygulama`).
+  - `Vakit bildirimi` (Sesli/Sessiz) ve `Bildirim sesi` tek `Bildirim sesi` satırında birleştirildi (`Sessiz` en üstte).
+  - `Hesaplama yöntemi` ve `İhtiyat` tek `Hesaplama ve ihtiyat` satırında toplandı.
+  - 5 satırlık `İzinler` bloğu akıllı özet satıra (`✓ Tümü hazır` / `N izin eksik`, dokununca açılır) dönüştürüldü.
+  - 4 test/bakım düğmesi tek `Test ve sorun giderme` alt penceresinde toplandı.
+- [ ] **Aşama 6:** Şehir ve İlçe Seçimi modernizasyonu (rapor hazırlandı) / Aylık İmsakiye inceleme ve iyileştirme
 - [ ] **Aşama 7:** Ana ekran Widget'ları inceleme ve iyileştirme
 - [ ] **Aşama 8:** Bildirimler inceleme ve iyileştirme (en son)

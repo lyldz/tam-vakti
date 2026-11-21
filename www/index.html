@@ -511,7 +511,7 @@
 
 
       <section>
-        <div class="text-[12px] font-bold text-sky-300/90 uppercase tracking-wider px-1 mb-2">Konum</div>
+        <div class="text-[12px] font-bold text-sky-300/90 uppercase tracking-wider px-1 mb-2">Konum ve Vakit</div>
         <div class="rounded-2xl bg-[#0d1527] border border-sky-400/15 divide-y divide-white/5 overflow-hidden">
           <button onclick="app.openLocationModal()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
             <span class="flex items-center gap-3 min-w-0">
@@ -538,63 +538,27 @@
               <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
             </span>
           </label>
-          <button onclick="app.openCalcMethodModal()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
+          <button onclick="app.openCalcAndOffsetModal()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
             <span class="flex items-center gap-3 min-w-0">
               <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
               <span class="min-w-0">
-                <span class="block text-[14px] font-semibold text-slate-100">Hesaplama yöntemi</span>
+                <span class="block text-[14px] font-semibold text-slate-100">Hesaplama ve ihtiyat</span>
                 <span id="settingsMethodDesc" class="block text-[12px] text-slate-400 truncate">Konuma göre otomatik</span>
               </span>
             </span>
             <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
-              <span id="settingsMethodValue">Otomatik</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-            </span>
-          </button>
-          <button onclick="app.openIhtiyatModal()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
-            <span class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
-              <span class="min-w-0">
-                <span class="block text-[14px] font-semibold text-slate-100">İhtiyat</span>
-                <span id="settingsIhtiyatDesc" class="block text-[12px] text-slate-400 truncate">Tüm vakitlere dakika ekler</span>
-              </span>
-            </span>
-            <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
-              <span id="settingsCalcMethod">±0 dk</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              <span id="settingsCalcSummary">Diyanet</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </span>
           </button>
         </div>
       </section>
 
       <section>
-        <div class="text-[12px] font-bold text-sky-300/90 uppercase tracking-wider px-1 mb-2">Bildirim</div>
+        <div class="text-[12px] font-bold text-sky-300/90 uppercase tracking-wider px-1 mb-2">Bildirimler</div>
         <div class="rounded-2xl bg-[#0d1527] border border-sky-400/15 divide-y divide-white/5 overflow-hidden">
-          <button onclick="app.openPrayerModesModal()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
-            <span class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.065-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-              <span class="min-w-0">
-                <span class="block text-[14px] font-semibold text-slate-100">Vakit bildirimi</span>
-                <span id="settingsNotifDesc" class="block text-[12px] text-slate-400 truncate">Vakit girince ne olsun</span>
-              </span>
-            </span>
-            <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
-              <span id="settingsNotifMode">Telefon sesi</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-            </span>
-          </button>
-          <button onclick="app.openToneModal()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
-            <span class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z"/></svg>
-              <span class="min-w-0">
-                <span class="block text-[14px] font-semibold text-slate-100">Bildirim sesi</span>
-                <span id="settingsSoundDesc" class="block text-[12px] text-slate-400 truncate">Telefondaki istediğiniz sesi seçin</span>
-              </span>
-            </span>
-            <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
-              <span id="settingsSoundAction">Değiştir</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-            </span>
-          </button>
           <button onclick="app.openPrayerAlertList()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
             <span class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.065-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
               <span class="min-w-0">
                 <span class="block text-[14px] font-semibold text-slate-100">Vakit uyarıları</span>
                 <span id="settingsAlertsDesc" class="block text-[12px] text-slate-400 truncate">Vaktinde ve vakitten önce, her vakit ayrı</span>
@@ -604,19 +568,18 @@
               <span id="settingsAlertsSummary">5 vakit açık</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </span>
           </button>
-          <label class="flex items-center justify-between gap-3 px-4 py-3.5 cursor-pointer active:bg-white/5">
+          <button onclick="app.openToneModal()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
             <span class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z"/></svg>
               <span class="min-w-0">
-                <span class="block text-[14px] font-semibold text-slate-100">Namazda sessize al</span>
-                <span class="block text-[12px] text-slate-400">Vakitte 30 dk titreşime alır</span>
+                <span class="block text-[14px] font-semibold text-slate-100">Bildirim sesi</span>
+                <span id="settingsSoundDesc" class="block text-[12px] text-slate-400 truncate">Sesli, sessiz veya hatırlatma tonu</span>
               </span>
             </span>
-            <span class="relative inline-flex items-center shrink-0">
-              <input type="checkbox" id="autoSilentToggle" onchange="app.toggleAutoSilent(this.checked)" class="sr-only peer" checked>
-              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
+            <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
+              <span id="settingsSoundAction">Telefon sesi</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </span>
-          </label>
+          </button>
           <label class="flex items-center justify-between gap-3 px-4 py-3.5 cursor-pointer active:bg-white/5">
             <span class="flex items-center gap-3 min-w-0">
               <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -627,6 +590,19 @@
             </span>
             <span class="relative inline-flex items-center shrink-0">
               <input type="checkbox" id="ongoingNotifToggle" onchange="app.toggleOngoingNotification(this.checked)" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
+            </span>
+          </label>
+          <label class="flex items-center justify-between gap-3 px-4 py-3.5 cursor-pointer active:bg-white/5">
+            <span class="flex items-center gap-3 min-w-0">
+              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+              <span class="min-w-0">
+                <span class="block text-[14px] font-semibold text-slate-100">Namazda sessize al</span>
+                <span class="block text-[12px] text-slate-400">Vakitte 30 dk titreşime alır</span>
+              </span>
+            </span>
+            <span class="relative inline-flex items-center shrink-0">
+              <input type="checkbox" id="autoSilentToggle" onchange="app.toggleAutoSilent(this.checked)" class="sr-only peer" checked>
               <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
             </span>
           </label>
@@ -659,67 +635,9 @@
         </div>
       </section>
 
-      <!-- İzinler (yalnızca Android uygulamasında görünür) -->
-      <section id="permSection" class="hidden">
-        <div class="text-[12px] font-bold text-sky-300/90 uppercase tracking-wider px-1 mb-2">İzinler</div>
-        <div class="rounded-2xl bg-[#0d1527] border border-sky-400/15 divide-y divide-white/5 overflow-hidden">
-          <button id="permRowNotif" onclick="app.fixPermission('notif')" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
-            <span class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.065-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-              <span class="min-w-0">
-                <span class="block text-[14px] font-semibold text-slate-100">Bildirimler</span>
-                <span class="block text-[12px] text-slate-400">Uyarıların gelmesi için gerekli</span>
-              </span>
-            </span>
-            <span class="flex items-center gap-1 shrink-0"><span id="permChipNotif" class="text-[13px] font-semibold text-slate-400">…</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></span>
-          </button>
-          <button id="permRowExact" onclick="app.fixPermission('exact')" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
-            <span class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <span class="min-w-0">
-                <span class="block text-[14px] font-semibold text-slate-100">Tam zamanında uyarı</span>
-                <span class="block text-[12px] text-slate-400">Uyarıların dakikasında gelmesi için</span>
-              </span>
-            </span>
-            <span class="flex items-center gap-1 shrink-0"><span id="permChipExact" class="text-[13px] font-semibold text-slate-400">…</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></span>
-          </button>
-          <button id="permRowDnd" onclick="app.fixPermission('dnd')" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
-            <span class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
-              <span class="min-w-0">
-                <span class="block text-[14px] font-semibold text-slate-100">Sessize alma erişimi</span>
-                <span class="block text-[12px] text-slate-400">Namazda telefonu titreşime almak için</span>
-              </span>
-            </span>
-            <span class="flex items-center gap-1 shrink-0"><span id="permChipDnd" class="text-[13px] font-semibold text-slate-400">…</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></span>
-          </button>
-          <button id="permRowBattery" onclick="app.fixPermission('battery')" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
-            <span class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-              <span class="min-w-0">
-                <span class="block text-[14px] font-semibold text-slate-100">Pil tasarrufu</span>
-                <span class="block text-[12px] text-slate-400">Kısıtlıysa uyarılar gecikebilir</span>
-              </span>
-            </span>
-            <span class="flex items-center gap-1 shrink-0"><span id="permChipBattery" class="text-[13px] font-semibold text-slate-400">…</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></span>
-          </button>
-          <button id="permRowOem" hidden onclick="app.fixPermission('oem')" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
-            <span class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-              <span class="min-w-0">
-                <span class="block text-[14px] font-semibold text-slate-100">Arka planda çalışma</span>
-                <span class="block text-[12px] text-slate-400">Bazı telefonlar uygulamayı uyutur</span>
-              </span>
-            </span>
-            <span class="flex items-center gap-1 shrink-0"><span id="permChipOem" class="text-[13px] font-semibold text-slate-400">Kontrol et</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></span>
-          </button>
-        </div>
-      </section>
-
       <section>
-        <div class="text-[12px] font-bold text-sky-300/90 uppercase tracking-wider px-1 mb-2">Uygulama</div>
+        <div class="text-[12px] font-bold text-sky-300/90 uppercase tracking-wider px-1 mb-2">Görünüm ve Sistem</div>
         <div class="rounded-2xl bg-[#0d1527] border border-sky-400/15 divide-y divide-white/5 overflow-hidden">
-          
           <button onclick="app.openHomeModeModal()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
             <span class="flex items-center gap-3 min-w-0">
               <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm0 10a1 1 0 011-1h14a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4z"/></svg>
@@ -732,52 +650,77 @@
               <span id="settingsHomeModeValue">Detay</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </span>
           </button>
-          <button onclick="app.sendTestNotification()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
+
+          <!-- Sistem izinleri (akıllı özet + açılır 5 izin listesi, yalnızca Android'de görünür) -->
+          <div id="permSection" class="hidden">
+            <button onclick="app.togglePermPanel()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
+              <span class="flex items-center gap-3 min-w-0">
+                <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                <span class="min-w-0">
+                  <span class="block text-[14px] font-semibold text-slate-100">Sistem izinleri</span>
+                  <span class="block text-[12px] text-slate-400 truncate">Bildirim, alarm, pil ve arka plan</span>
+                </span>
+              </span>
+              <span class="flex items-center gap-1 shrink-0">
+                <span id="permSummaryChip" class="text-[13px] font-semibold text-sky-300">Kontrol ediliyor</span>
+                <svg id="permSummaryChevron" class="w-4 h-4 text-slate-500 shrink-0 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+              </span>
+            </button>
+            <div id="permListPanel" class="hidden bg-slate-950/40 divide-y divide-white/5 border-t border-white/5">
+              <button id="permRowNotif" onclick="app.fixPermission('notif')" class="w-full flex items-center justify-between gap-3 pl-10 pr-4 py-3 text-left active:bg-white/5 transition-colors">
+                <span class="min-w-0">
+                  <span class="block text-[13px] font-semibold text-slate-200">Bildirimler</span>
+                  <span class="block text-[11px] text-slate-400">Uyarıların gelmesi için gerekli</span>
+                </span>
+                <span class="flex items-center gap-1 shrink-0"><span id="permChipNotif" class="text-[12px] font-semibold text-slate-400">…</span><svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></span>
+              </button>
+              <button id="permRowExact" onclick="app.fixPermission('exact')" class="w-full flex items-center justify-between gap-3 pl-10 pr-4 py-3 text-left active:bg-white/5 transition-colors">
+                <span class="min-w-0">
+                  <span class="block text-[13px] font-semibold text-slate-200">Tam zamanında uyarı</span>
+                  <span class="block text-[11px] text-slate-400">Uyarıların dakikasında gelmesi için</span>
+                </span>
+                <span class="flex items-center gap-1 shrink-0"><span id="permChipExact" class="text-[12px] font-semibold text-slate-400">…</span><svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></span>
+              </button>
+              <button id="permRowDnd" onclick="app.fixPermission('dnd')" class="w-full flex items-center justify-between gap-3 pl-10 pr-4 py-3 text-left active:bg-white/5 transition-colors">
+                <span class="min-w-0">
+                  <span class="block text-[13px] font-semibold text-slate-200">Sessize alma erişimi</span>
+                  <span class="block text-[11px] text-slate-400">Namazda telefonu titreşime almak için</span>
+                </span>
+                <span class="flex items-center gap-1 shrink-0"><span id="permChipDnd" class="text-[12px] font-semibold text-slate-400">…</span><svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></span>
+              </button>
+              <button id="permRowBattery" onclick="app.fixPermission('battery')" class="w-full flex items-center justify-between gap-3 pl-10 pr-4 py-3 text-left active:bg-white/5 transition-colors">
+                <span class="min-w-0">
+                  <span class="block text-[13px] font-semibold text-slate-200">Pil tasarrufu</span>
+                  <span class="block text-[11px] text-slate-400">Kısıtlıysa uyarılar gecikebilir</span>
+                </span>
+                <span class="flex items-center gap-1 shrink-0"><span id="permChipBattery" class="text-[12px] font-semibold text-slate-400">…</span><svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></span>
+              </button>
+              <button id="permRowOem" hidden onclick="app.fixPermission('oem')" class="w-full flex items-center justify-between gap-3 pl-10 pr-4 py-3 text-left active:bg-white/5 transition-colors">
+                <span class="min-w-0">
+                  <span class="block text-[13px] font-semibold text-slate-200">Arka planda çalışma</span>
+                  <span class="block text-[11px] text-slate-400">Üreticiye özel pil ve kilit rehberi</span>
+                </span>
+                <span class="flex items-center gap-1 shrink-0"><span id="permChipOem" class="text-[12px] font-semibold text-slate-400">Kontrol et</span><svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></span>
+              </button>
+            </div>
+          </div>
+
+          <button onclick="app.openTroubleshootModal()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
             <span class="flex items-center gap-3 min-w-0">
               <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               <span class="min-w-0">
-                <span class="block text-[14px] font-semibold text-slate-100">Bildirimi test et</span>
-                <span id="settingsTestDesc" class="block text-[12px] text-slate-400 truncate">Şimdi bir deneme bildirimi gönderir</span>
-              </span>
-            </span>
-            <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
-              <span id="settingsTestAction">Dene</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-            </span>
-          </button>
-          <button onclick="app.resyncAlarms()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
-            <span class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <span class="min-w-0">
-                <span class="block text-[14px] font-semibold text-slate-100">Alarmları yeniden kur</span>
-                <span id="settingsResyncDesc" class="block text-[12px] text-slate-400 truncate">Uyarılar gelmiyorsa deneyin</span>
-              </span>
-            </span>
-            <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
-              <span id="settingsResyncAction">Kur</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-            </span>
-          </button>
-          <div id="fsTestRow" class="hidden"><button onclick="app.testFullScreenAlert()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
-            <span class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <span class="min-w-0">
-                <span class="block text-[14px] font-semibold text-slate-100">Tam ekranı dene</span>
-                <span id="settingsFsTestDesc" class="block text-[12px] text-slate-400 truncate">10 sn sonra gelir</span>
-              </span>
-            </span>
-            <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
-              <span id="settingsFsTestAction">Dene</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-            </span>
-          </button></div>
-          <button onclick="app.restartOnboarding()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
-            <span class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-              <span class="min-w-0">
-                <span class="block text-[14px] font-semibold text-slate-100">Kurulumu yeniden başlat</span>
-                <span class="block text-[12px] text-slate-400 truncate">Konum ve izin adımlarını tekrar gösterir</span>
+                <span class="block text-[14px] font-semibold text-slate-100">Test ve sorun giderme</span>
+                <span class="block text-[12px] text-slate-400 truncate">Bildirim testi, alarm kurulumu, sihirbaz</span>
               </span>
             </span>
             <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
           </button>
+        </div>
+      </section>
+
+      <section>
+        <div class="text-[12px] font-bold text-sky-300/90 uppercase tracking-wider px-1 mb-2">Uygulama</div>
+        <div class="rounded-2xl bg-[#0d1527] border border-sky-400/15 divide-y divide-white/5 overflow-hidden">
           <button onclick="app.openAboutModal()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
             <span class="flex items-center gap-3 min-w-0">
               <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
