@@ -20,6 +20,7 @@
         android:id="@+id/w_countdown"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fontFamily="monospace"
         android:textColor="@color/w_count"
         android:textSize="20sp"
         android:textStyle="bold" />

@@ -85,8 +85,16 @@ object Widgets {
     fun updateAll(ctx: Context) {
         val app = ctx.applicationContext
         val mgr = AppWidgetManager.getInstance(app)
+        val hasAny = listOf(
+            PrayerWidget::class.java, SmallWidget::class.java, RowWidget::class.java,
+            ListWidget::class.java, LargeWidget::class.java, ClockWidget::class.java,
+            MinimalWidget::class.java
+        ).any { mgr.getAppWidgetIds(ComponentName(app, it)).isNotEmpty() }
+        if (!hasAny) return
+
         val d = dayOfNext(app)
         val city = Store.city(app)
+        val inKerahat = isKerahatNow(d)
 
         push(app, mgr, PrayerWidget::class.java, R.layout.widget_prayer) { v -> fillClassic(v, d, city) }
         push(app, mgr, SmallWidget::class.java, R.layout.widget_small) { v ->
@@ -99,9 +107,12 @@ object Widgets {
             fillCells(v, d)
         }
         push(app, mgr, LargeWidget::class.java, R.layout.widget_large) { v ->
-            v.setTextViewText(R.id.w_city, city)
+            v.setTextViewText(R.id.w_city, if (d.tomorrow) "$city • Yarın" else city)
             v.setTextViewText(R.id.w_name, d.next?.let { nextLabel(it) } ?: "Tam Vakti")
-            v.setTextViewText(R.id.w_time, d.next?.let { "${it.time} • kalan" } ?: "Uygulamayı bir kez açın")
+            v.setTextViewText(
+                R.id.w_time,
+                d.next?.let { if (inKerahat) "${it.time} • Kerahat" else "${it.time} • kalan" } ?: "Uygulamayı bir kez açın"
+            )
             countdown(v, d.next)
             fillCells(v, d)
         }
@@ -114,7 +125,23 @@ object Widgets {
             v.setTextViewText(R.id.w_city, city)
             countdown(v, d.next)
         }
+        scheduleNextBoundary(app, d.next?.millis)
         scheduleMidnight(app)
+    }
+
+    /** Şu an kerahat vaktindeysek (Güneş + 45 dk, Öğle - 45 dk, Akşam - 45 dk) true döner. */
+    private fun isKerahatNow(d: Day): Boolean {
+        val next = d.next ?: return false
+        val now = System.currentTimeMillis()
+        val k = 45 * 60_000L
+        if (next.key == "ogle") {
+            val gunes = d.rows.getOrNull(1)
+            if (gunes != null && now >= gunes.millis && now < gunes.millis + k) return true
+            if (now >= next.millis - k && now < next.millis) return true
+        } else if (next.key == "aksam") {
+            if (now >= next.millis - k && now < next.millis) return true
+        }
+        return false
     }
 
     private fun push(
@@ -137,7 +164,7 @@ object Widgets {
             v.setTextViewText(R.id.widget_time, "Uygulamayı bir kez açın")
             v.setViewVisibility(R.id.widget_countdown, View.GONE)
         } else {
-            v.setTextViewText(R.id.widget_name, next.name)
+            v.setTextViewText(R.id.widget_name, nextLabel(next))
             v.setTextViewText(R.id.widget_time, next.time)
             v.setViewVisibility(R.id.widget_countdown, View.VISIBLE)
             val base = SystemClock.elapsedRealtime() + (next.millis - System.currentTimeMillis())
@@ -171,6 +198,19 @@ object Widgets {
             v.setTextColor(TIME[i], if (isNext) cText else if (past) cPast else cText)
             v.setInt(CELL[i], "setBackgroundResource", if (isNext) R.drawable.widget_cell_on else 0)
         }
+    }
+
+    /** Sıradaki vakit girdiğinde Chronometer eksiye düşmeden widget'ları bir sonraki vakte geçirir. */
+    private fun scheduleNextBoundary(app: Context, nextMillis: Long?) {
+        if (nextMillis == null || nextMillis <= System.currentTimeMillis()) return
+        val intent = Intent(app, PrayerWidget::class.java).apply { action = ACTION_TICK }
+        val pi = PendingIntent.getBroadcast(
+            app, 4991, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        try {
+            val am = app.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            am.set(AlarmManager.RTC, nextMillis + 2000L, pi)
+        } catch (e: Exception) {}
     }
 
     /** Gece yarısı tarih/"Yarın" etiketi yenilensin (kesin olmayan, uyandırmayan alarm: pil dostu). */

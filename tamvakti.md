@@ -113,5 +113,8 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
 - [x] **Aşama 6 — Logo Ufuk Cilası ve Aylık İmsakiye İyileştirmeleri (2026-11-21, `v2.13.6` Seher, `versionCode`: 23900):**
   - Logo ufuk çizgisi yayın tam tabanına (`y=78`) hizalandı (`A3.svg`, `logo.svg`, `ic_launcher_foreground.xml`, `logo_full.png`, `mipmap-*`, `play-store-icon-512.png`, `docs/logo.png`).
   - Aylık İmsakiye: çift Hicri ay aralığı başlığı, gün sütununda kısa Hicri tarih, `_monthlySeq` hızlı ay değiştirme koruması, bugünkü sıradaki vakit vurgusu, ihtiyat notu ve sadeleştirilmiş üst bar.
-- [ ] **Aşama 7:** Ana ekran Widget'ları inceleme ve iyileştirme
-- [ ] **Aşama 8:** Bildirimler inceleme ve iyileştirme (en son)
+- [x] **Aşama 7 — Ana Ekran Widget'ları İyileştirmeleri (2026-11-21, `v2.13.7` Seher, `versionCode`: 24000):**
+  - Sıradaki vakit sınırına (`+2 sn`) hafif widget tazeleme alarmı (`scheduleNextBoundary`) eklendi (Chronometer eksiye düşmez); aktif widget yoksa alarm kurulmaz.
+  - Tüm 7 widget'ta `Chronometer` ve vakit saatleri `monospace` yapıldı; `widget_bg.xml`'e 1dp Arctic camgöbeği çerçeve eklendi.
+  - `LargeWidget`: Yatsı sonrası `"• Yarın"` ve kerahat anında `"• Kerahat"` notu; `PrayerWidget`: Cuma günü `"Cuma"` tutarlılığı.
+- [ ] **Aşama 8:** Bildirimler genel inceleme ve iyileştirme (en son)
