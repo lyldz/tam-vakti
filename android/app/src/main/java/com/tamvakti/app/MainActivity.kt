@@ -52,6 +52,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var pendingGeoCallback: GeolocationPermissions.Callback? = null
     private var pendingGeoOrigin: String? = null
     private var pendingInstallApk: File? = null
+    @Volatile private var isApkDownloading = false
+    @Volatile private var downloadedApkUrl: String? = null
 
     // Native Pusula & Sensör Değişkenleri
     private var sensorManager: SensorManager? = null
@@ -375,11 +377,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onResume() {
         super.onResume()
-        // Bilinmeyen kaynak izninden dönüldüyse bekleyen APK kurulumunu başlat
+        // Bilinmeyen kaynak izninden dönüldüyse bekleyen APK kurulumunu başlat; izin verilmediyse bekleyen durumu temizle
         val apk = pendingInstallApk
-        if (apk != null && apk.exists()) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || packageManager.canRequestPackageInstalls()) {
-                pendingInstallApk = null
+        if (apk != null) {
+            pendingInstallApk = null
+            if (apk.exists() && (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || packageManager.canRequestPackageInstalls())) {
                 promptInstallApk(apk)
             }
         }
@@ -911,6 +913,19 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     fun startApkDownload(downloadUrl: String) {
+        if (isApkDownloading) return
+
+        val cachedApk = File(cacheDir, "TamVakti-update.apk")
+        if (downloadUrl == downloadedApkUrl && cachedApk.exists() && cachedApk.length() > 0L) {
+            runOnUiThread {
+                webView.evaluateJavascript("window.app && window.app.onUpdateDownloadProgress(100, 'Kuruluma hazır!');", null)
+                promptInstallApk(cachedApk)
+            }
+            return
+        }
+
+        isApkDownloading = true
+        downloadedApkUrl = null
         thread {
             try {
                 runOnUiThread {
@@ -986,6 +1001,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 input.close()
                 connection.disconnect()
 
+                if (fileLength > 0 && total < fileLength.toLong()) {
+                    throw java.io.IOException("İndirme tamamlanamadı")
+                }
+
+                downloadedApkUrl = downloadUrl
+
                 runOnUiThread {
                     webView.evaluateJavascript("window.app && window.app.onUpdateDownloadProgress(100, 'Kuruluma hazır!');", null)
                     promptInstallApk(apkFile)
@@ -993,10 +1014,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
             } catch (e: Exception) {
                 e.printStackTrace()
+                downloadedApkUrl = null
                 runOnUiThread {
                     val errMsg = (e.message ?: "Bilinmeyen hata").replace("\\", " ").replace("'", " ").replace("\n", " ")
                     webView.evaluateJavascript("window.app && window.app.onUpdateDownloadError('$errMsg');", null)
                 }
+            } finally {
+                isApkDownloading = false
             }
         }
     }
@@ -1027,6 +1051,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             startActivity(installIntent)
         } catch (e: Exception) {
             e.printStackTrace()
+            downloadedApkUrl = null
             val errMsg = (e.message ?: "Bilinmeyen hata").replace("\\", " ").replace("'", " ").replace("\n", " ")
             webView.evaluateJavascript("window.app && window.app.onUpdateDownloadError('Kurulum başlatılamadı: $errMsg');", null)
         }

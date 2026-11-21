@@ -697,6 +697,9 @@ class TamVaktiApp {
     }
     this.refreshPermissionStatus();
     this.onOnboardingResume();
+    if (this._updateInstallerLaunched) {
+      this.resetUpdateDownloadUI(!!this._updateDownloaded);
+    }
     const viewQibla = document.getElementById("viewQibla");
     const qiblaVisible = viewQibla && !viewQibla.classList.contains("hidden");
     if (this.compass && qiblaVisible) {
@@ -2404,10 +2407,12 @@ class TamVaktiApp {
 
     if (tagEl) tagEl.textContent = this.updateInfo.version;
     if (notesEl) notesEl.innerHTML = this.formatChangelog(this.updateInfo.body);
-    if (progressArea) progressArea.classList.add("hidden");
-    if (btn) {
-      btn.classList.remove("opacity-50", "pointer-events-none");
-      btn.innerHTML = DOWNLOAD_BTN_HTML;
+    if (!this.isDownloadingUpdate) {
+      if (progressArea) progressArea.classList.add("hidden");
+      if (btn) {
+        btn.classList.remove("opacity-50", "pointer-events-none");
+        btn.innerHTML = this._updateDownloaded ? `<span>Kurulumu Başlat</span>` : DOWNLOAD_BTN_HTML;
+      }
     }
 
     if (modal) {
@@ -2470,13 +2475,7 @@ class TamVaktiApp {
   }
 
   startUpdateDownloadFromModal() {
-    const progressArea = document.getElementById("modalUpdateProgressArea");
-    const btn = document.getElementById("modalBtnStartUpdate");
-    if (progressArea) progressArea.classList.remove("hidden");
-    if (btn) {
-      btn.classList.add("opacity-50", "pointer-events-none");
-      btn.innerHTML = `<span>İndiriliyor…</span>`;
-    }
+    if (this.isDownloadingUpdate) return;
     this.startUpdateDownload();
   }
 
@@ -2568,29 +2567,65 @@ class TamVaktiApp {
     }
   }
 
+  resetUpdateDownloadUI(readyToInstall = false) {
+    if (this._updateResetTimer) {
+      clearTimeout(this._updateResetTimer);
+      this._updateResetTimer = null;
+    }
+    this.isDownloadingUpdate = false;
+    this._updateInstallerLaunched = false;
+
+    const progressArea = document.getElementById("updateProgressArea");
+    const btn = document.getElementById("btnStartUpdate");
+    const modalProgressArea = document.getElementById("modalUpdateProgressArea");
+    const modalBtn = document.getElementById("modalBtnStartUpdate");
+
+    if (progressArea) progressArea.classList.add("hidden");
+    if (modalProgressArea) modalProgressArea.classList.add("hidden");
+
+    if (btn) {
+      btn.classList.remove("opacity-50", "pointer-events-none");
+      btn.innerHTML = readyToInstall ? `<span>Kur</span>` : `<span>İndir</span>`;
+    }
+    if (modalBtn) {
+      modalBtn.classList.remove("opacity-50", "pointer-events-none");
+      modalBtn.innerHTML = readyToInstall ? `<span>Kurulumu Başlat</span>` : DOWNLOAD_BTN_HTML;
+    }
+  }
+
   startUpdateDownload() {
     if (!this.canSelfUpdate) return;
     if (!this.updateInfo || !this.updateInfo.downloadUrl) return;
     if (this.isDownloadingUpdate) return;
 
+    if (this._updateResetTimer) {
+      clearTimeout(this._updateResetTimer);
+      this._updateResetTimer = null;
+    }
     this.isDownloadingUpdate = true;
+    this._updateInstallerLaunched = false;
+
     const progressArea = document.getElementById("updateProgressArea");
     const btn = document.getElementById("btnStartUpdate");
+    const modalProgressArea = document.getElementById("modalUpdateProgressArea");
+    const modalBtn = document.getElementById("modalBtnStartUpdate");
+
     if (progressArea) progressArea.classList.remove("hidden");
+    if (modalProgressArea) modalProgressArea.classList.remove("hidden");
     if (btn) {
       btn.classList.add("opacity-50", "pointer-events-none");
       btn.innerHTML = `<span>İndiriliyor…</span>`;
+    }
+    if (modalBtn) {
+      modalBtn.classList.add("opacity-50", "pointer-events-none");
+      modalBtn.innerHTML = `<span>İndiriliyor…</span>`;
     }
 
     if (window.AndroidBridge && window.AndroidBridge.downloadAndInstallApk) {
       window.AndroidBridge.downloadAndInstallApk(this.updateInfo.downloadUrl);
     } else {
       window.open(this.updateInfo.downloadUrl, "_blank");
-      this.isDownloadingUpdate = false;
-      if (btn) {
-        btn.classList.remove("opacity-50", "pointer-events-none");
-        btn.innerHTML = `<span>İndir</span>`;
-      }
+      this.resetUpdateDownloadUI(false);
     }
   }
 
@@ -2610,14 +2645,32 @@ class TamVaktiApp {
     if (modalStatus) modalStatus.textContent = txt;
 
     if (percent >= 100) {
+      this.isDownloadingUpdate = false;
+      this._updateDownloaded = true;
+      this._updateInstallerLaunched = true;
       const finishText = `<span>📦</span><span>Paket Yükleyici Başlatılıyor...</span>`;
       if (btn) btn.innerHTML = finishText;
       if (modalBtn) modalBtn.innerHTML = finishText;
+
+      // Bazı cihazlarda yükleyici iptalinde onResume tetiklenmese bile düğmeler kilitli kalmasın
+      if (this._updateResetTimer) clearTimeout(this._updateResetTimer);
+      this._updateResetTimer = setTimeout(() => {
+        if (this._updateInstallerLaunched) {
+          this.resetUpdateDownloadUI(true);
+        }
+      }, 2500);
     }
   }
 
   onUpdateDownloadError(errorMsg) {
+    if (this._updateResetTimer) {
+      clearTimeout(this._updateResetTimer);
+      this._updateResetTimer = null;
+    }
     this.isDownloadingUpdate = false;
+    this._updateDownloaded = false;
+    this._updateInstallerLaunched = false;
+
     const progressArea = document.getElementById("updateProgressArea");
     const btn = document.getElementById("btnStartUpdate");
     const modalProgressArea = document.getElementById("modalUpdateProgressArea");

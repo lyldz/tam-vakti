@@ -122,3 +122,7 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
   - Sabit bildirimde açık/koyu tema uyumlu `notif_accent`, `monospace` kronometre ve vakit sınırına tam yenileme (`min(10 dk, kalan + 2 sn)`).
   - `setLargeIcon` 128×128 (`inSampleSize = 8`) hafif Bitmap; kullanılmayan eski `tamvakti_alert_*` kanalları otomatik silinir.
   - `Silencer.endIfExpired()` ile yeniden başlatmada titreşimde takılı kalma önlendi.
+
+- **Güncelleme iptal sonrası tekrar kurulum/indirme kilidi düzeltmesi:**
+  - `www/js/app.js`: İndirme %100'e ulaşıp paket yükleyici açıldığında `isDownloadingUpdate` sıfırlanıyor, `onAppResume()` ve 2.5 sn yedek zamanlayıcı ile `resetUpdateDownloadUI()` çağrılarak düğmeler yeniden tıklanabilir hale geliyor ("Kur" / "Kurulumu Başlat").
+  - `MainActivity.kt`: Aynı oturumda zaten indirilmiş APK önbellekte duruyorsa (`downloadedApkUrl`) tekrar indirme yapmadan doğrudan paket yükleyiciyi açıyor; eşzamanlı indirme kilidi (`isApkDownloading`), eksik dosya kontrolü ve bilinmeyen kaynak izni iptalinde `pendingInstallApk` temizliği eklendi.
