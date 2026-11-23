@@ -139,3 +139,7 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
   - Toplu iğne yerine telefonlardaki modern GPS/konum simgesi (SVG) yanında bulunan il/ilçe adı yer alabilir.
   - Ekrandan yumuşak bir şekilde silinerek (fade-out) kaybolmalı.
   - **Not:** İlk sohbette kullanıcıya hatırlatılacak; uygulama öncesi araştırılıp görsel taslak/öneri sunulacak.
+- [ ] **Eski bildirimlerin (özellikle kerahat / vakit bildirimlerinin) otomatik silinmemesi:**
+  - 23 Kas ekran görüntüsünde Akşam vakti (17:43) girdikten 32 dk sonra bile 1 saat önceki `Kerahat vakti` bildiriminin hâlâ bildirim çekmecesinde durduğu görüldü.
+  - Yeni vakit girdiğinde önceki `kerahat` bildiriminin de temizlenmesi ve/veya bildirimlere süre aşımı (`setTimeoutAfter`) eklenmesi seçenekleri araştırılacak.
+  - **Not:** İleride kullanıcıya hatırlatılıp önce neden + çözüm raporu hazırlanacak, onay sonrası uygulanacak.
