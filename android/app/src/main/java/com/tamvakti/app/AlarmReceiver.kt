@@ -32,10 +32,18 @@ class AlarmReceiver : BroadcastReceiver() {
             val app = ctx.applicationContext
             if (type == "ongoing_tick") { Notifs.refreshOngoing(app); return }
             when (type) {
-                "reminder" -> Notifs.postAlert(app, Notifs.ID_ALERT_REMINDER, title, body, quiet = mode == "sessiz")
+                "reminder" -> {
+                    // Vakit bildirimi kapalı olsa bile hatırlatma sıradaki vakit girince kendiliğinden silinsin
+                    val next = Store.nextPrayer(app)
+                    val remain = if (next != null) {
+                        (next.millis - System.currentTimeMillis()).coerceIn(5 * 60_000L, 60 * 60_000L)
+                    } else 45 * 60_000L
+                    Notifs.postAlert(app, Notifs.ID_ALERT_REMINDER, title, body, quiet = mode == "sessiz", timeoutMs = remain)
+                }
                 "vakit" -> {
-                    // Vakit girince o vaktin eski "vakitten önce" hatırlatmasını temizle
+                    // Vakit girince önceki "vakitten önce" hatırlatması ve kerahat bildirimini temizle
                     Notifs.cancelAlert(app, Notifs.ID_ALERT_REMINDER)
+                    Notifs.cancelAlert(app, Notifs.ID_ALERT_KERAHAT)
                     // Vakit girişinde (ve ayar açıksa) tam ekran bildirim
                     var fs: Intent? = null
                     if (forceFullScreen || Store.fullScreenEnabled(app)) {
@@ -55,9 +63,9 @@ class AlarmReceiver : BroadcastReceiver() {
                         next != null -> "Sıradaki: ${next.name} ${next.time}"
                         else -> body
                     }
-                    Notifs.postAlert(app, Notifs.ID_ALERT_VAKIT, title, cleanBody, quiet = mode == "sessiz", fullScreen = fs)
+                    Notifs.postAlert(app, Notifs.ID_ALERT_VAKIT, title, cleanBody, quiet = mode == "sessiz", fullScreen = fs, timeoutMs = 60 * 60_000L)
                 }
-                "kerahat" -> Notifs.postAlert(app, Notifs.ID_ALERT_KERAHAT, title, body, quiet = true)
+                "kerahat" -> Notifs.postAlert(app, Notifs.ID_ALERT_KERAHAT, title, body, quiet = true, timeoutMs = 45 * 60_000L)
                 "silent_start" -> Silencer.start(app, silentUntil)
                 "silent_end" -> Silencer.end(app)
                 else -> {}

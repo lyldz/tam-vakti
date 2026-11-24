@@ -217,6 +217,45 @@ html, body {
   pointer-events: auto !important;
 }
 
+/* GPS Konum Bulundu Kartı (yumuşak giriş + ekrandan silinerek kaybolma) */
+#gpsLocationBanner {
+  z-index: 100011;
+  opacity: 0;
+  transform: translate(-50%, -10px) scale(0.96);
+  filter: blur(0px);
+  pointer-events: none;
+  box-shadow: 0 14px 36px rgba(2, 6, 23, 0.65), 0 0 24px rgba(56, 189, 248, 0.16);
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
+}
+#gpsLocationBanner.gps-visible {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+  filter: blur(0px);
+  pointer-events: auto;
+}
+#gpsLocationBanner.gps-dissolve {
+  opacity: 0;
+  transform: translate(-50%, -2px) scale(0.985);
+  filter: blur(4px);
+  pointer-events: none;
+  transition: opacity 0.85s ease-out, transform 0.85s ease-out, filter 0.85s ease-out;
+}
+.gps-banner-pulse {
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(56, 189, 248, 0.55);
+  opacity: 0;
+  pointer-events: none;
+}
+#gpsLocationBanner.gps-visible .gps-banner-pulse {
+  animation: gpsPulseRing 1.8s ease-out infinite;
+}
+@keyframes gpsPulseRing {
+  0% { transform: scale(0.92); opacity: 0.7; }
+  100% { transform: scale(1.42); opacity: 0; }
+}
+
 /* =========================================================
    KOYU TEMA (DARK MODE) - ARCTIC (LACİVERT & CAMGÖBEĞİ) PALETİ
    ========================================================= */

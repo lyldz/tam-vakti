@@ -134,12 +134,8 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
 - **Google Play aşamasına bırakılanlar:** Yurt dışı konum seçimi, Play (`play` flavor) AAB yayın hazırlığı.
 
 ## Yapılacak / Düzeltilecek Listesi (Hatırlatılacak)
-- [ ] **GPS ile konum bulunduğunda gösterilen bildirim/toast tasarımı:**
-  - Şu anki toplu iğne (`📍`) ikonlu küçük toast yerine daha modern, okunaklı ve biraz daha büyük bir görsel tasarım hazırlanacak.
-  - Toplu iğne yerine telefonlardaki modern GPS/konum simgesi (SVG) yanında bulunan il/ilçe adı yer alabilir.
-  - Ekrandan yumuşak bir şekilde silinerek (fade-out) kaybolmalı.
-  - **Not:** İlk sohbette kullanıcıya hatırlatılacak; uygulama öncesi araştırılıp görsel taslak/öneri sunulacak.
-- [ ] **Eski bildirimlerin (özellikle kerahat / vakit bildirimlerinin) otomatik silinmemesi:**
-  - 23 Kas ekran görüntüsünde Akşam vakti (17:43) girdikten 32 dk sonra bile 1 saat önceki `Kerahat vakti` bildiriminin hâlâ bildirim çekmecesinde durduğu görüldü.
-  - Yeni vakit girdiğinde önceki `kerahat` bildiriminin de temizlenmesi ve/veya bildirimlere süre aşımı (`setTimeoutAfter`) eklenmesi seçenekleri araştırılacak.
-  - **Not:** İleride kullanıcıya hatırlatılıp önce neden + çözüm raporu hazırlanacak, onay sonrası uygulanacak.
+- [x] **GPS ile konum bulunduğunda gösterilen bildirim/toast tasarımı (2026-11-24):**
+  - `#gpsLocationBanner` eklendi: kırmızı toplu iğne yerine nabızlı camgöbeği halka içinde yerel GPS hedef SVG simgesi, 2 satırlı net tipografi (`GPS KONUMU BULUNDU` / `KONUM GÜNCELLENDİ` + `İl · İlçe`) ve 3,2 sn sonunda ekrandan yumuşakça silinerek (`gps-dissolve`, opacity + blur) kaybolma animasyonu.
+- [x] **Eski bildirimlerin (özellikle kerahat / vakit bildirimlerinin) otomatik silinmemesi (2026-11-24):**
+  - `Notifs.postAlert()` içine Android yerel `setTimeoutAfter(timeoutMs)` desteği eklendi.
+  - `AlarmReceiver.kt`: Kerahat bildirimine `45 dk` zaman aşımı + yeni vakit girdiğinde anında `cancelAlert(ID_ALERT_KERAHAT)`; vakit öncesi hatırlatmaya sıradaki vakte kalan süre kadar zaman aşımı; vakit girişi bildirimine `60 dk` zaman aşımı eklendi.

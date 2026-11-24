@@ -1227,6 +1227,25 @@
     <span id="toastMsg" class="leading-tight">İşlem tamamlandı.</span>
   </div>
 
+  <!-- GPS KONUM BULUNDU BİLDİRİM KARTI -->
+  <div id="gpsLocationBanner" onclick="app.hideGpsBanner()" class="fixed top-6 left-1/2 max-w-[92%] min-w-[248px] bg-[#0c2340]/95 border border-sky-400/35 backdrop-blur-xl text-white px-4 py-3 rounded-2xl flex items-center gap-3.5 cursor-pointer select-none">
+    <div class="relative w-10 h-10 rounded-full bg-sky-400/15 border border-sky-300/35 flex items-center justify-center shrink-0">
+      <span class="gps-banner-pulse"></span>
+      <svg class="w-5 h-5 text-sky-300 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none"></circle>
+        <circle cx="12" cy="12" r="7.5"></circle>
+        <line x1="12" y1="1.8" x2="12" y2="4.5"></line>
+        <line x1="12" y1="19.5" x2="12" y2="22.2"></line>
+        <line x1="1.8" y1="12" x2="4.5" y2="12"></line>
+        <line x1="19.5" y1="12" x2="22.2" y2="12"></line>
+      </svg>
+    </div>
+    <div class="min-w-0 pr-1">
+      <div id="gpsBannerLabel" class="text-[10px] font-bold uppercase tracking-[0.14em] text-sky-300/90 leading-none">GPS KONUMU BULUNDU</div>
+      <div id="gpsBannerPlace" class="text-[16px] font-extrabold text-white tracking-tight leading-snug mt-0.5 truncate">—</div>
+    </div>
+  </div>
+
   <!-- Uygulama Scriptleri -->
   <script src="js/cities.js"></script>
   <script src="js/prayer-engine.js"></script>

@@ -184,7 +184,7 @@ object Notifs {
     /** Vakit girişi / hatırlatma / kerahat bildirimi. */
     fun postAlert(
         ctx: Context, id: Int, title: String, body: String, quiet: Boolean,
-        fullScreen: Intent? = null
+        fullScreen: Intent? = null, timeoutMs: Long = 0L
     ) {
         if (!hasPermission(ctx)) return
         createChannels(ctx)
@@ -198,6 +198,7 @@ object Notifs {
             .setContentIntent(openAppIntent(ctx))
             .setPriority(if (quiet) NotificationCompat.PRIORITY_DEFAULT else NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
+        if (timeoutMs > 0L) builder.setTimeoutAfter(timeoutMs)
         if (city.isNotBlank() && city != "Tam Vakti") builder.setSubText(city)
         largeIcon(ctx)?.let { builder.setLargeIcon(it) }
         // Tam ekran bildirim (kilit ekranı / ekran kapalıyken tüm ekranı kaplar; açıkken yukarıdan kayan bildirim olur)

@@ -703,7 +703,7 @@ class TamVaktiApp {
     const viewQibla = document.getElementById("viewQibla");
     const qiblaVisible = viewQibla && !viewQibla.classList.contains("hidden");
     if (this.compass && qiblaVisible) {
-      this.compass.resumeCompass(); // native taraf onPause'da durdu
+      this.compass.resumeCompass(true); // native taraf onPause'da durdu
     }
   }
 
@@ -1533,12 +1533,12 @@ class TamVaktiApp {
     return fallbackName;
   }
 
-  setAutoLocation(on) {
+  setAutoLocation(on, skipCheck = false) {
     this.autoLocation = !!on;
     localStorage.setItem("tamvakti_auto_location", this.autoLocation ? "true" : "false");
     const cb = document.getElementById("autoLocationToggle");
     if (cb) cb.checked = this.autoLocation;
-    if (this.autoLocation) {
+    if (this.autoLocation && !skipCheck) {
       const p = this.getPermissionState();
       if (p && !p.loc) {
         this.showToast("Otomatik güncelleme için konum izni gerekli (Ayarlar › Uygulama izni).", "📍", 3500);
@@ -1569,7 +1569,7 @@ class TamVaktiApp {
       if (cur && !cur.isPlaceholder && km(n.lat, n.lon) > km(cur.lat, cur.lon) - 1) return;
       this.saveLocation({ name, lat: n.lat, lon: n.lon });
       this.updatePrayers();
-      this.showToast(`Konum güncellendi: ${this.shortPlaceName(name)}`, "📍");
+      this.showGpsBanner(name, "KONUM GÜNCELLENDİ");
     }, () => {}, { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 });
   }
 
@@ -1584,10 +1584,10 @@ class TamVaktiApp {
           const lat = pos.coords.latitude;
           const lon = pos.coords.longitude;
           const locName = await this.resolveLocationName(lat, lon);
-          this.selectLocation(locName, lat, lon);
-          this.setAutoLocation(true);
-          const districtDisplay = locName.includes("/") ? locName.split("/")[1] : locName;
-          this.showToast(`Konumunuz tespit edildi: ${districtDisplay}`, "📍");
+          this.selectLocation(locName, lat, lon, true);
+          this._autoLocAt = Date.now();
+          this.setAutoLocation(true, true);
+          this.showGpsBanner(locName, "GPS KONUMU BULUNDU");
           if (lbl) lbl.textContent = idleTxt;
         },
         (err) => {
@@ -2358,6 +2358,54 @@ class TamVaktiApp {
     }, duration);
   }
 
+  formatGpsPlace(locName) {
+    if (!locName) return "";
+    if (!locName.includes("/")) return locName;
+    const [city, dist] = locName.split("/").map(s => s.trim());
+    if (!dist || dist === "Merkez" || dist === city) return city;
+    return `${city} · ${dist}`;
+  }
+
+  showGpsBanner(locName, label = "GPS KONUMU BULUNDU", duration = 3200) {
+    const banner = document.getElementById("gpsLocationBanner");
+    const labelEl = document.getElementById("gpsBannerLabel");
+    const placeEl = document.getElementById("gpsBannerPlace");
+    if (!banner || !placeEl) {
+      this.showToast(`${label}: ${this.formatGpsPlace(locName)}`, "✓", duration);
+      return;
+    }
+
+    if (this._gpsBannerTimer) clearTimeout(this._gpsBannerTimer);
+    if (this._gpsBannerCleanupTimer) clearTimeout(this._gpsBannerCleanupTimer);
+
+    if (labelEl) labelEl.textContent = label;
+    placeEl.textContent = this.formatGpsPlace(locName);
+
+    banner.classList.remove("gps-dissolve", "gps-visible");
+    void banner.offsetWidth;
+    banner.classList.add("gps-visible");
+
+    this._gpsBannerTimer = setTimeout(() => {
+      this.hideGpsBanner();
+    }, duration);
+  }
+
+  hideGpsBanner() {
+    const banner = document.getElementById("gpsLocationBanner");
+    if (!banner) return;
+    if (this._gpsBannerTimer) {
+      clearTimeout(this._gpsBannerTimer);
+      this._gpsBannerTimer = null;
+    }
+    if (!banner.classList.contains("gps-visible")) return;
+    banner.classList.remove("gps-visible");
+    banner.classList.add("gps-dissolve");
+    if (this._gpsBannerCleanupTimer) clearTimeout(this._gpsBannerCleanupTimer);
+    this._gpsBannerCleanupTimer = setTimeout(() => {
+      banner.classList.remove("gps-dissolve");
+    }, 900);
+  }
+
   formatChangelog(rawText) {
     if (!rawText) return "<div class='text-slate-300 py-1'>Yeni özellikler ve performans iyileştirmeleri.</div>";
 
@@ -3004,7 +3052,10 @@ class TamVaktiApp {
     if (!this._obDenied) this._obDenied = { notif: false, loc: false };
     if (kind === "notif") {
       this._obDenied.notif = !granted;
-      if (granted) this.evaluateCurrentPrayer();
+      if (granted) {
+        this._lastNotifTargetMillis = null;
+        this.evaluateCurrentPrayer();
+      }
     } else if (kind === "loc") {
       this._obDenied.loc = !granted;
     }
@@ -3039,10 +3090,10 @@ class TamVaktiApp {
           const lat = pos.coords.latitude;
           const lon = pos.coords.longitude;
           const locName = await this.resolveLocationName(lat, lon);
-          this.selectLocation(locName, lat, lon); // konum adımından kendiliğinden ilerler
-          this.setAutoLocation(true);
-          const districtDisplay = locName.includes("/") ? locName.split("/")[1] : locName;
-          this.showToast(`Konum tespit edildi: ${districtDisplay}`, "📍");
+          this.selectLocation(locName, lat, lon, true); // konum adımından kendiliğinden ilerler
+          this._autoLocAt = Date.now();
+          this.setAutoLocation(true, true);
+          this.showGpsBanner(locName, "GPS KONUMU BULUNDU");
           if (btn) btn.innerHTML = origHtml;
         },
         (err) => {
