@@ -19,6 +19,7 @@ object Scheduler {
         return am.canScheduleExactAlarms()
     }
 
+    @Synchronized
     fun sync(ctx: Context, json: String) {
         Store.prefs(ctx).edit().putString("schedule", json).apply()
         reschedule(ctx)
@@ -82,6 +83,7 @@ object Scheduler {
         return o.toString()
     }
 
+    @Synchronized
     fun reschedule(ctx: Context) {
         val app = ctx.applicationContext
         val am = app.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -160,6 +162,7 @@ object Scheduler {
      * kurulu alarm sayısı 30'un altına düştüğünde yeniler. Aynı dakikadaki birden fazla
      * alarmın (ör. vakit + silent_start + kerahat) birbirini iptal etmesini de önler.
      */
+    @Synchronized
     fun rescheduleIfNeeded(ctx: Context) {
         val app = ctx.applicationContext
         val p = Store.prefs(app)

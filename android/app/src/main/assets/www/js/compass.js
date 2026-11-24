@@ -194,8 +194,8 @@ class QiblaCompass {
   }
 
   // Uygulama arka plandan dönünce / modal kapanınca: aşamayı koruyarak sensörü yeniden aç
-  resumeCompass() {
-    if (this.isListening) return;
+  resumeCompass(force = false) {
+    if (this.isListening && !force) return;
     this._goodSince = 0;
     this._lowSince = 0;
     this._startTs = performance.now();
@@ -285,8 +285,11 @@ class QiblaCompass {
       this.onNativeUpdate(heading, 3, e.beta || 0, e.gamma || 0);
     };
     const add = () => {
-      window.addEventListener("deviceorientationabsolute", this._webHandler, true);
-      window.addEventListener("deviceorientation", this._webHandler, true);
+      if ("ondeviceorientationabsolute" in window) {
+        window.addEventListener("deviceorientationabsolute", this._webHandler, true);
+      } else {
+        window.addEventListener("deviceorientation", this._webHandler, true);
+      }
     };
     if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
       DeviceOrientationEvent.requestPermission().then((r) => { if (r === "granted" && this._webHandler) add(); }).catch(() => {});

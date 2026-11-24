@@ -162,6 +162,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 if (hasLocationPermission()) {
                     callback?.invoke(origin, true, false)
                 } else {
+                    pendingGeoCallback?.invoke(pendingGeoOrigin, false, false)
                     pendingGeoCallback = callback
                     pendingGeoOrigin = origin
                     ActivityCompat.requestPermissions(
@@ -250,7 +251,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         targetMillis: Long
     ) {
         if (!hasNotificationPermission()) {
-            requestNotificationPermission()
             return
         }
         Notifs.postOngoing(this, cityName, nextPrayerName, nextPrayerTime, targetMillis)
@@ -926,80 +926,83 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         isApkDownloading = true
         downloadedApkUrl = null
-        thread {
-            try {
-                runOnUiThread {
-                    webView.evaluateJavascript("window.app && window.app.onUpdateDownloadProgress(0, 'İndirme başlatılıyor...');", null)
+        val evalJs: (String) -> Unit = { script ->
+            runOnUiThread {
+                if (!isFinishing && !isDestroyed && ::webView.isInitialized) {
+                    webView.evaluateJavascript(script, null)
                 }
+            }
+        }
+        thread {
+            var connection: HttpURLConnection? = null
+            try {
+                evalJs("window.app && window.app.onUpdateDownloadProgress(0, 'İndirme başlatılıyor...');")
 
                 val url = URL(downloadUrl)
-                var connection = url.openConnection() as HttpURLConnection
-                connection.instanceFollowRedirects = true
-                connection.connectTimeout = 15000
-                connection.readTimeout = 30000
-                connection.connect()
+                var conn = (url.openConnection() as HttpURLConnection).apply {
+                    instanceFollowRedirects = true
+                    connectTimeout = 15000
+                    readTimeout = 30000
+                    connect()
+                }
+                connection = conn
 
                 var redirectCount = 0
-                while ((connection.responseCode == HttpURLConnection.HTTP_MOVED_PERM ||
-                        connection.responseCode == HttpURLConnection.HTTP_MOVED_TEMP ||
-                        connection.responseCode == HttpURLConnection.HTTP_SEE_OTHER) && redirectCount < 5) {
-                    val newUrl = connection.getHeaderField("Location")
-                    connection.disconnect()
+                while ((conn.responseCode == HttpURLConnection.HTTP_MOVED_PERM ||
+                        conn.responseCode == HttpURLConnection.HTTP_MOVED_TEMP ||
+                        conn.responseCode == HttpURLConnection.HTTP_SEE_OTHER) && redirectCount < 5) {
+                    val newUrl = conn.getHeaderField("Location")
+                    conn.disconnect()
+                    connection = null
                     val nu = Uri.parse(newUrl ?: "")
                     val h = nu.host ?: ""
                     if (nu.scheme != "https" || !(h == "github.com" || h.endsWith(".githubusercontent.com"))) {
-                        runOnUiThread {
-                            webView.evaluateJavascript("window.app && window.app.onUpdateDownloadError('Güvenli olmayan yönlendirme engellendi');", null)
-                        }
+                        evalJs("window.app && window.app.onUpdateDownloadError('Güvenli olmayan yönlendirme engellendi');")
                         return@thread
                     }
-                    connection = URL(newUrl).openConnection() as HttpURLConnection
-                    connection.connectTimeout = 15000
-                    connection.readTimeout = 30000
-                    connection.connect()
+                    conn = (URL(newUrl).openConnection() as HttpURLConnection).apply {
+                        connectTimeout = 15000
+                        readTimeout = 30000
+                        connect()
+                    }
+                    connection = conn
                     redirectCount++
                 }
 
-                if (connection.responseCode != HttpURLConnection.HTTP_OK) {
-                    runOnUiThread {
-                        webView.evaluateJavascript("window.app && window.app.onUpdateDownloadError('İndirme hatası: HTTP ${connection.responseCode}');", null)
-                    }
+                if (conn.responseCode != HttpURLConnection.HTTP_OK) {
+                    val code = conn.responseCode
+                    evalJs("window.app && window.app.onUpdateDownloadError('İndirme hatası: HTTP $code');")
                     return@thread
                 }
 
-                val fileLength = connection.contentLength
+                val fileLength = conn.contentLength
                 val apkFile = File(cacheDir, "TamVakti-update.apk")
                 if (apkFile.exists()) {
                     apkFile.delete()
                 }
 
-                val input: InputStream = connection.inputStream
-                val output = FileOutputStream(apkFile)
-
-                val data = ByteArray(8192)
                 var total: Long = 0
-                var count: Int
-                var lastPercent = -1
+                conn.inputStream.use { input ->
+                    FileOutputStream(apkFile).use { output ->
+                        val data = ByteArray(8192)
+                        var count: Int
+                        var lastPercent = -1
 
-                while (input.read(data).also { count = it } != -1) {
-                    total += count
-                    output.write(data, 0, count)
+                        while (input.read(data).also { count = it } != -1) {
+                            total += count
+                            output.write(data, 0, count)
 
-                    if (fileLength > 0) {
-                        val percent = ((total * 100) / fileLength).toInt()
-                        if (percent != lastPercent) {
-                            lastPercent = percent
-                            runOnUiThread {
-                                webView.evaluateJavascript("window.app && window.app.onUpdateDownloadProgress($percent, '%$percent');", null)
+                            if (fileLength > 0) {
+                                val percent = ((total * 100) / fileLength).toInt()
+                                if (percent != lastPercent) {
+                                    lastPercent = percent
+                                    evalJs("window.app && window.app.onUpdateDownloadProgress($percent, '%$percent');")
+                                }
                             }
                         }
+                        output.flush()
                     }
                 }
-
-                output.flush()
-                output.close()
-                input.close()
-                connection.disconnect()
 
                 if (fileLength > 0 && total < fileLength.toLong()) {
                     throw java.io.IOException("İndirme tamamlanamadı")
@@ -1008,18 +1011,19 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 downloadedApkUrl = downloadUrl
 
                 runOnUiThread {
-                    webView.evaluateJavascript("window.app && window.app.onUpdateDownloadProgress(100, 'Kuruluma hazır!');", null)
-                    promptInstallApk(apkFile)
+                    if (!isFinishing && !isDestroyed && ::webView.isInitialized) {
+                        webView.evaluateJavascript("window.app && window.app.onUpdateDownloadProgress(100, 'Kuruluma hazır!');", null)
+                        promptInstallApk(apkFile)
+                    }
                 }
 
             } catch (e: Exception) {
                 e.printStackTrace()
                 downloadedApkUrl = null
-                runOnUiThread {
-                    val errMsg = (e.message ?: "Bilinmeyen hata").replace("\\", " ").replace("'", " ").replace("\n", " ")
-                    webView.evaluateJavascript("window.app && window.app.onUpdateDownloadError('$errMsg');", null)
-                }
+                val errMsg = (e.message ?: "Bilinmeyen hata").replace("\\", " ").replace("'", " ").replace("\n", " ")
+                evalJs("window.app && window.app.onUpdateDownloadError('$errMsg');")
             } finally {
+                try { connection?.disconnect() } catch (_: Exception) {}
                 isApkDownloading = false
             }
         }
