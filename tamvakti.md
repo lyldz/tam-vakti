@@ -139,3 +139,6 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
 - [x] **Eski bildirimlerin (özellikle kerahat / vakit bildirimlerinin) otomatik silinmemesi (2026-11-24):**
   - `Notifs.postAlert()` içine Android yerel `setTimeoutAfter(timeoutMs)` desteği eklendi.
   - `AlarmReceiver.kt`: Kerahat bildirimine `45 dk` zaman aşımı + yeni vakit girdiğinde anında `cancelAlert(ID_ALERT_KERAHAT)`; vakit öncesi hatırlatmaya sıradaki vakte kalan süre kadar zaman aşımı; vakit girişi bildirimine `60 dk` zaman aşımı eklendi.
+- [x] **Uygulama içi genel toast bildiriminin yenilenmesi (2026-11-24):**
+  - Ekranın tepesinde çıkan eski kutu (`#appToast`) kaldırılıp ekranın altında yüzen modern Arctic cam karta dönüştürüldü.
+  - Tüm ham emojiler (`✓`, `⚠️`, `🔔`, `🔕`, `⏰`, `📵`, `🔋`, `🔒`, `📍`, `ℹ️`) renk kodlu daire rozet içinde vektörel SVG simgelere çevrildi; dokununca kapanıyor ve GPS kartı gibi yumuşakça silinerek (`toast-dissolve`, opacity + blur) kayboluyor.

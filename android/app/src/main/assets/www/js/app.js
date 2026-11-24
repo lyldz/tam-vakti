@@ -2341,21 +2341,71 @@ class TamVaktiApp {
     return 0;
   }
 
+  toastIconMeta(icon) {
+    const svg = (body) => `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+    switch (icon) {
+      case "⚠️":
+        return { tone: "warn", svg: svg('<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>') };
+      case "🔔":
+        return { tone: "info", svg: svg('<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>') };
+      case "🔕":
+        return { tone: "muted", svg: svg('<path d="M13.73 21a2 2 0 0 1-3.46 0"/><path d="M18.63 13A17.89 17.89 0 0 1 18 8"/><path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"/><path d="M18 8a6 6 0 0 0-9.33-5"/><line x1="1" y1="1" x2="23" y2="23"/>') };
+      case "⏰":
+        return { tone: "info", svg: svg('<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5"/><path d="M5 3L2 6"/><path d="M22 6l-3-3"/>') };
+      case "📵":
+        return { tone: "info", svg: svg('<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>') };
+      case "🔋":
+        return { tone: "info", svg: svg('<rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/>') };
+      case "🔒":
+        return { tone: "info", svg: svg('<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>') };
+      case "📍":
+        return { tone: "info", svg: svg('<circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="7.5"/><line x1="12" y1="2" x2="12" y2="4.5"/><line x1="12" y1="19.5" x2="12" y2="22"/><line x1="2" y1="12" x2="4.5" y2="12"/><line x1="19.5" y1="12" x2="22" y2="12"/>') };
+      case "ℹ️":
+      case "🧮":
+        return { tone: "info", svg: svg('<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>') };
+      default:
+        return { tone: "ok", svg: svg('<polyline points="20 6 9 17 4 12"/>') };
+    }
+  }
+
   showToast(msg, icon = "✓", duration = 3000) {
     const toast = document.getElementById("appToast");
     const msgEl = document.getElementById("toastMsg");
     const iconEl = document.getElementById("toastIcon");
+    const badgeEl = document.getElementById("toastBadge");
     if (!toast || !msgEl) return;
 
-    msgEl.textContent = msg;
-    if (iconEl) iconEl.textContent = icon;
+    if (this._toastTimeout) clearTimeout(this._toastTimeout);
+    if (this._toastCleanupTimeout) clearTimeout(this._toastCleanupTimeout);
 
+    const meta = this.toastIconMeta(icon);
+    msgEl.textContent = msg;
+    if (badgeEl) badgeEl.setAttribute("data-tone", meta.tone);
+    if (iconEl) iconEl.innerHTML = meta.svg;
+
+    toast.classList.remove("toast-dissolve", "toast-visible");
+    void toast.offsetWidth;
     toast.classList.add("toast-visible");
 
-    if (this._toastTimeout) clearTimeout(this._toastTimeout);
     this._toastTimeout = setTimeout(() => {
-      toast.classList.remove("toast-visible");
+      this.hideToast();
     }, duration);
+  }
+
+  hideToast() {
+    const toast = document.getElementById("appToast");
+    if (!toast) return;
+    if (this._toastTimeout) {
+      clearTimeout(this._toastTimeout);
+      this._toastTimeout = null;
+    }
+    if (!toast.classList.contains("toast-visible")) return;
+    toast.classList.remove("toast-visible");
+    toast.classList.add("toast-dissolve");
+    if (this._toastCleanupTimeout) clearTimeout(this._toastCleanupTimeout);
+    this._toastCleanupTimeout = setTimeout(() => {
+      toast.classList.remove("toast-dissolve");
+    }, 800);
   }
 
   formatGpsPlace(locName) {

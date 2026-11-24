@@ -1221,10 +1221,12 @@
 
   </div>
 
-  <!-- IN-APP TOAST BİLDİRİMİ -->
-  <div id="appToast" class="fixed top-5 left-1/2 -translate-x-1/2 z-70 max-w-[90%] bg-[#0c2340]/95 border border-sky-400/20 backdrop-blur-md text-white px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2.5 text-xs font-bold transition-all duration-300 opacity-0 pointer-events-none -translate-y-4">
-    <span id="toastIcon" class="text-base shrink-0">✓</span>
-    <span id="toastMsg" class="leading-tight">İşlem tamamlandı.</span>
+  <!-- IN-APP TOAST BİLDİRİMİ (Alt yüzer cam kart, SVG simgeli, silinerek kaybolur) -->
+  <div id="appToast" onclick="app.hideToast()" class="fixed bottom-7 left-1/2 w-[calc(100%-2.25rem)] max-w-[360px] bg-[#0c2340]/95 border border-sky-400/30 backdrop-blur-xl text-white px-3.5 py-2.5 rounded-2xl flex items-center gap-3 cursor-pointer select-none">
+    <div id="toastBadge" data-tone="ok" class="w-8 h-8 rounded-full flex items-center justify-center shrink-0">
+      <span id="toastIcon" class="flex items-center justify-center"></span>
+    </div>
+    <span id="toastMsg" class="text-[13px] font-semibold text-slate-100 leading-snug min-w-0 flex-1">İşlem tamamlandı.</span>
   </div>
 
   <!-- GPS KONUM BULUNDU BİLDİRİM KARTI -->

@@ -207,14 +207,49 @@ html, body {
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.9);
 }
 
-/* In-App Toast Bildirimi */
-/* Tailwind'de z-70/z-60 tanımlı değil: toast ve güncelleme penceresi Ayarlar/İmsakiye modallarının altında kalıyordu */
-#appToast { z-index: 100010; }
+/* In-App Toast Bildirimi (alt cam kart, yumuşak silinerek kaybolma) */
+#appToast {
+  z-index: 100010;
+  opacity: 0;
+  transform: translate(-50%, 12px) scale(0.97);
+  filter: blur(0px);
+  pointer-events: none;
+  box-shadow: 0 14px 34px rgba(2, 6, 23, 0.65), 0 0 20px rgba(56, 189, 248, 0.12);
+  transition: opacity 0.3s ease, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
+}
 #updateFoundModal { z-index: 100003; }
 #appToast.toast-visible {
   opacity: 1 !important;
-  transform: translate(-50%, 0) !important;
+  transform: translate(-50%, 0) scale(1) !important;
+  filter: blur(0px) !important;
   pointer-events: auto !important;
+}
+#appToast.toast-dissolve {
+  opacity: 0 !important;
+  transform: translate(-50%, 3px) scale(0.985) !important;
+  filter: blur(4px) !important;
+  pointer-events: none !important;
+  transition: opacity 0.75s ease-out, transform 0.75s ease-out, filter 0.75s ease-out;
+}
+#toastBadge[data-tone="ok"] {
+  background: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  color: #6ee7b7;
+}
+#toastBadge[data-tone="warn"] {
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  color: #fcd34d;
+}
+#toastBadge[data-tone="info"] {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #7dd3fc;
+}
+#toastBadge[data-tone="muted"] {
+  background: rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  color: #cbd5e1;
 }
 
 /* GPS Konum Bulundu Kartı (yumuşak giriş + ekrandan silinerek kaybolma) */
