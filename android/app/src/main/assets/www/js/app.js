@@ -1,6 +1,6 @@
 /**
  * Tam Vakti - Minimalist Adaçayı Yeşili & Sade Vakit / Kıble Kontrolcüsü
- * Sürüm: v2.13.11
+ * Sürüm: v2.14.0
  */
 
 const PRAYER_LIST = [
@@ -57,9 +57,9 @@ class TamVaktiApp {
     // Dağıtım: "play" (kendini güncelleme yok), "github" (APK güncelleyici var) veya "web"
     this.distribution = (window.AndroidBridge && window.AndroidBridge.getDistribution) ? window.AndroidBridge.getDistribution() : "web";
     this.canSelfUpdate = this.distribution !== "play";
-    this.currentVersion = "v2.13.11";
-    this.versionCodename = "Seher";
-    this.versionDisplay = "v2.13.11 • Seher";
+    this.currentVersion = "v2.14.0";
+    this.versionCodename = "Kuşluk";
+    this.versionDisplay = "v2.14.0 • Kuşluk";
     this.onboardingStep = 1;
     this.monthlyYear = null;
     this.monthlyMonth = null;
@@ -84,6 +84,7 @@ class TamVaktiApp {
     this.calcMethodPref = localStorage.getItem("tamvakti_calc_method") || "auto";
     // İhtiyat: tüm vakitlere eklenen dakika (Diyanet ± ayarı)
     this.timeOffsetMin = parseInt(localStorage.getItem("tamvakti_time_offset"), 10) || 0;
+    this.loadExtSettings();
     this._syncSeq = 0;
 
     this.isFriday = false;
@@ -196,6 +197,7 @@ class TamVaktiApp {
 
     // Canlı Saat & Tarih Sayacı
     this.applyHomeMode(false);
+    this.applyExtDisplaySettings();
     setInterval(() => this.tick(), 1000);
     this.tick();
 
@@ -216,18 +218,22 @@ class TamVaktiApp {
     }
 
     // Eksik izin varsa (alarm / bildirim) bir kez nazikçe hatırlat
-    setTimeout(() => {
-      const p = this.getPermissionState();
-      if (p && !this._permHinted && (!p.exact || !p.notif) && localStorage.getItem("tamvakti_onboarding_completed") === "true") {
-        this._permHinted = true;
-        this.showToast("Uyarıların zamanında gelmesi için Ayarlar › İzinler bölümünü kontrol edin.", "⏰", 4500);
-      }
-    }, 5000);
+    if (this.permReminderHint) {
+      setTimeout(() => {
+        const p = this.getPermissionState();
+        if (this.permReminderHint && p && !this._permHinted && (!p.exact || !p.notif) && localStorage.getItem("tamvakti_onboarding_completed") === "true") {
+          this._permHinted = true;
+          this.showToast("Uyarıların zamanında gelmesi için Ayarlar › İzinler bölümünü kontrol edin.", "⏰", 4500);
+        }
+      }, 5000);
+    }
 
     // Arka planda sessizce yeni GitHub sürümünü denetle (bilinen sürüm için rozet hemen görünür)
     if (this.canSelfUpdate) {
       this.loadCachedUpdate();
-      setTimeout(() => this.checkForUpdates(true), 2500);
+      if (this.autoUpdateCheck) {
+        setTimeout(() => this.checkForUpdates(true), 2500);
+      }
     }
   }
 
@@ -339,6 +345,7 @@ class TamVaktiApp {
     // Hicri Takvim (Diyanet / civil uyumlu format: "Pazartesi • 29 Rebiülahir")
     const hicriEl = document.getElementById("hicriDateSub");
     if (hicriEl) {
+      hicriEl.classList.toggle("hidden", !this.showHijriDate);
       try {
         const islamicMonths = [
           "",
@@ -839,7 +846,9 @@ class TamVaktiApp {
 
     const countEl = document.getElementById("mainCountdown");
     if (countEl) {
-      countEl.innerHTML = `<span class="cd-main">${hrsStr}:${minsStr}</span><span class="cd-sec">:${secsStr}</span>`;
+      countEl.innerHTML = this.showSeconds
+        ? `<span class="cd-main">${hrsStr}:${minsStr}</span><span class="cd-sec">:${secsStr}</span>`
+        : `<span class="cd-main">${hrsStr}:${minsStr}</span>`;
     }
 
     // 2. İlerleme çizgisi: mevcut vaktin ne kadarı geçti
@@ -856,8 +865,8 @@ class TamVaktiApp {
     setText("horizonEndTime", current.nextTimeStr || "--:--");
     setText("horizonElapsedText", `${Math.floor(elapsed / 3600000)} sa ${Math.floor((elapsed % 3600000) / 60000)} dk`);
 
-    // 3. Kerahat: doğuştan sonraki 45 dk, öğleye ve akşama 45 dk kala
-    const K = 45 * 60000;
+    // 3. Kerahat: doğuştan sonraki kerahatMinutes dk, öğleye ve akşama kerahatMinutes dk kala
+    const K = (this.kerahatMinutes || 45) * 60000;
     const nowMs = now.getTime();
     let kerahatEnd = null;        // şu an kerahattaysak bitiş zamanı
     let kerahatNextStart = null;  // yaklaşan kerahatin başlangıcı
@@ -1658,6 +1667,18 @@ class TamVaktiApp {
     const fs = document.getElementById("fullScreenToggle");
     if (fs) fs.checked = this.fullScreenAlert;
     set("settingsHomeModeValue", this.homeMode === "focus" ? "Sade" : "Detay");
+    set("autoSilentDesc", `Vakitte ${this.silentDurationMin} dk (Cuma ${this.fridaySilentDurationMin} dk) titreşime alır`);
+    const setChk = (id, v) => { const el = document.getElementById(id); if (el) el.checked = !!v; };
+    setChk("showSecondsToggle", this.showSeconds);
+    setChk("showHijriToggle", this.showHijriDate);
+    setChk("showSolarArcToggle", this.showSolarArc);
+    setChk("autoUpdateToggle", this.autoUpdateCheck);
+    setChk("permHintToggle", this.permReminderHint);
+    setChk("homeHintToggle", this.showHomeModeHint);
+    set("settingsSilentDurVal", `${this.silentDurationMin} dk`);
+    set("settingsFriSilentDurVal", `${this.fridaySilentDurationMin} dk`);
+    set("settingsKerahatMinVal", `${this.kerahatMinutes} dk`);
+    set("settingsToastDurVal", `${(this.toastDurationMs / 1000).toFixed(this.toastDurationMs % 1000 === 0 ? 0 : 1)} sn`);
     this.refreshPermissionStatus();
   }
 
@@ -1716,7 +1737,7 @@ class TamVaktiApp {
     if (sVal) sVal.textContent = mode === "focus" ? "Sade" : "Detay";
     const hint = document.getElementById("homeModeHint");
     if (hint) {
-      const showHint = !this.homeModeHintSeen && !this.isOnboardingOpen();
+      const showHint = this.showHomeModeHint && !this.homeModeHintSeen && !this.isOnboardingOpen();
       hint.classList.toggle("hidden", !showHint);
     }
     if (save) {
@@ -1752,6 +1773,246 @@ class TamVaktiApp {
       this.applyHomeMode(true);
       this.evaluateCurrentPrayer();
     });
+  }
+
+  // ==========================================
+  // GELİŞMİŞ AYARLAR, JSON YEDEKLEME VE SIFIRLAMA
+  // ==========================================
+  loadExtSettings() {
+    const store = window.TamVaktiSettings;
+    let raw = {};
+    try {
+      raw = JSON.parse(localStorage.getItem("tamvakti_ext_settings") || "{}");
+    } catch (e) { raw = {}; }
+    const s = store ? store.sanitizeSettings(raw) : {
+      silentDurationMin: 30, fridaySilentDurationMin: 60, kerahatMinutes: 45,
+      showSeconds: true, showHijriDate: true, showSolarArc: true,
+      autoUpdateCheck: true, permReminderHint: true, showHomeModeHint: true,
+      toastDurationMs: 3000
+    };
+    this.silentDurationMin = s.silentDurationMin;
+    this.fridaySilentDurationMin = s.fridaySilentDurationMin;
+    this.kerahatMinutes = s.kerahatMinutes;
+    this.showSeconds = s.showSeconds;
+    this.showHijriDate = s.showHijriDate;
+    this.showSolarArc = s.showSolarArc;
+    this.autoUpdateCheck = s.autoUpdateCheck;
+    this.permReminderHint = s.permReminderHint;
+    this.showHomeModeHint = s.showHomeModeHint;
+    this.toastDurationMs = s.toastDurationMs;
+  }
+
+  saveExtSettings() {
+    const data = {
+      silentDurationMin: this.silentDurationMin,
+      fridaySilentDurationMin: this.fridaySilentDurationMin,
+      kerahatMinutes: this.kerahatMinutes,
+      showSeconds: this.showSeconds,
+      showHijriDate: this.showHijriDate,
+      showSolarArc: this.showSolarArc,
+      autoUpdateCheck: this.autoUpdateCheck,
+      permReminderHint: this.permReminderHint,
+      showHomeModeHint: this.showHomeModeHint,
+      toastDurationMs: this.toastDurationMs
+    };
+    try { localStorage.setItem("tamvakti_ext_settings", JSON.stringify(data)); } catch (e) {}
+  }
+
+  getAllSettingsSnapshot() {
+    return {
+      ongoingNotifEnabled: this.ongoingNotifEnabled,
+      autoSilent: this.autoSilent,
+      autoLocation: this.autoLocation,
+      homeMode: this.homeMode,
+      notifMode: this.notifMode,
+      kerahatAlert: this.kerahatAlert,
+      fullScreenAlert: this.fullScreenAlert,
+      alertTone: this.alertTone,
+      calcMethodPref: this.calcMethodPref,
+      timeOffsetMin: this.timeOffsetMin,
+      prayerAlerts: this.prayerAlerts,
+      silentDurationMin: this.silentDurationMin,
+      fridaySilentDurationMin: this.fridaySilentDurationMin,
+      kerahatMinutes: this.kerahatMinutes,
+      showSeconds: this.showSeconds,
+      showHijriDate: this.showHijriDate,
+      showSolarArc: this.showSolarArc,
+      autoUpdateCheck: this.autoUpdateCheck,
+      permReminderHint: this.permReminderHint,
+      showHomeModeHint: this.showHomeModeHint,
+      toastDurationMs: this.toastDurationMs
+    };
+  }
+
+  applyExtDisplaySettings() {
+    const solar = document.getElementById("solarTransitContainer");
+    if (solar) solar.classList.toggle("hidden", !this.showSolarArc);
+    const hicri = document.getElementById("hicriDateSub");
+    if (hicri) hicri.classList.toggle("hidden", !this.showHijriDate);
+    this.applyHomeMode(false);
+    if (this.currentTimes) this.evaluateCurrentPrayer();
+  }
+
+  toggleExtSetting(key, checked) {
+    const allowed = new Set(["showSeconds", "showHijriDate", "showSolarArc", "autoUpdateCheck", "permReminderHint", "showHomeModeHint"]);
+    if (!allowed.has(key)) return;
+    this[key] = !!checked;
+    if (key === "showHomeModeHint" && checked) {
+      this.homeModeHintSeen = false;
+      try { localStorage.setItem("tamvakti_home_mode_hint_seen", "false"); } catch (e) {}
+    }
+    this.saveExtSettings();
+    this.applyExtDisplaySettings();
+    this.updateSettingsLabels();
+  }
+
+  openSilentDurationModal() {
+    const opts = [10, 15, 20, 30, 45, 60, 90].map(m => ({
+      value: String(m), label: `${m} dakika`, desc: m === 30 ? "Varsayılan süre" : `Vakitte ${m} dk titreşimde kalır`
+    }));
+    this.openChoice("Sessize alma süresi", "Normal namaz vakitlerinde telefonun sessizde kalma süresi.", opts, String(this.silentDurationMin), (v) => {
+      this.silentDurationMin = Math.min(90, Math.max(10, parseInt(v, 10) || 30));
+      this.saveExtSettings();
+      this.updateSettingsLabels();
+      this.scheduleSync();
+      this.showToast(`Sessize alma süresi ${this.silentDurationMin} dk yapıldı`, "📵");
+    });
+  }
+
+  openFridaySilentDurationModal() {
+    const opts = [30, 45, 60, 75, 90, 120].map(m => ({
+      value: String(m), label: `${m} dakika`, desc: m === 60 ? "Varsayılan Cuma süresi" : `Cuma öğlede ${m} dk titreşimde kalır`
+    }));
+    this.openChoice("Cuma sessize alma süresi", "Cuma namazı boyunca telefonun sessizde kalma süresi.", opts, String(this.fridaySilentDurationMin), (v) => {
+      this.fridaySilentDurationMin = Math.min(120, Math.max(20, parseInt(v, 10) || 60));
+      this.saveExtSettings();
+      this.updateSettingsLabels();
+      this.scheduleSync();
+      this.showToast(`Cuma sessize alma süresi ${this.fridaySilentDurationMin} dk yapıldı`, "📵");
+    });
+  }
+
+  openKerahatMinutesModal() {
+    const opts = [20, 30, 40, 45, 50, 60].map(m => ({
+      value: String(m), label: `${m} dakika`, desc: m === 45 ? "Diyanet varsayılanı (45 dk)" : `Kerahat penceresi ${m} dakika`
+    }));
+    this.openChoice("Kerahat süresi", "Güneş doğuşu sonrası ve öğle/akşam öncesi kerahat penceresi.", opts, String(this.kerahatMinutes), (v) => {
+      this.kerahatMinutes = Math.min(60, Math.max(20, parseInt(v, 10) || 45));
+      this.saveExtSettings();
+      this.updateSettingsLabels();
+      this.evaluateCurrentPrayer();
+      this.scheduleSync();
+      this.showToast(`Kerahat süresi ${this.kerahatMinutes} dk yapıldı`, "⚠️");
+    });
+  }
+
+  openToastDurationModal() {
+    const opts = [
+      { value: "1500", label: "1.5 saniye", desc: "Hızlı kapanır" },
+      { value: "2500", label: "2.5 saniye", desc: "Kısa gösterim" },
+      { value: "3000", label: "3 saniye", desc: "Varsayılan süre" },
+      { value: "4500", label: "4.5 saniye", desc: "Uzun gösterim" },
+      { value: "6000", label: "6 saniye", desc: "Daha rahat okuma" }
+    ];
+    this.openChoice("Uyarı mesajı süresi", "Ekran altındaki bilgi balonlarının açık kalma süresi.", opts, String(this.toastDurationMs), (v) => {
+      this.toastDurationMs = Math.min(8000, Math.max(1500, parseInt(v, 10) || 3000));
+      this.saveExtSettings();
+      this.updateSettingsLabels();
+      this.showToast(`Uyarı süresi ${(this.toastDurationMs / 1000).toFixed(this.toastDurationMs % 1000 === 0 ? 0 : 1)} sn yapıldı`, "ℹ️");
+    });
+  }
+
+  applyFullSettingsObject(s, loc) {
+    this.ongoingNotifEnabled = s.ongoingNotifEnabled;
+    this.autoSilent = s.autoSilent;
+    this.autoLocation = s.autoLocation;
+    this.homeMode = s.homeMode;
+    this.notifMode = s.notifMode;
+    this.kerahatAlert = s.kerahatAlert;
+    this.fullScreenAlert = s.fullScreenAlert;
+    this.alertTone = s.alertTone;
+    this.calcMethodPref = s.calcMethodPref;
+    this.timeOffsetMin = s.timeOffsetMin;
+    this.prayerAlerts = s.prayerAlerts;
+    this.silentDurationMin = s.silentDurationMin;
+    this.fridaySilentDurationMin = s.fridaySilentDurationMin;
+    this.kerahatMinutes = s.kerahatMinutes;
+    this.showSeconds = s.showSeconds;
+    this.showHijriDate = s.showHijriDate;
+    this.showSolarArc = s.showSolarArc;
+    this.autoUpdateCheck = s.autoUpdateCheck;
+    this.permReminderHint = s.permReminderHint;
+    this.showHomeModeHint = s.showHomeModeHint;
+    this.toastDurationMs = s.toastDurationMs;
+
+    try {
+      localStorage.setItem("tamvakti_ongoing_notif", this.ongoingNotifEnabled ? "true" : "false");
+      localStorage.setItem("tamvakti_auto_silent", this.autoSilent ? "true" : "false");
+      localStorage.setItem("tamvakti_auto_location", this.autoLocation ? "true" : "false");
+      localStorage.setItem("tamvakti_home_mode", this.homeMode);
+      localStorage.setItem("tamvakti_notif_mode", this.notifMode);
+      localStorage.setItem("tamvakti_kerahat_alert", this.kerahatAlert ? "true" : "false");
+      localStorage.setItem("tamvakti_fullscreen_alert", this.fullScreenAlert ? "true" : "false");
+      localStorage.setItem("tamvakti_alert_tone", this.alertTone);
+      localStorage.setItem("tamvakti_calc_method", this.calcMethodPref);
+      localStorage.setItem("tamvakti_time_offset", String(this.timeOffsetMin));
+      localStorage.setItem("tamvakti_prayer_alerts", JSON.stringify(this.prayerAlerts));
+    } catch (e) {}
+    this.saveExtSettings();
+    if (loc) this.saveLocation(loc);
+
+    const locToggle = document.getElementById("autoLocationToggle");
+    if (locToggle) locToggle.checked = this.autoLocation;
+    const silentToggle = document.getElementById("autoSilentToggle");
+    if (silentToggle) silentToggle.checked = this.autoSilent;
+    const ongoingToggle = document.getElementById("ongoingNotifToggle");
+    if (ongoingToggle) ongoingToggle.checked = this.ongoingNotifEnabled;
+
+    this.applyExtDisplaySettings();
+    this.updateSettingsLabels();
+    this.updatePrayers();
+    this.scheduleSync();
+  }
+
+  exportSettingsBackup() {
+    const store = window.TamVaktiSettings;
+    if (!store) return;
+    const json = store.exportBackupJson(this.getAllSettingsSnapshot(), this.currentLocation, this.currentVersion);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tam-vakti-ayarlar-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    this.showToast("Ayarlar JSON olarak dışa aktarıldı", "✓");
+  }
+
+  importSettingsBackup(file) {
+    if (!file || !window.TamVaktiSettings) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const parsed = window.TamVaktiSettings.parseBackupJson(String(reader.result || ""));
+      if (!parsed) {
+        this.showToast("Geçersiz ayar yedek dosyası", "⚠️");
+        return;
+      }
+      this.applyFullSettingsObject(parsed.settings, parsed.location);
+      this.showToast("Ayarlar başarıyla içe aktarıldı", "✓");
+    };
+    reader.readAsText(file);
+  }
+
+  resetSettingsToDefaults() {
+    if (!window.TamVaktiSettings) return;
+    if (!confirm("Tüm ayarlar varsayılan değerlere sıfırlansın mı? Konumunuz korunur.")) return;
+    const def = window.TamVaktiSettings.createDefaults();
+    this.homeModeHintSeen = false;
+    try { localStorage.setItem("tamvakti_home_mode_hint_seen", "false"); } catch (e) {}
+    this.applyFullSettingsObject(def, null);
+    this.showToast("Tüm ayarlar varsayılanlara sıfırlandı", "✓");
   }
 
   closeSettingsModal() {
@@ -2087,21 +2348,22 @@ class TamVaktiApp {
         }
 
         if (this.autoSilent && p.key !== "gunes") {
-          const dur = (p.key === "ogle" && isFri) ? 60 : 30;
+          const dur = (p.key === "ogle" && isFri) ? (this.fridaySilentDurationMin || 60) : (this.silentDurationMin || 30);
           events.push({ t, type: "silent_start" });
           events.push({ t: t + dur * MIN, type: "silent_end" });
         }
       });
 
       if (this.kerahatAlert) {
+        const km = this.kerahatMinutes || 45;
         if (at.gunes) {
-          events.push({ t: at.gunes.dt.getTime(), type: "kerahat", title: "Kerahat vakti başladı", body: "Güneş doğdu; yaklaşık 45 dk nafile namaz kılınmaz." });
+          events.push({ t: at.gunes.dt.getTime(), type: "kerahat", title: "Kerahat vakti başladı", body: `Güneş doğdu; yaklaşık ${km} dk nafile namaz kılınmaz.` });
         }
         if (at.ogle) {
-          events.push({ t: at.ogle.dt.getTime() - 45 * MIN, type: "kerahat", title: "Kerahat vakti (istiva)", body: "Öğle vaktine 45 dk kaldı." });
+          events.push({ t: at.ogle.dt.getTime() - km * MIN, type: "kerahat", title: "Kerahat vakti (istiva)", body: `Öğle vaktine ${km} dk kaldı.` });
         }
         if (at.aksam) {
-          events.push({ t: at.aksam.dt.getTime() - 45 * MIN, type: "kerahat", title: "Kerahat vakti", body: "Güneş batımına 45 dk kaldı; ikindi namazını kılmadıysanız acele edin." });
+          events.push({ t: at.aksam.dt.getTime() - km * MIN, type: "kerahat", title: "Kerahat vakti", body: `Güneş batımına ${km} dk kaldı; ikindi namazını kılmadıysanız acele edin.` });
         }
       }
     }
@@ -2266,9 +2528,10 @@ class TamVaktiApp {
 
   // Giren vakte ait kısa bilgi (tam ekran bildirimde gösterilir; Hanefi/Diyanet rekât düzeni)
   prayerInfoText(key, isFri) {
+    const km = this.kerahatMinutes || 45;
     const t = {
       imsak: "Sabah namazı: 2 rekât sünnet, 2 rekât farz.",
-      gunes: "Sabah vakti çıktı. Güneşin doğuşundan itibaren yaklaşık 45 dk kerahat vaktidir; nafile namaz kılınmaz.",
+      gunes: `Sabah vakti çıktı. Güneşin doğuşundan itibaren yaklaşık ${km} dk kerahat vaktidir; nafile namaz kılınmaz.`,
       ogle: "Öğle namazı: 4 rekât ilk sünnet, 4 rekât farz, 2 rekât son sünnet.",
       ikindi: "İkindi namazı: 4 rekât sünnet, 4 rekât farz.",
       aksam: "Akşam namazı: 3 rekât farz, 2 rekât sünnet.",
@@ -2368,7 +2631,8 @@ class TamVaktiApp {
     }
   }
 
-  showToast(msg, icon = "✓", duration = 3000) {
+  showToast(msg, icon = "✓", duration) {
+    const dur = (typeof duration === "number" && duration > 0) ? duration : (this.toastDurationMs || 3000);
     const toast = document.getElementById("appToast");
     const msgEl = document.getElementById("toastMsg");
     const iconEl = document.getElementById("toastIcon");
@@ -2389,7 +2653,7 @@ class TamVaktiApp {
 
     this._toastTimeout = setTimeout(() => {
       this.hideToast();
-    }, duration);
+    }, dur);
   }
 
   hideToast() {
