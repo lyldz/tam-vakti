@@ -616,6 +616,17 @@ main:has(#viewQibla:not(.hidden)) {
   #dayTimesRibbon > div > span:last-child { font-size: 18px; }
   #dayTimesRibbon > div > span:first-child { font-size: 14px; }
 }
+@media (max-height: 600px) {
+  .minimal-app { padding-bottom: 0.5rem; }
+  .top-header { margin-bottom: 0.25rem; }
+  #viewPrayer { gap: 0.35rem; padding-top: 0; padding-bottom: 0; }
+  #solarTransitContainer { min-height: 92px; }
+  #heroPresentModule > div:first-child { margin-bottom: 0.25rem; }
+  #horizonCard { padding: 0.65rem 0.85rem; gap: 0.45rem; }
+  #dayTimesRibbon { padding: 0.35rem; gap: 0.35rem; }
+  #dayTimesRibbon > div { padding-top: 0.3rem; padding-bottom: 0.3rem; }
+  #homeModeToggleBtn { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+}
 #horizonKerahatBadge { white-space: nowrap; }
 @media (max-width: 380px) {
   #horizonKerahatBadge { font-size: 12px; padding-left: 0.5rem; padding-right: 0.5rem; }

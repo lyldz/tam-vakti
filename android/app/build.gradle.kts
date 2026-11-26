@@ -14,9 +14,9 @@ android {
         minSdk = 24
         targetSdk = 36
         
-        // Sürüm Yapılandırması: v2.14.1 "Kuşluk"
-        versionCode = 24600
-        versionName = "2.14.1"
+        // Sürüm Yapılandırması: v2.14.2 "Kuşluk"
+        versionCode = 24700
+        versionName = "2.14.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

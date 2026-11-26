@@ -61,11 +61,10 @@ Katı SemVer `MAJOR.MINOR.PATCH`. **Sürüm numarasını kullanıcıya sorma; de
 - Güvenlik: WebView dosya erişimi kapalı, dış bağlantılar tarayıcıda açılır, APK indirme yalnızca GitHub'dan (`docs/GUVENLIK.md`).
 
 ## Durum (güncel: 2026-11-26)
-- Yayında: **v2.14.1 Kuşluk** (`versionCode`: 24600). Önceki: **v2.14.0 Kuşluk** (merkezi ayar deposu `settings-store.js`, 10 yeni dinamik ayar anahtarı, JSON yedekleme/sıfırlama).
-- `v2.14.1` ile: konum/güncelleme/alarm zamanlamaları, çevrimiçi geocode anahtarı, tam ekran uyarısında ekranı açık tutma ve otomatik kapanma süreleri ayarlara taşındı; kullanılmayan artık kod ve importlar temizlendi.
+- Yayında: **v2.14.2 Kuşluk** (`versionCode`: 24700). Önceki: **v2.14.1 Kuşluk** (zamanlama ayarları ve temizlik, telefonda doğrulandı).
+- `v2.14.2` ile: 320×568 gibi çok kısa ekranlarda ana ekranın alttan taşması (`@media (max-height: 600px)`) giderildi.
 - BEKLEMEDE, kullanıcıya HATIRLAT: arka plan konum takibi (opsiyonel anahtar, yalnızca github flavor). Rapor: `docs/ARKA-PLAN-KONUM-RAPORU.md`. Kullanıcı karar verince yapılır.
 - Sırada (`TODO.md`): Ramazan modu (beklemede, "erken" denildi); gerçek kısa tekbir klibi (`[!]`, lisans); Google Play hazırlığı (ertelendi, `store/PLAY_STORE.md`).
-- Bilinen küçük sorunlar: 320x568'de ana ekran 12 px taşıyor.
 
 ## Dokümanlar
 - `tamvakti.md` **proje hafıza ve takip dosyası** (yapılan aşamalar, kararlar, öğrenilen dersler ve güncel durum burada tutulur)
