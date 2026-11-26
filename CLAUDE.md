@@ -68,6 +68,8 @@ Katı SemVer `MAJOR.MINOR.PATCH`. **Sürüm numarasını kullanıcıya sorma; de
 - Bilinen küçük sorunlar: 320x568'de ana ekran 12 px taşıyor; v2.9.0 widget'ları ve bazı bildirim özellikleri telefonda tek tek doğrulanmadı.
 
 ## Dokümanlar
+- `tamvakti.md` **proje hafıza ve takip dosyası** (yapılan aşamalar, kararlar, öğrenilen dersler ve güncel durum burada tutulur)
+- `docs/raporlar/README.md` inceleme ve tasarım raporları arşivi
 - `docs/KURULUM.md` sihirbaz şeması · `docs/RAKIP-ANALIZI.md` · `docs/GELIR-MODELI.md` · `docs/GUVENLIK.md` · `docs/EZAN-SESI-ARASTIRMA.md` · `store/PLAY_STORE.md`
 
 ## Çalışma ortamı

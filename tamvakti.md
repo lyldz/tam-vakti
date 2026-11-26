@@ -1,9 +1,10 @@
-# Tam Vakti — Geliştirme ve İyileştirme Günlüğü
+# Tam Vakti — Proje Hafıza ve Takip Dosyası
 
-Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kararlarını ve geri dönüş noktalarını kayıt altına alır.
+Bu dosya, Tam Vakti uygulamasının **canlı hafıza ve takip dosyasıdır**: yapılan her aşamayı, alınan tasarım kararlarını, öğrenilen teknik dersleri ve geri dönüş noktalarını kayıt altına alır. Proje devam ederken yeni kararlar, bulgular ve tamamlanan işler buraya işlenir.
 
 - **Başlangıç (referans kararlı sürüm):** `v2.12.0` (`8d62231`, İşa)
 - **Ürün ilkesi:** Yalnızca namaz vakti, kıble ve imsakiyeye odaklanan, reklamsız, çevrimdışı çalışabilen sade uygulama.
+- **İnceleme ve tasarım raporları arşivi:** [docs/raporlar/README.md](./docs/raporlar/README.md) (21–24 Kasım 2026 tarihli 12 teknik/tasarım raporu ve 5 görsel taslak).
 
 ---
 
@@ -129,8 +130,9 @@ Bu dosya, Tam Vakti uygulamasında yapılan her aşamayı, alınan tasarım kara
   - Gerçek cihazda `v2.13.9` sorunsuz kuruldu (Play Protect uyarısı vermedi).
 
 ## Kaldığımız Yer (Sonraki Oturum İçin)
-- **Güncel yayınlanan sürüm:** `v2.13.10` ("Seher", `versionCode: 24300`, `main` temiz ve `origin/main` ile eşit).
-- **Tamamlanan inceleme ve iyileştirmeler:** Ana ekran Sade/Detay modu, güneş yayı, kıble pusulası, bildirim/tam ekran/simgeler, Ayarlar sadeleştirme, 2 adımlı şehir seçici, logo ufuk cilası, aylık imsakiye, widget'lar, bildirim hijyeni & otomatik sessiz, güncelleme iptal kilidi, eski bildirimlerin otomatik temizlenmesi, yeni GPS konum kartı ve kararlılık düzeltmeleri (`Scheduler` `@Synchronized`, `MainActivity` akış/bağlantı güvenliği, `compass.js`).
+- **Son etiketli sürüm (`main`):** `v2.14.0` (`2e9e97c`) — merkezi ayar deposu, 10 dinamik ayar anahtarı, JSON yedekleme ve sıfırlama. Öncesi: `v2.13.11` (`7fa3038`), `v2.13.10` ("Seher", `versionCode: 24300`).
+- **Aktif dal (`ccr-5bbed883-gj8mzh`):** `929082b` — konum/güncelleme/alarm zamanlamaları, çevrimiçi geocode anahtarı, tam ekran uyarısında ekranı açık tutma ve otomatik kapanma süreleri yapılandırılabilir hale getirildi (`2452dec`, `929082b`).
+- **Tamamlanan inceleme ve iyileştirmeler:** Ana ekran Sade/Detay modu, güneş yayı, kıble pusulası, bildirim/tam ekran/simgeler, Ayarlar sadeleştirme, 2 adımlı şehir seçici, logo ufuk cilası, aylık imsakiye, widget'lar, bildirim hijyeni & otomatik sessiz, güncelleme iptal kilidi, eski bildirimlerin otomatik temizlenmesi, yeni GPS konum kartı, alt yüzer SVG cam toast, merkezi ayar deposu + JSON yedekleme ve kararlılık düzeltmeleri (`Scheduler` `@Synchronized`, `MainActivity` akış/bağlantı güvenliği, `compass.js`).
 - **Google Play aşamasına bırakılanlar:** Yurt dışı konum seçimi, Play (`play` flavor) AAB yayın hazırlığı.
 
 ## Yapılacak / Düzeltilecek Listesi (Hatırlatılacak)
