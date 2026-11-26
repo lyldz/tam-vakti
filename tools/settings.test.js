@@ -7,9 +7,9 @@ const BOOL_KEYS = [
   'showSeconds', 'showHijriDate', 'showSolarArc', 'autoUpdateCheck', 'permReminderHint', 'showHomeModeHint',
 ];
 
-test('all 21 settings fields exist and pass sanitization cleanly', () => {
+test('all 29 settings fields exist and pass sanitization cleanly', () => {
   const def = createDefaults();
-  assert.equal(Object.keys(def).length, 21);
+  assert.equal(Object.keys(def).length, 29);
   assert.deepEqual(sanitizeSettings(def), def);
 });
 

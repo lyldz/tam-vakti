@@ -816,6 +816,79 @@
               <span id="settingsToastDurVal">3 sn</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </span>
           </button>
+          <label class="flex items-center justify-between gap-3 px-4 py-3.5 cursor-pointer active:bg-white/5">
+            <span class="min-w-0">
+              <span class="block text-[14px] font-semibold text-slate-100">Çevrimiçi ilçe adı</span>
+              <span class="block text-[12px] text-slate-400">GPS konumundan daha ayrıntılı ilçe adı için internetten sorgu yapar. Kapalıyken konum dışarı gönderilmez</span>
+            </span>
+            <span class="relative inline-flex items-center shrink-0">
+              <input type="checkbox" id="onlineGeocodeToggle" onchange="app.toggleExtSetting('onlineGeocode', this.checked)" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
+            </span>
+          </label>
+          <button onclick="app.openExtNumModal('autoLocationIntervalMin')" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
+            <span class="min-w-0">
+              <span class="block text-[14px] font-semibold text-slate-100">Konum denetim aralığı</span>
+              <span class="block text-[12px] text-slate-400">Otomatik konum açıkken GPS'e en sık bu aralıkla bakılır</span>
+            </span>
+            <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
+              <span id="settingsExt_autoLocationIntervalMin">15 dk</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </span>
+          </button>
+          <button onclick="app.openExtNumModal('autoLocationHysteresisKm')" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
+            <span class="min-w-0">
+              <span class="block text-[14px] font-semibold text-slate-100">Konum değişim eşiği</span>
+              <span class="block text-[12px] text-slate-400">Sınırda gidip gelmeyi önleyen asgari yakınlık farkı</span>
+            </span>
+            <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
+              <span id="settingsExt_autoLocationHysteresisKm">1 km</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </span>
+          </button>
+          <button onclick="app.openExtNumModal('updateDismissHours')" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
+            <span class="min-w-0">
+              <span class="block text-[14px] font-semibold text-slate-100">Güncelleme hatırlatma aralığı</span>
+              <span class="block text-[12px] text-slate-400">Aynı sürüm için pencerenin tekrar gösterilmeme süresi</span>
+            </span>
+            <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
+              <span id="settingsExt_updateDismissHours">24 sa</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </span>
+          </button>
+          <button onclick="app.openExtNumModal('updateCheckTimeoutSec')" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
+            <span class="min-w-0">
+              <span class="block text-[14px] font-semibold text-slate-100">Güncelleme denetimi zaman aşımı</span>
+              <span class="block text-[12px] text-slate-400">Yeni sürüm sorgusunun en fazla bekleme süresi</span>
+            </span>
+            <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
+              <span id="settingsExt_updateCheckTimeoutSec">5 sn</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </span>
+          </button>
+          <button onclick="app.openExtNumModal('geocodeTimeoutSec')" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
+            <span class="min-w-0">
+              <span class="block text-[14px] font-semibold text-slate-100">İlçe adı sorgusu zaman aşımı</span>
+              <span class="block text-[12px] text-slate-400">Çevrimiçi ilçe adı sorgusunun en fazla bekleme süresi</span>
+            </span>
+            <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
+              <span id="settingsExt_geocodeTimeoutSec">2 sn</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </span>
+          </button>
+          <button onclick="app.openExtNumModal('scheduleHorizonDays')" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
+            <span class="min-w-0">
+              <span class="block text-[14px] font-semibold text-slate-100">Alarm ufku</span>
+              <span class="block text-[12px] text-slate-400">Alarmların kaç gün ilerisi için hazırlanacağı</span>
+            </span>
+            <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
+              <span id="settingsExt_scheduleHorizonDays">30 gün</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </span>
+          </button>
+          <button onclick="app.openExtNumModal('scheduleSyncDelayMs')" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-white/5 transition-colors">
+            <span class="min-w-0">
+              <span class="block text-[14px] font-semibold text-slate-100">Alarm eşitleme gecikmesi</span>
+              <span class="block text-[12px] text-slate-400">Ayar değişince alarmların yeniden kurulma gecikmesi</span>
+            </span>
+            <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
+              <span id="settingsExt_scheduleSyncDelayMs">600 ms</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </span>
+          </button>
           <div class="grid grid-cols-2 divide-x divide-white/5">
             <button onclick="app.exportSettingsBackup()" class="px-4 py-3.5 text-center text-[13px] font-semibold text-sky-300 active:bg-white/5 transition-colors">
               Ayarları Dışa Aktar (JSON)

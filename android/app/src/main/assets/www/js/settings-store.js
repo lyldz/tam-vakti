@@ -42,7 +42,24 @@
       permReminderHint: true,
       showHomeModeHint: true,
       toastDurationMs: 3000,
+      // Eskiden koda gömülüydü; varsayılanlar eski değerlerle aynı
+      onlineGeocode: true,
+      autoLocationIntervalMin: 15,
+      autoLocationHysteresisKm: 1,
+      updateDismissHours: 24,
+      updateCheckTimeoutSec: 5,
+      geocodeTimeoutSec: 2,
+      scheduleHorizonDays: 30,
+      scheduleSyncDelayMs: 600,
     };
+  }
+
+  function clampNum(v, min, max, fallback, digits) {
+    if (typeof v === 'boolean' || v === null || v === undefined || v === '') return fallback;
+    const n = Number(v);
+    if (!Number.isFinite(n)) return fallback;
+    const c = Math.min(max, Math.max(min, n));
+    return Number(c.toFixed(digits === undefined ? 1 : digits));
   }
 
   function clampInt(v, min, max, fallback) {
@@ -95,6 +112,14 @@
       permReminderHint: boolVal(s.permReminderHint, def.permReminderHint),
       showHomeModeHint: boolVal(s.showHomeModeHint, def.showHomeModeHint),
       toastDurationMs: clampInt(s.toastDurationMs, 1500, 8000, def.toastDurationMs),
+      onlineGeocode: boolVal(s.onlineGeocode, def.onlineGeocode),
+      autoLocationIntervalMin: clampInt(s.autoLocationIntervalMin, 1, 120, def.autoLocationIntervalMin),
+      autoLocationHysteresisKm: clampNum(s.autoLocationHysteresisKm, 0, 10, def.autoLocationHysteresisKm, 1),
+      updateDismissHours: clampInt(s.updateDismissHours, 1, 168, def.updateDismissHours),
+      updateCheckTimeoutSec: clampInt(s.updateCheckTimeoutSec, 2, 30, def.updateCheckTimeoutSec),
+      geocodeTimeoutSec: clampInt(s.geocodeTimeoutSec, 1, 10, def.geocodeTimeoutSec),
+      scheduleHorizonDays: clampInt(s.scheduleHorizonDays, 7, 30, def.scheduleHorizonDays),
+      scheduleSyncDelayMs: clampInt(s.scheduleSyncDelayMs, 200, 3000, def.scheduleSyncDelayMs),
     };
   }
 

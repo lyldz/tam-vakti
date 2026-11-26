@@ -16,6 +16,48 @@ const POLICY_URL = "https://lyldz.github.io/tam-vakti/";
 
 const DOWNLOAD_BTN_HTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v12m0 0l-5-5m5 5l5-5M5 20h14"/></svg><span>İndir</span>`;
 
+// Gelişmiş ayarlar: eskiden koda gömülü olan değerler (varsayılanlar eskisiyle aynı)
+const EXT_EXTRA_DEFAULTS = {
+  onlineGeocode: true,
+  autoLocationIntervalMin: 15,
+  autoLocationHysteresisKm: 1,
+  updateDismissHours: 24,
+  updateCheckTimeoutSec: 5,
+  geocodeTimeoutSec: 2,
+  scheduleHorizonDays: 30,
+  scheduleSyncDelayMs: 600
+};
+const EXT_NUM_DEFS = {
+  autoLocationIntervalMin: {
+    title: "Konum denetim aralığı", desc: "Otomatik konum açıkken, uygulama öne gelince GPS'e en sık ne kadar aralıkla bakılsın.",
+    opts: [1, 5, 15, 30, 60, 120], unit: "dk", def: 15
+  },
+  autoLocationHysteresisKm: {
+    title: "Konum değişim eşiği", desc: "Yeni ilçe merkezi, kayıtlı yerden en az bu kadar km daha yakın değilse vakitler taşınmaz (sınırda gidip gelmeyi önler).",
+    opts: [0, 0.5, 1, 2, 5], unit: "km", def: 1
+  },
+  updateDismissHours: {
+    title: "Güncelleme hatırlatma aralığı", desc: "Aynı sürüm için \"sonra\" dediğinizde pencere ne kadar süre tekrar gösterilmesin.",
+    opts: [1, 6, 12, 24, 48, 168], unit: "sa", def: 24
+  },
+  updateCheckTimeoutSec: {
+    title: "Güncelleme denetimi zaman aşımı", desc: "Yeni sürüm sorgusunun en fazla bekleyeceği süre.",
+    opts: [2, 5, 10, 20, 30], unit: "sn", def: 5
+  },
+  geocodeTimeoutSec: {
+    title: "Çevrimiçi ilçe adı zaman aşımı", desc: "GPS konumundan ilçe adı sorgusunun en fazla bekleyeceği süre; aşılırsa çevrimdışı ad kullanılır.",
+    opts: [1, 2, 4, 8, 10], unit: "sn", def: 2
+  },
+  scheduleHorizonDays: {
+    title: "Alarm ufku", desc: "Uygulama açılmasa da alarmların kaç gün ilerisi için hazırlanacağı.",
+    opts: [7, 14, 21, 30], unit: "gün", def: 30
+  },
+  scheduleSyncDelayMs: {
+    title: "Alarm eşitleme gecikmesi", desc: "Bir ayar değiştikten sonra alarmların yeniden kurulmadan önce beklenen süre.",
+    opts: [200, 600, 1000, 2000, 3000], unit: "ms", def: 600
+  }
+};
+
 class TamVaktiApp {
   // Kurulum sihirbazı sürümü: artırılınca sihirbaz mevcut kullanıcılara bir kez daha açılır
   static ONBOARDING_VERSION = 2;
@@ -1518,9 +1560,10 @@ class TamVaktiApp {
     }
 
     // 2. İnternet bağlantısı varsa daha detaylı ilçe tespiti için hızlı ters coğrafi kodlama dene
+    if (!this.onlineGeocode) return fallbackName;
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const timeoutId = setTimeout(() => controller.abort(), this.geocodeTimeoutSec * 1000);
       const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=tr`, { signal: controller.signal });
       clearTimeout(timeoutId);
       if (res.ok) {
@@ -1561,7 +1604,7 @@ class TamVaktiApp {
   checkAutoLocation(force = false) {
     if (!this.autoLocation || !navigator.geolocation) return;
     const now = Date.now();
-    if (!force && now - (this._autoLocAt || 0) < 15 * 60 * 1000) return;
+    if (!force && now - (this._autoLocAt || 0) < this.autoLocationIntervalMin * 60 * 1000) return;
     this._autoLocAt = now;
     navigator.geolocation.getCurrentPosition((pos) => {
       const { latitude: lat, longitude: lon } = pos.coords;
@@ -1575,7 +1618,7 @@ class TamVaktiApp {
       if (cur && cur.name === name) return;
       // Sınırda gidip gelmesin: yeni ilçe merkezi, kayıtlı yerden en az 1 km daha yakın olmalı
       const km = (la, lo) => Math.hypot((lat - la) * 111.2, (lon - lo) * 111.2 * Math.cos(lat * Math.PI / 180));
-      if (cur && !cur.isPlaceholder && km(n.lat, n.lon) > km(cur.lat, cur.lon) - 1) return;
+      if (cur && !cur.isPlaceholder && km(n.lat, n.lon) > km(cur.lat, cur.lon) - this.autoLocationHysteresisKm) return;
       this.saveLocation({ name, lat: n.lat, lon: n.lon });
       this.updatePrayers();
       this.showGpsBanner(name, "KONUM GÜNCELLENDİ");
@@ -1679,6 +1722,8 @@ class TamVaktiApp {
     set("settingsFriSilentDurVal", `${this.fridaySilentDurationMin} dk`);
     set("settingsKerahatMinVal", `${this.kerahatMinutes} dk`);
     set("settingsToastDurVal", `${(this.toastDurationMs / 1000).toFixed(this.toastDurationMs % 1000 === 0 ? 0 : 1)} sn`);
+    setChk("onlineGeocodeToggle", this.onlineGeocode);
+    for (const k of Object.keys(EXT_NUM_DEFS)) set(`settingsExt_${k}`, `${this[k]} ${EXT_NUM_DEFS[k].unit}`);
     this.refreshPermissionStatus();
   }
 
@@ -1800,6 +1845,7 @@ class TamVaktiApp {
     this.permReminderHint = s.permReminderHint;
     this.showHomeModeHint = s.showHomeModeHint;
     this.toastDurationMs = s.toastDurationMs;
+    for (const k of Object.keys(EXT_EXTRA_DEFAULTS)) this[k] = s[k] !== undefined ? s[k] : EXT_EXTRA_DEFAULTS[k];
   }
 
   saveExtSettings() {
@@ -1815,11 +1861,12 @@ class TamVaktiApp {
       showHomeModeHint: this.showHomeModeHint,
       toastDurationMs: this.toastDurationMs
     };
+    for (const k of Object.keys(EXT_EXTRA_DEFAULTS)) data[k] = this[k];
     try { localStorage.setItem("tamvakti_ext_settings", JSON.stringify(data)); } catch (e) {}
   }
 
   getAllSettingsSnapshot() {
-    return {
+    const snap = {
       ongoingNotifEnabled: this.ongoingNotifEnabled,
       autoSilent: this.autoSilent,
       autoLocation: this.autoLocation,
@@ -1842,6 +1889,8 @@ class TamVaktiApp {
       showHomeModeHint: this.showHomeModeHint,
       toastDurationMs: this.toastDurationMs
     };
+    for (const k of Object.keys(EXT_EXTRA_DEFAULTS)) snap[k] = this[k];
+    return snap;
   }
 
   applyExtDisplaySettings() {
@@ -1854,7 +1903,7 @@ class TamVaktiApp {
   }
 
   toggleExtSetting(key, checked) {
-    const allowed = new Set(["showSeconds", "showHijriDate", "showSolarArc", "autoUpdateCheck", "permReminderHint", "showHomeModeHint"]);
+    const allowed = new Set(["showSeconds", "showHijriDate", "showSolarArc", "autoUpdateCheck", "permReminderHint", "showHomeModeHint", "onlineGeocode"]);
     if (!allowed.has(key)) return;
     this[key] = !!checked;
     if (key === "showHomeModeHint" && checked) {
@@ -1906,6 +1955,25 @@ class TamVaktiApp {
     });
   }
 
+  openExtNumModal(key) {
+    const d = EXT_NUM_DEFS[key];
+    if (!d) return;
+    const opts = d.opts.map(v => ({
+      value: String(v), label: `${v} ${d.unit}`, desc: v === d.def ? "Varsayılan değer" : ""
+    }));
+    this.openChoice(d.title, d.desc, opts, String(this[key]), (v) => {
+      const store = window.TamVaktiSettings;
+      const cur = this.getAllSettingsSnapshot();
+      cur[key] = Number(v);
+      const clean = store ? store.sanitizeSettings(cur)[key] : Number(v);
+      this[key] = clean;
+      this.saveExtSettings();
+      this.updateSettingsLabels();
+      if (key === "scheduleHorizonDays" || key === "scheduleSyncDelayMs") this.scheduleSync();
+      this.showToast(`${d.title}: ${clean} ${d.unit}`, "✓");
+    });
+  }
+
   openToastDurationModal() {
     const opts = [
       { value: "1500", label: "1.5 saniye", desc: "Hızlı kapanır" },
@@ -1944,6 +2012,7 @@ class TamVaktiApp {
     this.permReminderHint = s.permReminderHint;
     this.showHomeModeHint = s.showHomeModeHint;
     this.toastDurationMs = s.toastDurationMs;
+    for (const k of Object.keys(EXT_EXTRA_DEFAULTS)) this[k] = s[k] !== undefined ? s[k] : EXT_EXTRA_DEFAULTS[k];
 
     try {
       localStorage.setItem("tamvakti_ongoing_notif", this.ongoingNotifEnabled ? "true" : "false");
@@ -2271,7 +2340,7 @@ class TamVaktiApp {
   scheduleSync() {
     if (!window.AndroidBridge || !window.AndroidBridge.syncSchedule) return;
     clearTimeout(this._syncTimer);
-    this._syncTimer = setTimeout(() => this.syncNativeSchedule(), 600);
+    this._syncTimer = setTimeout(() => this.syncNativeSchedule(), this.scheduleSyncDelayMs);
   }
 
   async syncNativeSchedule() {
@@ -2282,7 +2351,7 @@ class TamVaktiApp {
     const { lat, lon } = this.currentLocation;
     const city = this.shortPlaceName();
 
-    const DAYS = 30; // uygulama günlerce açılmasa da alarmlar sürsün (native taraf en yakın 120 olayı kurar, kendini yeniler)
+    const DAYS = this.scheduleHorizonDays; // uygulama günlerce açılmasa da alarmlar sürsün (native taraf en yakın 120 olayı kurar, kendini yeniler)
     const monthCache = {};
     const prayers = [];
     const events = [];
@@ -2798,7 +2867,7 @@ class TamVaktiApp {
     if (!this.updateInfo) return false;
     try {
       const d = JSON.parse(localStorage.getItem("tamvakti_update_dismissed"));
-      if (d && d.version === this.updateInfo.version && Date.now() - d.ts < 24 * 60 * 60 * 1000) return false;
+      if (d && d.version === this.updateInfo.version && Date.now() - d.ts < this.updateDismissHours * 60 * 60 * 1000) return false;
     } catch (e) {}
     const ob = document.getElementById("onboardingModal");
     if (ob && !ob.classList.contains("hidden")) return false; // kurulum sırasında rahatsız etme
@@ -2851,7 +2920,7 @@ class TamVaktiApp {
 
     try {
       const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
-      const timeoutId = controller ? setTimeout(() => controller.abort(), 5000) : null;
+      const timeoutId = controller ? setTimeout(() => controller.abort(), this.updateCheckTimeoutSec * 1000) : null;
       const res = await fetch("https://api.github.com/repos/lyldz/tam-vakti/releases/latest", {
         headers: { "Accept": "application/vnd.github.v3+json" },
         ...(controller ? { signal: controller.signal } : {})
