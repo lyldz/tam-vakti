@@ -56,4 +56,12 @@ object Store {
     }
     fun fullScreenEnabled(ctx: Context): Boolean = schedule(ctx)?.optBoolean("fullscreen", false) ?: false
     fun ongoingEnabled(ctx: Context): Boolean = schedule(ctx)?.optBoolean("ongoing", false) ?: false
+    fun fullScreenKeepScreenMs(ctx: Context): Long {
+        val sec = schedule(ctx)?.optInt("keepScreenSec", 60) ?: 60
+        return sec.coerceIn(10, 300) * 1000L
+    }
+    fun fullScreenAutoCloseMs(ctx: Context): Long {
+        val min = schedule(ctx)?.optInt("autoCloseMin", 5) ?: 5
+        return min.coerceIn(1, 30) * 60 * 1000L
+    }
 }

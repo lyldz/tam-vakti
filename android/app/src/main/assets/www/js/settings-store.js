@@ -51,6 +51,8 @@
       geocodeTimeoutSec: 2,
       scheduleHorizonDays: 30,
       scheduleSyncDelayMs: 600,
+      fullScreenKeepScreenSec: 60,
+      fullScreenAutoCloseMin: 5,
     };
   }
 
@@ -120,6 +122,8 @@
       geocodeTimeoutSec: clampInt(s.geocodeTimeoutSec, 1, 10, def.geocodeTimeoutSec),
       scheduleHorizonDays: clampInt(s.scheduleHorizonDays, 7, 30, def.scheduleHorizonDays),
       scheduleSyncDelayMs: clampInt(s.scheduleSyncDelayMs, 200, 3000, def.scheduleSyncDelayMs),
+      fullScreenKeepScreenSec: clampInt(s.fullScreenKeepScreenSec, 10, 300, def.fullScreenKeepScreenSec),
+      fullScreenAutoCloseMin: clampInt(s.fullScreenAutoCloseMin, 1, 30, def.fullScreenAutoCloseMin),
     };
   }
 

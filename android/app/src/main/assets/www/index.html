@@ -889,6 +889,24 @@
               <span id="settingsExt_scheduleSyncDelayMs">600 ms</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </span>
           </button>
+          <button onclick="app.openExtNumModal('fullScreenKeepScreenSec')" class="w-full px-4 py-3.5 flex items-center justify-between gap-3 text-left active:bg-white/5 transition-colors">
+            <span class="min-w-0">
+              <span class="block text-[14px] font-semibold text-slate-100">Tam ekran açık kalma</span>
+              <span class="block text-[12px] text-slate-400">Tam ekran vakit bildiriminde ekranın zorla açık kalacağı süre</span>
+            </span>
+            <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
+              <span id="settingsExt_fullScreenKeepScreenSec">60 sn</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </span>
+          </button>
+          <button onclick="app.openExtNumModal('fullScreenAutoCloseMin')" class="w-full px-4 py-3.5 flex items-center justify-between gap-3 text-left active:bg-white/5 transition-colors">
+            <span class="min-w-0">
+              <span class="block text-[14px] font-semibold text-slate-100">Tam ekran otomatik kapanma</span>
+              <span class="block text-[12px] text-slate-400">Tam ekran vakit bildiriminin kendiliğinden kapanacağı süre</span>
+            </span>
+            <span class="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-sky-300">
+              <span id="settingsExt_fullScreenAutoCloseMin">5 dk</span><svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </span>
+          </button>
           <div class="grid grid-cols-2 divide-x divide-white/5">
             <button onclick="app.exportSettingsBackup()" class="px-4 py-3.5 text-center text-[13px] font-semibold text-sky-300 active:bg-white/5 transition-colors">
               Ayarları Dışa Aktar (JSON)

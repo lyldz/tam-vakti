@@ -25,7 +25,9 @@ const EXT_EXTRA_DEFAULTS = {
   updateCheckTimeoutSec: 5,
   geocodeTimeoutSec: 2,
   scheduleHorizonDays: 30,
-  scheduleSyncDelayMs: 600
+  scheduleSyncDelayMs: 600,
+  fullScreenKeepScreenSec: 60,
+  fullScreenAutoCloseMin: 5
 };
 const EXT_NUM_DEFS = {
   autoLocationIntervalMin: {
@@ -55,6 +57,14 @@ const EXT_NUM_DEFS = {
   scheduleSyncDelayMs: {
     title: "Alarm eşitleme gecikmesi", desc: "Bir ayar değiştikten sonra alarmların yeniden kurulmadan önce beklenen süre.",
     opts: [200, 600, 1000, 2000, 3000], unit: "ms", def: 600
+  },
+  fullScreenKeepScreenSec: {
+    title: "Tam ekran ekran açık kalma süresi", desc: "Tam ekran vakit bildiriminde ekranın zorla açık tutulacağı süre (pil/OLED koruması).",
+    opts: [15, 30, 60, 120, 300], unit: "sn", def: 60
+  },
+  fullScreenAutoCloseMin: {
+    title: "Tam ekran otomatik kapanma", desc: "Tam ekran vakit bildiriminin kendiliğinden kapanacağı süre.",
+    opts: [1, 3, 5, 10, 30], unit: "dk", def: 5
   }
 };
 
@@ -1969,7 +1979,7 @@ class TamVaktiApp {
       this[key] = clean;
       this.saveExtSettings();
       this.updateSettingsLabels();
-      if (key === "scheduleHorizonDays" || key === "scheduleSyncDelayMs") this.scheduleSync();
+      if (key === "scheduleHorizonDays" || key === "scheduleSyncDelayMs" || key === "fullScreenKeepScreenSec" || key === "fullScreenAutoCloseMin") this.scheduleSync();
       this.showToast(`${d.title}: ${clean} ${d.unit}`, "✓");
     });
   }
@@ -2446,6 +2456,8 @@ class TamVaktiApp {
         ongoing: !!this.ongoingNotifEnabled,
         fullscreen: !!this.fullScreenAlert,
         tone: this.alertTone,
+        keepScreenSec: this.fullScreenKeepScreenSec,
+        autoCloseMin: this.fullScreenAutoCloseMin,
         prayers,
         events: events.slice(0, 1500)
       }));

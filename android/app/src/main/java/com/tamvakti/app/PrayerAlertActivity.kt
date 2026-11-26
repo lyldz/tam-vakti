@@ -57,9 +57,11 @@ class PrayerAlertActivity : AppCompatActivity() {
         }
         // Ekran kapatılana kadar açık kalır; ekran kapanınca kendini kapatır
         registerReceiver(screenOffReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF))
-        // Pil / OLED koruması: 60 sn sonra ekranı zorla açık tutmayı bırak, 5 dk sonra pencereyi kapat
-        handler.postDelayed({ window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }, KEEP_SCREEN_MS)
-        handler.postDelayed({ finishAndRemoveTask() }, AUTO_CLOSE_MS)
+        // Pil / OLED koruması: varsayılan 60 sn sonra ekranı zorla açık tutmayı bırak, 5 dk sonra pencereyi kapat
+        val keepScreenMs = runCatching { Store.fullScreenKeepScreenMs(this) }.getOrDefault(KEEP_SCREEN_MS)
+        val autoCloseMs = runCatching { Store.fullScreenAutoCloseMs(this) }.getOrDefault(AUTO_CLOSE_MS)
+        handler.postDelayed({ window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }, keepScreenMs)
+        handler.postDelayed({ finishAndRemoveTask() }, autoCloseMs)
     }
 
     override fun onNewIntent(intent: Intent) {

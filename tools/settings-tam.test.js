@@ -77,7 +77,7 @@ test('every setting is wired in app.js (load, save, snapshot, apply) and exposed
     if (typeof DEF[k] === 'boolean') assert.ok(html.includes(`${k}Toggle`) || html.includes(`'${k}'`), `index.html'de ${k} anahtarı yok`);
     else assert.ok(html.includes(`openExtNumModal('${k}')`), `index.html'de ${k} satırı yok`);
   }
-  assert.equal(extra.length, 8);
+  assert.equal(extra.length, 10);
 });
 
 test('www and android assets stay identical', () => {
