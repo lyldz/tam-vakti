@@ -60,12 +60,12 @@ Katı SemVer `MAJOR.MINOR.PATCH`. **Sürüm numarasını kullanıcıya sorma; de
 - Android 16 Canlı Güncelleme v2.7.2'de denendi, Xiaomi'de başarısız oldu, v2.7.4'te kaldırıldı. İstenmedikçe önerme.
 - Güvenlik: WebView dosya erişimi kapalı, dış bağlantılar tarayıcıda açılır, APK indirme yalnızca GitHub'dan (`docs/GUVENLIK.md`).
 
-## Durum (güncel: 2026-11-13)
-- Yayında: **v2.12.0 İşa** (otomatik konum il/ilçe değişince güncellenir, 1 km histerezis). Önceki: v2.11.0 Şefak (Ayarlar > "Konumu otomatik güncelle": açılış/öne gelişte GPS bakar, 10 km üzeri ilçe değişirse vakitler yenilenir, çevrimdışı ilçe verisi, arka plan takibi yok; telefonda denenmedi). Önceki: v2.10.1 Gurub (dingin sayaç: küçük ve soluk saniye; v2.10.0: `versionCode` 22800): Cuma tutarlılığı, kıble açısı rozeti, Cuma tebriği; v2.9.1: nefes alan vakit kutusu. Beğenilmezse geri dönüş v2.9.1. `main` temiz.
-- 2026-11-11: "tam ekran güncelleme penceresi, 30 dk / öne gelince denetim, izin dönüşünde kurulum devamı" değişikliği yapıldı ve geri alındı (revert).
+## Durum (güncel: 2026-11-26)
+- Yayında: **v2.14.1 Kuşluk** (`versionCode`: 24600). Önceki: **v2.14.0 Kuşluk** (merkezi ayar deposu `settings-store.js`, 10 yeni dinamik ayar anahtarı, JSON yedekleme/sıfırlama).
+- `v2.14.1` ile: konum/güncelleme/alarm zamanlamaları, çevrimiçi geocode anahtarı, tam ekran uyarısında ekranı açık tutma ve otomatik kapanma süreleri ayarlara taşındı; kullanılmayan artık kod ve importlar temizlendi.
 - BEKLEMEDE, kullanıcıya HATIRLAT: arka plan konum takibi (opsiyonel anahtar, yalnızca github flavor). Rapor: `docs/ARKA-PLAN-KONUM-RAPORU.md`. Kullanıcı karar verince yapılır.
 - Sırada (`TODO.md`): Ramazan modu (beklemede, "erken" denildi); gerçek kısa tekbir klibi (`[!]`, lisans); Google Play hazırlığı (ertelendi, `store/PLAY_STORE.md`).
-- Bilinen küçük sorunlar: 320x568'de ana ekran 12 px taşıyor; v2.9.0 widget'ları ve bazı bildirim özellikleri telefonda tek tek doğrulanmadı.
+- Bilinen küçük sorunlar: 320x568'de ana ekran 12 px taşıyor.
 
 ## Dokümanlar
 - `tamvakti.md` **proje hafıza ve takip dosyası** (yapılan aşamalar, kararlar, öğrenilen dersler ve güncel durum burada tutulur)

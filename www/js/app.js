@@ -1,6 +1,6 @@
 /**
  * Tam Vakti - Minimalist Adaçayı Yeşili & Sade Vakit / Kıble Kontrolcüsü
- * Sürüm: v2.14.0
+ * Sürüm: v2.14.1
  */
 
 const PRAYER_LIST = [
@@ -109,9 +109,9 @@ class TamVaktiApp {
     // Dağıtım: "play" (kendini güncelleme yok), "github" (APK güncelleyici var) veya "web"
     this.distribution = (window.AndroidBridge && window.AndroidBridge.getDistribution) ? window.AndroidBridge.getDistribution() : "web";
     this.canSelfUpdate = this.distribution !== "play";
-    this.currentVersion = "v2.14.0";
+    this.currentVersion = "v2.14.1";
     this.versionCodename = "Kuşluk";
-    this.versionDisplay = "v2.14.0 • Kuşluk";
+    this.versionDisplay = "v2.14.1 • Kuşluk";
     this.onboardingStep = 1;
     this.monthlyYear = null;
     this.monthlyMonth = null;
@@ -2505,18 +2505,6 @@ class TamVaktiApp {
   closeChoice() {
     const sheet = document.getElementById("choiceSheet");
     if (sheet) sheet.classList.add("hidden");
-  }
-
-  openPrayerModesModal() {
-    this.openChoice("Vakit bildirimi", "Vakit girince ne olsun?", [
-      { value: "bip", label: "Sesli bildirim", desc: "Sesi Bildirim sesi satırından seçebilirsiniz" },
-      { value: "sessiz", label: "Sessiz", desc: "Yalnızca bildirim yazısı gösterilir" }
-    ], this.notifMode, (v) => {
-      this.notifMode = v;
-      localStorage.setItem("tamvakti_notif_mode", v);
-      this.updateSettingsLabels();
-      this.scheduleSync();
-    });
   }
 
   // Hesaplama yöntemi seçimi: otomatik (konuma göre) ya da elle
