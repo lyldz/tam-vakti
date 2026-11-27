@@ -213,12 +213,19 @@ class QiblaCompass {
       this._bindWebOrientation();
       label = "Web sensörü";
     }
-    this._setBadge(label || "Sensör yok");
+    this._setBadge(label || "Sensör yok", label ? "ok" : "low");
+    if (this._noSensorTimer) clearTimeout(this._noSensorTimer);
+    if (label && !this._hasData) {
+      this._noSensorTimer = setTimeout(() => {
+        if (this.isListening && !this._hasData) this._setBadge("Sensör yok", "low");
+      }, 2500);
+    }
     this._lastFrame = 0;
     if (!this._raf) this._raf = requestAnimationFrame(this._tick);
   }
 
   stopCompass() {
+    if (this._noSensorTimer) { clearTimeout(this._noSensorTimer); this._noSensorTimer = 0; }
     if (!this.isListening) return;
     this.isListening = false;
     if (this._raf) {

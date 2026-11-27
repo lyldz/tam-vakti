@@ -252,6 +252,9 @@ class TamVaktiApp {
     this.applyExtDisplaySettings();
     setInterval(() => this.tick(), 1000);
     this.tick();
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") this.handleBack();
+    });
 
     await this.updatePrayers();
     if (typeof this.updateOnboardingLocationDisplay === "function") {
