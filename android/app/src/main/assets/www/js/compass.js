@@ -118,8 +118,8 @@ class QiblaCompass {
 
   // ---- Hedef kıble ----
   setTargetQibla(angle, lat, lon) {
-    this.targetQiblaAngle = angle || 156.0;
-    if (lat && lon) {
+    this.targetQiblaAngle = (typeof angle === "number" && Number.isFinite(angle)) ? angle : 156.0;
+    if (typeof lat === "number" && Number.isFinite(lat) && typeof lon === "number" && Number.isFinite(lon)) {
       this.userLat = lat;
       this.userLon = lon;
     }

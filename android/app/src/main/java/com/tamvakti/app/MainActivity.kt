@@ -26,6 +26,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.hardware.GeomagneticField
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -50,8 +51,48 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var pendingGeoCallback: GeolocationPermissions.Callback? = null
     private var pendingGeoOrigin: String? = null
     private var pendingInstallApk: File? = null
+    private var pendingExportJson: String? = null
     @Volatile private var isApkDownloading = false
     @Volatile private var downloadedApkUrl: String? = null
+
+    private val createBackupLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        val json = pendingExportJson
+        pendingExportJson = null
+        if (uri != null && json != null) {
+            try {
+                contentResolver.openOutputStream(uri)?.use { out ->
+                    out.write(json.toByteArray(Charsets.UTF_8))
+                }
+                if (::webView.isInitialized) {
+                    webView.evaluateJavascript("window.app && window.app.showToast('Ayarlar JSON olarak dışa aktarıldı', '✓');", null)
+                }
+            } catch (e: Exception) {
+                if (::webView.isInitialized) {
+                    webView.evaluateJavascript("window.app && window.app.showToast('Ayarlar dışa aktarılamadı', '⚠️');", null)
+                }
+            }
+        }
+    }
+
+    private val openBackupLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri == null || !::webView.isInitialized) return@registerForActivityResult
+        try {
+            val bytes = contentResolver.openInputStream(uri)?.use { it.readBytes() }
+            if (bytes != null && bytes.size <= 512 * 1024) {
+                val text = String(bytes, Charsets.UTF_8)
+                val quoted = org.json.JSONObject.quote(text)
+                webView.evaluateJavascript("window.app && window.app.importSettingsBackupText($quoted);", null)
+            } else {
+                webView.evaluateJavascript("window.app && window.app.showToast('Geçersiz veya çok büyük yedek dosyası', '⚠️');", null)
+            }
+        } catch (e: Exception) {
+            webView.evaluateJavascript("window.app && window.app.showToast('Yedek dosyası okunamadı', '⚠️');", null)
+        }
+    }
 
     // Native Pusula & Sensör Değişkenleri
     private var sensorManager: SensorManager? = null
@@ -832,14 +873,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         /** Seçilen vakit bildirim sesinin kısa önizlemesi ("telefon" için telefonun varsayılan bildirim sesi). */
         @JavascriptInterface
         fun playTone(tone: String) {
-            if (tone == "telefon") {
-                activity.runOnUiThread {
-                    try {
-                        val r = android.media.RingtoneManager.getRingtone(activity, android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION))
-                        r?.play()
-                    } catch (e: Exception) {}
-                }
-            } else {
+            activity.runOnUiThread {
                 Notifs.playTone(activity.applicationContext, tone)
             }
         }
@@ -908,6 +942,27 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 } catch (e: Exception) {}
             }
         }
+
+        @JavascriptInterface
+        fun exportBackupJson(filename: String, json: String) {
+            activity.runOnUiThread {
+                try {
+                    activity.pendingExportJson = json
+                    activity.createBackupLauncher.launch(filename.ifBlank { "tam-vakti-ayarlar.json" })
+                } catch (e: Exception) {
+                    activity.pendingExportJson = null
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun importBackupJson() {
+            activity.runOnUiThread {
+                try {
+                    activity.openBackupLauncher.launch(arrayOf("application/json", "text/plain", "*/*"))
+                } catch (e: Exception) {}
+            }
+        }
     }
 
     fun startApkDownload(downloadUrl: String) {
@@ -938,7 +993,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
                 val url = URL(downloadUrl)
                 var conn = (url.openConnection() as HttpURLConnection).apply {
-                    instanceFollowRedirects = true
+                    instanceFollowRedirects = false
                     connectTimeout = 15000
                     readTimeout = 30000
                     connect()
@@ -948,7 +1003,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 var redirectCount = 0
                 while ((conn.responseCode == HttpURLConnection.HTTP_MOVED_PERM ||
                         conn.responseCode == HttpURLConnection.HTTP_MOVED_TEMP ||
-                        conn.responseCode == HttpURLConnection.HTTP_SEE_OTHER) && redirectCount < 5) {
+                        conn.responseCode == HttpURLConnection.HTTP_SEE_OTHER ||
+                        conn.responseCode == 307 ||
+                        conn.responseCode == 308) && redirectCount < 5) {
                     val newUrl = conn.getHeaderField("Location")
                     conn.disconnect()
                     connection = null
@@ -959,6 +1016,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                         return@thread
                     }
                     conn = (URL(newUrl).openConnection() as HttpURLConnection).apply {
+                        instanceFollowRedirects = false
                         connectTimeout = 15000
                         readTimeout = 30000
                         connect()

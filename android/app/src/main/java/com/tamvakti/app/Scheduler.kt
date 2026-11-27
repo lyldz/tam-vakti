@@ -163,11 +163,11 @@ object Scheduler {
      * alarmın (ör. vakit + silent_start + kerahat) birbirini iptal etmesini de önler.
      */
     @Synchronized
-    fun rescheduleIfNeeded(ctx: Context) {
+    fun rescheduleIfNeeded(ctx: Context, deferReschedule: Boolean = false) {
         val app = ctx.applicationContext
         val p = Store.prefs(app)
         val rem = (p.getInt("remaining", 0) - 1).coerceAtLeast(0)
         p.edit().putInt("remaining", rem).apply()
-        if (rem <= 30) reschedule(app)
+        if (rem <= 30 && !deferReschedule) reschedule(app)
     }
 }

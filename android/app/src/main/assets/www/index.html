@@ -210,6 +210,7 @@
 
           <!-- Sleek Horizontal Progress Bar with Kerahat Zone -->
           <div class="relative w-full h-3.5 rounded-full bg-slate-800/80 overflow-hidden flex p-[1px] border border-slate-700/50">
+            <div id="horizonMorningKerahatZone" class="hidden absolute left-0 top-0 bottom-0 kerahat-stripes border-r border-amber-400/60 rounded-l-full pointer-events-none z-10"><div class="absolute inset-0 bg-amber-500/20"></div></div>
             <!-- Passed Time Segment -->
             <div id="horizonPassedSegment" class="h-full bg-sky-400 rounded-l-full relative shadow-[0_0_12px_#38bdf8] transition-all duration-300" style="width: 63%;">
               <!-- Glowing Indicator Head / Pulse Tip -->
@@ -911,7 +912,7 @@
             <button onclick="app.exportSettingsBackup()" class="px-4 py-3.5 text-center text-[13px] font-semibold text-sky-300 active:bg-white/5 transition-colors">
               Ayarları Dışa Aktar (JSON)
             </button>
-            <button onclick="document.getElementById('settingsImportFile').click()" class="px-4 py-3.5 text-center text-[13px] font-semibold text-sky-300 active:bg-white/5 transition-colors">
+            <button onclick="app.triggerImportSettingsBackup()" class="px-4 py-3.5 text-center text-[13px] font-semibold text-sky-300 active:bg-white/5 transition-colors">
               Ayarları İçe Aktar (JSON)
             </button>
           </div>

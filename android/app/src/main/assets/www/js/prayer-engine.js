@@ -153,9 +153,9 @@ class PrayerEngine {
       const phi = this.d2r(lat);
       const q = this.d2r(qiblaAngle);
 
-      const A = 1 / Math.tan(q);
-      const B = -Math.sin(phi);
-      const C = -Math.cos(phi) * Math.tan(delta);
+      const A = Math.cos(q);
+      const B = -Math.sin(q) * Math.sin(phi);
+      const C = -Math.sin(q) * Math.cos(phi) * Math.tan(delta);
 
       const R = Math.sqrt(A * A + B * B);
       if (R === 0 || Math.abs(C / R) > 1) return null;
@@ -171,6 +171,11 @@ class PrayerEngine {
         const Hrad = this.d2r(hDeg);
         const sinAlt = Math.sin(phi) * Math.sin(delta) + Math.cos(phi) * Math.cos(delta) * Math.cos(Hrad);
         if (sinAlt > 0) {
+          const y = -Math.sin(Hrad);
+          const x = Math.tan(delta) * Math.cos(phi) - Math.sin(phi) * Math.cos(Hrad);
+          const az = (this.r2d(Math.atan2(y, x)) + 360) % 360;
+          const diff = Math.abs(((az - qiblaAngle + 540) % 360) - 180);
+          if (diff > 2) continue;
           const solarHours = 12 + (hDeg / 15);
           const localHours = solarHours - solar.equationOfTime - ((lon - 15 * tz) / 15);
           return this.formatTime(localHours);
@@ -219,10 +224,9 @@ class PrayerEngine {
   }
 
   // Tam Diyanet Modeliyle Çevrimdışı Vakit Hesaplama
-  calculateTimesOffline(date, lat, lon, tz = 3.0) {
+  calculateTimesOffline(date, lat, lon, tz) {
     const M = this.methodInfo();
-    // Diyanet: Türkiye saati (UTC+3). Diğer yöntemler yurt dışında da kullanılabilir: cihazın saat dilimi esas alınır.
-    if (this.method !== 'diyanet') tz = -date.getTimezoneOffset() / 60;
+    if (tz === undefined || tz === null) tz = -date.getTimezoneOffset() / 60;
     const tk = M.temkin || { imsak: 0, gunes: 0, ogle: 0, ikindi: 0, aksam: 0, yatsi: 0 };
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
@@ -235,20 +239,25 @@ class PrayerEngine {
     const solarNoon = 12 + tz - (lon / 15) - equationOfTime;
 
     // Saat Açıları
-    const haSunrise = this.getHourAngle(lat, declination, -0.8333); // Ufuk kırılması
+    const haSunriseRaw = this.getHourAngle(lat, declination, -0.8333); // Ufuk kırılması
+    const haSunrise = haSunriseRaw !== null ? haSunriseRaw : 6;
+    const night = Math.max(0, 24 - 2 * haSunrise);
     const haFajr = this.getHourAngle(lat, declination, -M.fajr);
     const haIsha = M.ishaMin ? null : this.getHourAngle(lat, declination, -M.isha);
     const haAsr = this.getAsrHourAngle(lat, declination, 1);
 
+    // Yüksek enlemlerde (>48.5°) yazın güneş batış açısı yeterli derinliğe inmezse Açısal Yöntem (Angle-Based) uygulanır
+    const fajrOffset = haFajr !== null ? haFajr : (haSunrise + (M.fajr / 60) * night);
+    const ishaOffset = haIsha !== null ? haIsha : (haSunrise + (M.isha / 60) * night);
+
     // Temkin Payları (Diyanet Standart Temkini)
-    // Öğle: +6 dk temkin, İkindi: +5 dk temkin, Akşam: +7 dk temkin, Yatsı: +1 dk temkin
-    const imsak = solarNoon - (haFajr || 6) + (tk.imsak / 60);
-    const gunes = solarNoon - (haSunrise || 6) + (tk.gunes / 60);
+    const imsak = solarNoon - fajrOffset + (tk.imsak / 60);
+    const gunes = solarNoon - haSunrise + (tk.gunes / 60);
     const ogle = solarNoon + (tk.ogle / 60);
-    const ikindi = solarNoon + (haAsr || 3) + (tk.ikindi / 60);
-    const aksam = solarNoon + (haSunrise || 6) + (tk.aksam / 60);
+    const ikindi = solarNoon + (haAsr !== null ? haAsr : 3) + (tk.ikindi / 60);
+    const aksam = solarNoon + haSunrise + (tk.aksam / 60);
     // Ümmü'l-Kurâ: yatsı = akşam + 90 dk; diğerleri açıya göre
-    const yatsi = M.ishaMin ? aksam + (M.ishaMin / 60) : solarNoon + (haIsha || 7) + (tk.yatsi / 60);
+    const yatsi = M.ishaMin ? aksam + (M.ishaMin / 60) : solarNoon + ishaOffset + (tk.yatsi / 60);
 
     return {
       date: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
@@ -314,7 +323,7 @@ class PrayerEngine {
   }
 
   // Çevrimiçi Diyanet API'den Çekme ve Yerel Önbelleğe (Cache) Alma
-  async getPrayerTimes(date, lat, lon, tz = 3.0) {
+  async getPrayerTimes(date, lat, lon, tz) {
     const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     const cacheKey = `tamvakti_v2_${lat.toFixed(2)}_${lon.toFixed(2)}_${dateStr}${this._mk()}`;
 
@@ -365,7 +374,7 @@ class PrayerEngine {
   }
 
   // Aylık Namaz Vakitleri (Çevrimiçi Diyanet API veya %100 Çevrimdışı Astronomik Hesaplama)
-  async getMonthlyPrayerTimes(year, month, lat, lon, tz = 3.0) {
+  async getMonthlyPrayerTimes(year, month, lat, lon, tz) {
     const monthPadded = String(month).padStart(2, '0');
     const cacheKey = `tamvakti_monthly_v2_${lat.toFixed(2)}_${lon.toFixed(2)}_${year}_${monthPadded}${this._mk()}`;
 
@@ -463,7 +472,7 @@ class PrayerEngine {
     let firstHOff = null, lastHOff = null;
 
     for (let d = 1; d <= daysInMonth; d++) {
-      const dDate = new Date(year, month - 1, d);
+      const dDate = new Date(year, month - 1, d, 12, 0, 0);
       const times = this.calculateTimesOffline(dDate, lat, lon, tz);
       const isFri = (dDate.getDay() === 5);
       const isTod = (times.date === todayStr);

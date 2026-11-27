@@ -48,8 +48,12 @@ class PrayerAlertActivity : AppCompatActivity() {
             isAppearanceLightNavigationBars = false
         }
         bind(intent)
-        findViewById<Button>(R.id.alertClose).setOnClickListener { finishAndRemoveTask() }
+        findViewById<Button>(R.id.alertClose).setOnClickListener {
+            Notifs.cancelAlert(this, Notifs.ID_ALERT_VAKIT)
+            finishAndRemoveTask()
+        }
         findViewById<Button>(R.id.alertOpen).setOnClickListener {
+            Notifs.cancelAlert(this, Notifs.ID_ALERT_VAKIT)
             startActivity(Intent(this, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             })
@@ -57,6 +61,12 @@ class PrayerAlertActivity : AppCompatActivity() {
         }
         // Ekran kapatılana kadar açık kalır; ekran kapanınca kendini kapatır
         registerReceiver(screenOffReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF))
+        scheduleTimeouts()
+    }
+
+    private fun scheduleTimeouts() {
+        handler.removeCallbacksAndMessages(null)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         // Pil / OLED koruması: varsayılan 60 sn sonra ekranı zorla açık tutmayı bırak, 5 dk sonra pencereyi kapat
         val keepScreenMs = runCatching { Store.fullScreenKeepScreenMs(this) }.getOrDefault(KEEP_SCREEN_MS)
         val autoCloseMs = runCatching { Store.fullScreenAutoCloseMs(this) }.getOrDefault(AUTO_CLOSE_MS)
@@ -68,6 +78,7 @@ class PrayerAlertActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         bind(intent)
+        scheduleTimeouts()
     }
 
     override fun onDestroy() {

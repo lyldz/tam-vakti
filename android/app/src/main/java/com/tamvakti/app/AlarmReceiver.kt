@@ -44,14 +44,15 @@ class AlarmReceiver : BroadcastReceiver() {
                     // Vakit girince önceki "vakitten önce" hatırlatması ve kerahat bildirimini temizle
                     Notifs.cancelAlert(app, Notifs.ID_ALERT_REMINDER)
                     Notifs.cancelAlert(app, Notifs.ID_ALERT_KERAHAT)
-                    // Vakit girişinde (ve ayar açıksa) tam ekran bildirim
+                    // Vakit girişinde (ve ayar açıksa) tam ekran bildirim; sessiz modda tam ekran açılmaz (test hariç)
                     var fs: Intent? = null
-                    if (forceFullScreen || Store.fullScreenEnabled(app)) {
+                    if (forceFullScreen || (mode != "sessiz" && Store.fullScreenEnabled(app))) {
                         val alert = PrayerAlertActivity.intent(app, name.ifBlank { title.removeSuffix(" vakti girdi") }, time, Store.city(app), info)
-                        // "Diğer uygulamaların üzerinde göster" izni varsa telefon açıkken de doğrudan tam ekran açılır;
-                        // yoksa sistemin tam ekran bildirimine düşülür (yalnızca ekran kapalı/kilitliyken tam ekran olur)
+                        val pm = app.getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
+                        val screenOn = pm?.isInteractive ?: true
+                        // Ekran açıkken overlay izniyle doğrudan aç; ekran kapalıyken sistemin setFullScreenIntent mekanizmasını kullan
                         var launched = false
-                        if (Settings.canDrawOverlays(app)) {
+                        if (screenOn && Settings.canDrawOverlays(app)) {
                             try { app.startActivity(alert); launched = true } catch (e: Exception) {}
                         }
                         if (!launched) fs = alert
@@ -73,8 +74,9 @@ class AlarmReceiver : BroadcastReceiver() {
             // Her alarmdan sonra widget ve sabit bildirim sıradaki vakte geçsin
             PrayerWidget.updateAll(app)
             Notifs.refreshOngoing(app)
-            // Kayan pencere: kalan kurulu alarm azalınca pencereyi yenile (aynı dakikadaki diğer alarmları iptal etmez)
-            if (type != "silent_start") Scheduler.rescheduleIfNeeded(app)
+            // Kayan pencere: kalan kurulu alarm azalınca pencereyi yenile (aynı dakikadaki diğer alarmları iptal etmez;
+            // silent_start sayacı düşürür ama aynı dakikadaki vakit alarmını iptal etmemek için yenilemeyi erteler)
+            if (id >= 5000) Scheduler.rescheduleIfNeeded(app, deferReschedule = (type == "silent_start"))
         }
     }
 }

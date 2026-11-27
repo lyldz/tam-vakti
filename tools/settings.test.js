@@ -84,4 +84,35 @@ test('extreme, zero, empty, NaN, and invalid values never crash and clamp/fallba
   assert.equal(safe.prayerAlerts.imsak.before, 60);
   assert.equal(parseBackupJson('not json'), null);
   assert.equal(parseBackupJson('{"format":"wrong"}'), null);
+  assert.equal(parseBackupJson('{"a":1}'), null);
+  const badLoc = parseBackupJson(JSON.stringify({
+    format: 'tam-vakti-settings',
+    settings: { homeMode: 'focus' },
+    location: { name: 'Mars', lat: 95, lon: 200 },
+  }));
+  assert.ok(badLoc);
+  assert.equal(badLoc.location, null);
+});
+
+test('PrayerEngine: calculateQiblaHour matches sun azimuth and high-latitude times stay ordered', () => {
+  const { PrayerEngine } = require('../www/js/prayer-engine.js');
+  const eng = new PrayerEngine();
+  // İstanbul için yaz günü kıble saati: güneş azimutu kıble açısına (~152°) yakın olmalı
+  const istQ = eng.calculateQibla(41.0082, 28.9784).angle;
+  const qTime = eng.calculateQiblaHour(new Date(2026, 5, 21, 12, 0, 0), 41.0082, 28.9784, istQ, 3);
+  assert.ok(qTime && /^\d{2}:\d{2}$/.test(qTime), `qTime=${qTime}`);
+  const [qh, qm] = qTime.split(':').map(Number);
+  const sun = eng.getSunPositionNow(new Date(2026, 5, 21, qh, qm, 0), 41.0082, 28.9784, 3);
+  const azDiff = Math.abs(((sun.azimuth - istQ + 540) % 360) - 180);
+  assert.ok(azDiff < 3, `Güneş azimutu (${sun.azimuth}°) kıble açısına (${istQ}°) yakın olmalı`);
+
+  // Yüksek enlemde (Stockholm 59.3°N, 21 Haziran) vakit sırası bozulmamalı
+  eng.setMethod('mwl');
+  const hi = eng.calculateTimesOffline(new Date(2026, 5, 21, 12, 0, 0), 59.3293, 18.0686, 2);
+  const toMin = (s) => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
+  assert.ok(toMin(hi.imsak) < toMin(hi.gunes), `${hi.imsak} < ${hi.gunes}`);
+  assert.ok(toMin(hi.gunes) < toMin(hi.ogle), `${hi.gunes} < ${hi.ogle}`);
+  assert.ok(toMin(hi.ogle) < toMin(hi.ikindi), `${hi.ogle} < ${hi.ikindi}`);
+  assert.ok(toMin(hi.ikindi) < toMin(hi.aksam), `${hi.ikindi} < ${hi.aksam}`);
+  assert.ok(toMin(hi.aksam) < toMin(hi.yatsi), `${hi.aksam} < ${hi.yatsi}`);
 });

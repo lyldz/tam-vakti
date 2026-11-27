@@ -117,10 +117,19 @@ object Notifs {
     }
 
     private var tonePlayer: android.media.MediaPlayer? = null
+    private var toneRingtone: android.media.Ringtone? = null
 
     /** Ayarlardaki ses önizlemesi (yaklaşık 2 sn). */
+    @Synchronized
     fun playTone(ctx: Context, tone: String) {
         stopTone()
+        if (tone == "telefon") {
+            try {
+                val uri = android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION)
+                toneRingtone = android.media.RingtoneManager.getRingtone(ctx, uri)?.also { it.play() }
+            } catch (e: Exception) {}
+            return
+        }
         val raw = toneRawId(ctx, tone)
         if (raw == 0) return
         try {
@@ -143,9 +152,12 @@ object Notifs {
         }
     }
 
+    @Synchronized
     fun stopTone() {
         try { tonePlayer?.release() } catch (e: Exception) {}
         tonePlayer = null
+        try { toneRingtone?.stop() } catch (e: Exception) {}
+        toneRingtone = null
     }
 
     fun hasPermission(ctx: Context): Boolean =
@@ -316,7 +328,11 @@ object Notifs {
             cancelOngoing(ctx)
             return
         }
-        val next = Store.nextPrayer(ctx) ?: return
+        val next = Store.nextPrayer(ctx)
+        if (next == null) {
+            postOngoing(ctx, Store.city(ctx), "Vakitler için uygulamayı açın", "", 0L)
+            return
+        }
         postOngoing(ctx, Store.city(ctx), next.name, next.time, next.millis)
     }
 }

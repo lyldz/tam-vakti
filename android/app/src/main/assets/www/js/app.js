@@ -424,6 +424,9 @@ class TamVaktiApp {
   // Günün güneş yolu: x = günün saati (00:00-24:00), y = o andaki gerçek güneş yüksekliği.
   // Vakit noktaları gerçek saatlerine oturur; şu anki yerde güneş (geceleyin hilal) parlar.
   updateSolarTransitCurve() {
+    if (!this.showSolarArc) return;
+    const viewPrayer = document.getElementById("viewPrayer");
+    if (viewPrayer && viewPrayer.classList.contains("hidden")) return;
     const nodesEl = document.getElementById("solarArcNodes");
     const sunEl = document.getElementById("solarArcSun");
     const baseEl = document.getElementById("arcBase");
@@ -722,6 +725,7 @@ class TamVaktiApp {
   }
 
   tick() {
+    if (typeof document !== "undefined" && document.hidden) return;
     const _n = new Date();
     if (this.currentTimes && this._arcMin !== _n.getMinutes()) {
       this._arcMin = _n.getMinutes();
@@ -783,6 +787,10 @@ class TamVaktiApp {
     if (isOpen("updateFoundModal")) { this.closeUpdateFoundModal(); return true; }
     if (isOpen("monthlyModal")) { this.closeMonthlyModal(); return true; }
     if (isOpen("settingsModal")) { this.closeSettingsModal(); return true; }
+    if (isOpen("onboardingModal")) {
+      if (this.onboardingStep > 1 && typeof this.prevOnboardingStep === "function") this.prevOnboardingStep();
+      return true;
+    }
     if (isOpen("viewQibla")) { this.switchTab("prayer"); return true; }
     return false;
   }
@@ -935,6 +943,7 @@ class TamVaktiApp {
     }
 
     const kZone = document.getElementById("horizonKerahatZone");
+    const kMorningZone = document.getElementById("horizonMorningKerahatZone");
     if (kZone) {
       if (zoneStart !== null) {
         const w = Math.min(60, Math.max(8, (K / totalDuration) * 100));
@@ -942,6 +951,15 @@ class TamVaktiApp {
         kZone.classList.remove("hidden");
       } else {
         kZone.classList.add("hidden");
+      }
+    }
+    if (kMorningZone) {
+      if (current.key === "gunes") {
+        const w = Math.min(40, Math.max(8, (K / totalDuration) * 100));
+        kMorningZone.style.width = `${w.toFixed(1)}%`;
+        kMorningZone.classList.remove("hidden");
+      } else {
+        kMorningZone.classList.add("hidden");
       }
     }
     const kBadge = document.getElementById("horizonKerahatBadge");
@@ -1291,17 +1309,23 @@ class TamVaktiApp {
       return;
     }
     wrap.classList.remove("hidden");
-    box.innerHTML = list.slice(0, 3).map((r) => {
-      const safeName = String(r.name).replace(/'/g, "\\'");
-      const label = this.shortPlaceName(r.name);
+    this._recentLocationsCache = list.slice(0, 3);
+    const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    box.innerHTML = this._recentLocationsCache.map((r, idx) => {
+      const label = esc(this.shortPlaceName(r.name));
       const isCur = this.currentLocation && this.currentLocation.name === r.name;
       return `
-        <button onclick="app.selectLocation('${safeName}', ${r.lat}, ${r.lon})"
+        <button onclick="app.selectRecentLocation(${idx})"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all active:scale-95 cursor-pointer ${isCur ? "bg-sky-500/20 border-sky-400/50 text-sky-200" : "bg-[#0d1527] border-slate-700/70 text-slate-200 hover:border-sky-400/40"}">
           <span class="w-1.5 h-1.5 rounded-full ${isCur ? "bg-sky-400" : "bg-slate-500"}"></span>
           <span>${label}</span>
         </button>`;
     }).join("");
+  }
+
+  selectRecentLocation(idx) {
+    const r = (this._recentLocationsCache || [])[idx];
+    if (r) this.selectLocation(r.name, r.lat, r.lon);
   }
 
   _updateLocationHeader(query = "") {
@@ -2057,11 +2081,16 @@ class TamVaktiApp {
     const store = window.TamVaktiSettings;
     if (!store) return;
     const json = store.exportBackupJson(this.getAllSettingsSnapshot(), this.currentLocation, this.currentVersion);
+    const filename = `tam-vakti-ayarlar-${new Date().toISOString().slice(0, 10)}.json`;
+    if (window.AndroidBridge && typeof window.AndroidBridge.exportBackupJson === "function") {
+      window.AndroidBridge.exportBackupJson(filename, json);
+      return;
+    }
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `tam-vakti-ayarlar-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -2069,18 +2098,30 @@ class TamVaktiApp {
     this.showToast("Ayarlar JSON olarak dışa aktarıldı", "✓");
   }
 
+  triggerImportSettingsBackup() {
+    if (window.AndroidBridge && typeof window.AndroidBridge.importBackupJson === "function") {
+      window.AndroidBridge.importBackupJson();
+      return;
+    }
+    const input = document.getElementById("settingsImportFile");
+    if (input) input.click();
+  }
+
+  importSettingsBackupText(rawText) {
+    if (!window.TamVaktiSettings) return;
+    const parsed = window.TamVaktiSettings.parseBackupJson(String(rawText || ""));
+    if (!parsed) {
+      this.showToast("Geçersiz ayar yedek dosyası", "⚠️");
+      return;
+    }
+    this.applyFullSettingsObject(parsed.settings, parsed.location);
+    this.showToast("Ayarlar başarıyla içe aktarıldı", "✓");
+  }
+
   importSettingsBackup(file) {
     if (!file || !window.TamVaktiSettings) return;
     const reader = new FileReader();
-    reader.onload = () => {
-      const parsed = window.TamVaktiSettings.parseBackupJson(String(reader.result || ""));
-      if (!parsed) {
-        this.showToast("Geçersiz ayar yedek dosyası", "⚠️");
-        return;
-      }
-      this.applyFullSettingsObject(parsed.settings, parsed.location);
-      this.showToast("Ayarlar başarıyla içe aktarıldı", "✓");
-    };
+    reader.onload = () => this.importSettingsBackupText(reader.result);
     reader.readAsText(file);
   }
 
@@ -2395,7 +2436,7 @@ class TamVaktiApp {
       });
       if (i < 0) continue; // dünün alarmı kurulmaz
 
-      PRAYER_LIST.forEach(p => {
+      PRAYER_LIST.forEach((p, pIdx) => {
         const x = at[p.key];
         if (!x) return;
         const t = x.dt.getTime();
@@ -2428,8 +2469,15 @@ class TamVaktiApp {
 
         if (this.autoSilent && p.key !== "gunes") {
           const dur = (p.key === "ogle" && isFri) ? (this.fridaySilentDurationMin || 60) : (this.silentDurationMin || 30);
-          events.push({ t, type: "silent_start" });
-          events.push({ t: t + dur * MIN, type: "silent_end" });
+          const startT = t + 1500;
+          let endT = t + dur * MIN;
+          const nextP = PRAYER_LIST[pIdx + 1];
+          if (nextP && nextP.key !== "gunes" && at[nextP.key]) {
+            const limitT = at[nextP.key].dt.getTime() - MIN;
+            if (endT > limitT) endT = limitT;
+          }
+          events.push({ t: startT, type: "silent_start" });
+          if (endT > startT) events.push({ t: endT, type: "silent_end" });
         }
       });
 
@@ -3513,6 +3561,7 @@ class TamVaktiApp {
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.7);
       osc.connect(gain);
       gain.connect(ctx.destination);
+      osc.onended = () => { try { ctx.close(); } catch (e) {} };
       osc.start();
       osc.stop(ctx.currentTime + 0.7);
     } catch (e) {}

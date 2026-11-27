@@ -141,12 +141,20 @@
   function parseBackupJson(rawText) {
     try {
       const obj = JSON.parse(rawText);
-      if (!obj || typeof obj !== 'object') return null;
-      if (obj.format && obj.format !== 'tam-vakti-settings') return null;
-      const settingsObj = (obj.settings && typeof obj.settings === 'object') ? obj.settings : obj;
-      const loc = obj.location && typeof obj.location === 'object' && typeof obj.location.lat === 'number' && typeof obj.location.lon === 'number'
-        ? { name: String(obj.location.name || '').slice(0, 80), lat: obj.location.lat, lon: obj.location.lon }
-        : null;
+      if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null;
+      if (obj.format !== 'tam-vakti-settings') return null;
+      const settingsObj = (obj.settings && typeof obj.settings === 'object' && !Array.isArray(obj.settings)) ? obj.settings : null;
+      if (!settingsObj) return null;
+      let loc = null;
+      if (obj.location && typeof obj.location === 'object') {
+        const lat = obj.location.lat;
+        const lon = obj.location.lon;
+        const name = String(obj.location.name || '').trim().slice(0, 80);
+        if (name && typeof lat === 'number' && Number.isFinite(lat) && lat >= -90 && lat <= 90 &&
+            typeof lon === 'number' && Number.isFinite(lon) && lon >= -180 && lon <= 180) {
+          loc = { name, lat, lon };
+        }
+      }
       return { settings: sanitizeSettings(settingsObj), location: loc };
     } catch {
       return null;

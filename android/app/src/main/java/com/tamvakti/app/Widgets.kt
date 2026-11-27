@@ -125,8 +125,24 @@ object Widgets {
             v.setTextViewText(R.id.w_city, city)
             countdown(v, d.next)
         }
-        scheduleNextBoundary(app, d.next?.millis)
+        scheduleNextBoundary(app, nextBoundaryMillis(d))
         scheduleMidnight(app)
+    }
+
+    private fun nextBoundaryMillis(d: Day): Long? {
+        val nextMillis = d.next?.millis ?: return null
+        val now = System.currentTimeMillis()
+        val k = 45 * 60_000L
+        val candidates = mutableListOf(nextMillis)
+        val next = d.next
+        if (next.key == "ogle") {
+            val gunes = d.rows.getOrNull(1)
+            if (gunes != null && gunes.millis + k > now) candidates.add(gunes.millis + k)
+            if (nextMillis - k > now) candidates.add(nextMillis - k)
+        } else if (next.key == "aksam") {
+            if (nextMillis - k > now) candidates.add(nextMillis - k)
+        }
+        return candidates.filter { it > now }.minOrNull()
     }
 
     /** Şu an kerahat vaktindeysek (Güneş + 45 dk, Öğle - 45 dk, Akşam - 45 dk) true döner. */
@@ -159,24 +175,26 @@ object Widgets {
     private fun fillClassic(v: RemoteViews, d: Day, city: String) {
         v.setTextViewText(R.id.widget_city, city)
         val next = d.next
-        if (next == null) {
-            v.setTextViewText(R.id.widget_name, "Tam Vakti")
-            v.setTextViewText(R.id.widget_time, "Uygulamayı bir kez açın")
+        val now = System.currentTimeMillis()
+        if (next == null || next.millis <= now) {
+            v.setTextViewText(R.id.widget_name, next?.let { nextLabel(it) } ?: "Tam Vakti")
+            v.setTextViewText(R.id.widget_time, next?.time ?: "Uygulamayı bir kez açın")
             v.setViewVisibility(R.id.widget_countdown, View.GONE)
         } else {
             v.setTextViewText(R.id.widget_name, nextLabel(next))
             v.setTextViewText(R.id.widget_time, next.time)
             v.setViewVisibility(R.id.widget_countdown, View.VISIBLE)
-            val base = SystemClock.elapsedRealtime() + (next.millis - System.currentTimeMillis())
+            val base = SystemClock.elapsedRealtime() + (next.millis - now)
             v.setChronometerCountDown(R.id.widget_countdown, true)
             v.setChronometer(R.id.widget_countdown, base, null, true)
         }
     }
 
     private fun countdown(v: RemoteViews, next: Row?) {
-        if (next == null) { v.setViewVisibility(R.id.w_countdown, View.GONE); return }
+        val now = System.currentTimeMillis()
+        if (next == null || next.millis <= now) { v.setViewVisibility(R.id.w_countdown, View.GONE); return }
         v.setViewVisibility(R.id.w_countdown, View.VISIBLE)
-        val base = SystemClock.elapsedRealtime() + (next.millis - System.currentTimeMillis())
+        val base = SystemClock.elapsedRealtime() + (next.millis - now)
         v.setChronometerCountDown(R.id.w_countdown, true)
         v.setChronometer(R.id.w_countdown, base, null, true)
     }
@@ -200,7 +218,7 @@ object Widgets {
         }
     }
 
-    /** Sıradaki vakit girdiğinde Chronometer eksiye düşmeden widget'ları bir sonraki vakte geçirir. */
+    /** Sıradaki vakit veya kerahat sınırında widget'ları yeniler. */
     private fun scheduleNextBoundary(app: Context, nextMillis: Long?) {
         if (nextMillis == null || nextMillis <= System.currentTimeMillis()) return
         val intent = Intent(app, PrayerWidget::class.java).apply { action = ACTION_TICK }

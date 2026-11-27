@@ -7,13 +7,19 @@ import org.json.JSONObject
 /** Native tarafın küçük kalıcı deposu (alarm listesi, sessize alma durumu). */
 object Store {
     private const val FILE = "tamvakti_native"
+    @Volatile private var cachedRaw: String? = null
+    @Volatile private var cachedObj: JSONObject? = null
 
     fun prefs(ctx: Context): SharedPreferences =
         ctx.applicationContext.getSharedPreferences(FILE, Context.MODE_PRIVATE)
 
     fun schedule(ctx: Context): JSONObject? {
         val raw = prefs(ctx).getString("schedule", null) ?: return null
-        return try { JSONObject(raw) } catch (e: Exception) { null }
+        if (raw == cachedRaw) return cachedObj
+        val parsed = try { JSONObject(raw) } catch (e: Exception) { null }
+        cachedRaw = raw
+        cachedObj = parsed
+        return parsed
     }
 
     data class NextPrayer(val name: String, val time: String, val millis: Long)

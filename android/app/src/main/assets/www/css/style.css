@@ -599,6 +599,10 @@ html, body { overflow: hidden; }
   height: 100dvh;
   min-height: 0 !important;
 }
+@media (max-height: 540px) {
+  html, body { overflow-y: auto; }
+  .minimal-app { height: auto; min-height: 100dvh !important; }
+}
 /* Yalnızca Kıble sekmesi (uzun içerik) kendi içinde kayabilir */
 main:has(#viewQibla:not(.hidden)) {
   overflow-y: auto;
